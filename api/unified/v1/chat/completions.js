@@ -80,20 +80,80 @@ export default async function handler(req) {
 
   try {
     const body = await req.json();
-    const { model, messages, use_reasoning = true } = body; // OpenReason enabled by default
+    const { model, messages, use_memory = true, use_reasoning = true, session_id } = body; // Both enabled by default, opt-out
     const url = new URL(req.url);
     
     const targetEndpoint = findModelRoute(model);
     const targetUrl = new URL(targetEndpoint, url.origin);
 
-    // Get the base response from the model
+    // Session-based memory: store conversation context per session
+    let memoryContext = [];
+    if (use_memory !== false && session_id) {
+      try {
+        const lastUserMessage = messages?.findLast(m => m.role === 'user')?.content || '';
+        if (lastUserMessage) {
+          const memoryRes = await fetch(new URL('/api/openmemory/memory/query', url.origin), {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              query: lastUserMessage,
+              k: 3,
+              filters: { user_id: session_id },
+            }),
+          });
+          if (memoryRes.ok) {
+            const memoryData = await memoryRes.json();
+            if (memoryData.matches && memoryData.matches.length > 0) {
+              memoryContext = memoryData.matches.map((m: any) => ({
+                role: 'system' as const,
+                content: `[Context] ${m.content}`,
+              }));
+            }
+          }
+        }
+      } catch (memError) {
+        console.warn('Memory query failed:', memError);
+      }
+    }
+
+    // Get the base response from the model with memory context
     const response = await fetch(targetUrl, {
       method: 'POST',
       headers: req.headers,
-      body: JSON.stringify(body),
+      body: JSON.stringify({
+        ...body,
+        messages: [...memoryContext, ...messages],
+      }),
     });
 
     const responseData = await response.json();
+
+    // Store in session memory if enabled
+    if (use_memory !== false && session_id && responseData.choices && responseData.choices[0]?.message?.content) {
+      try {
+        const lastUserMessage = messages?.findLast(m => m.role === 'user')?.content || '';
+        const assistantResponse = responseData.choices[0].message.content;
+        
+        // Store conversation in session memory (not persistent forever)
+        await fetch(new URL('/api/openmemory/memory/add', url.origin), {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            content: `User: ${lastUserMessage}\nAssistant: ${assistantResponse}`,
+            tags: ['session', 'chat'],
+            metadata: { 
+              model, 
+              session_id,
+              timestamp: Date.now(),
+              temporary: true, // Mark as session-based
+            },
+            user_id: session_id,
+          }),
+        });
+      } catch (memError) {
+        console.warn('Memory storage failed:', memError);
+      }
+    }
 
     // Enhance with OpenReason if enabled and we have a response
     if (use_reasoning !== false && responseData.choices && responseData.choices[0]?.message?.content) {
@@ -101,7 +161,6 @@ export default async function handler(req) {
         const lastUserMessage = messages?.findLast(m => m.role === 'user')?.content || '';
         
         // Use OpenReason to enhance the reasoning
-        // This adds reasoning capabilities to all responses
         const reasonUrl = new URL('/api/openreason/reason', url.origin);
         const reasonResponse = await fetch(reasonUrl, {
           method: 'POST',
@@ -110,14 +169,13 @@ export default async function handler(req) {
             query: lastUserMessage,
             config: {
               provider: 'openai',
-              memory: { enabled: false }, // Can be enabled via OpenMemory
+              memory: { enabled: use_memory !== false && session_id ? true : false },
             },
           }),
         });
 
         if (reasonResponse.ok) {
           const reasonData = await reasonResponse.json();
-          // Add reasoning metadata to response
           if (reasonData.verdict) {
             responseData.reasoning = {
               engine: 'OpenReason',
@@ -129,7 +187,6 @@ export default async function handler(req) {
           }
         }
       } catch (reasonError) {
-        // Silently fail - reasoning is enhancement, not required
         console.warn('OpenReason enhancement failed:', reasonError);
       }
     }

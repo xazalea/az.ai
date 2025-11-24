@@ -1,208 +1,16 @@
-# az.ai - Unified AI Provider Platform with Advanced Reasoning & Memory
+# az.ai - Unified AI Platform with Reasoning & Memory
 
-## Overview
+Unified AI infrastructure with **OpenReason** (reasoning engine) and **OpenMemory** (session-based memory). Access 50+ models through a single OpenAI-compatible API.
 
-az.ai is a comprehensive, unified AI infrastructure platform that provides access to multiple AI models through a single OpenAI-compatible API. The platform features **OpenReason** (mandatory reasoning engine) and **OpenMemory** (optional long-term memory) to enhance all AI interactions. The platform is designed to be affordable, easy to use, and deployable on Vercel with zero environment variable friction.
+## 🧠 Core Features
 
-## 🧠 Key Features
+- **OpenReason**: Advanced reasoning engine (always enabled)
+- **OpenMemory**: Session-based memory (enabled by default, opt-out)
+- **50+ Models**: Text, image, and video generation
+- **Zero Setup**: No environment variables for most models
+- **OpenAI Compatible**: Drop-in replacement
 
-### **OpenReason - Advanced Reasoning Engine** (Always Enabled)
-- **Mandatory reasoning enhancement** for all AI responses
-- Multi-domain cognitive system with specialized solvers (Math, Logic, Causal, Ethics)
-- Unified reasoning graph with reflexive self-audit
-- Automatic reasoning quality verification
-- Enhances all chat completions with advanced reasoning capabilities
-
-### **OpenMemory - Long-Term Memory** (Optional)
-- **Optional long-term memory** system for context-aware conversations
-- Persistent memory across sessions
-- Semantic search and retrieval
-- User-specific memory isolation
-- Enable in the playground settings for enhanced context awareness
-
-### **Enhanced Image & Video Generation**
-- **Jimeng API** integration for advanced image and video generation
-- Image composition features
-- High-quality video generation
-- Multiple resolution and aspect ratio options
-
-## Integrated Providers
-
-### Text Generation Models
-
-1. **Qwen 2.5** - General purpose coding & chat (`qwen-free-api`)
-2. **DeepSeek V3** - High performance general model (`deepseek-free-api`)
-3. **DeepSeek R1** - Reasoning focused model (`deepseek-free-api`)
-4. **DeepSeek Free** - Free DeepSeek access (`deepseek4free`)
-5. **GLM-4** - Strong agentic capabilities (`glm-free-api`)
-6. **Doubao Pro** - Great Chinese understanding (`doubao-free-api`)
-7. **Kimi** - Long context specialist (`kimi-free-api`)
-8. **MiniMax** - Natural conversation (`minimax-free-api`)
-9. **Step-1** - Multi-modal reasoning (`step-free-api`)
-10. **Groq LPU™** - Ultra-fast inference (`Groq2API`)
-11. **GPT-4 (Free)** - GPT-4 via gpt4free-ts (`gpt4free-ts`)
-12. **GPT-3.5 Turbo (Free)** - Free GPT-3.5 access (`free-gpt3.5-2api`)
-13. **ChatGPT (Free)** - Free ChatGPT API (`ChatGPTAPIFree`)
-14. **Gemini Multimodal** - Multimodal Gemini (`gemini-multimodal-playground`)
-15. **Gemini 2.5 Pro (CLI)** - Via CLIProxyAPI
-16. **Claude Code (CLI)** - Via CLIProxyAPI
-17. **Qwen Code (CLI)** - Via CLIProxyAPI
-18. **Pollinations** - Free text generation (`pollinations`)
-
-### Image Generation Models
-
-1. **Jimeng API (Enhanced)** - Advanced image generation with composition features (`jimeng-api`)
-2. **Imagen 3** - Photorealistic generation (`imageFX-api`)
-3. **Jimeng** - Artistic generation (`jimeng-free-api`)
-4. **ImageAI (Google)** - Enhanced prompts via ImageAI (`ImageAI`)
-5. **ImageAI (OpenAI)** - DALL-E via ImageAI wrapper (`ImageAI`)
-6. **Pollinations (Flux)** - Free high-quality image generation (`pollinations`)
-7. **Pollinations (Turbo)** - Fast image generation (`pollinations`)
-
-### Video Generation Models
-
-1. **Jimeng API (Enhanced)** - Advanced video generation with enhanced quality (`jimeng-api`)
-2. **Veo 3** - Google Veo 3 video generation (`ImageAI`)
-3. **Veo 3 Fast** - Faster Veo generation
-4. **Veo 2** - Previous generation model
-5. **Viggle AI** - Meme creation & character animation (`Viggle-AI-WebUI`)
-6. **Tongyi** - Alibaba video generation (`ai-video-api`)
-7. **Vidu** - High quality video generation (`ai-video-api`)
-8. **PixVerse** - Creative video generation (`ai-video-api`)
-9. **Runway** - Professional video generation (`ai-video-api`)
-10. **Stability AI Video** - Via ai-video-api
-11. **Zhipu** - Via ai-video-api
-12. **Luma Labs** - Via ai-video-api
-
-## API Endpoints
-
-### Unified Endpoints (Recommended)
-
-All models are accessible through unified OpenAI-compatible endpoints. Simply specify the `model` parameter in your request:
-
-#### Text Generation
-```bash
-POST /v1/chat/completions
-Content-Type: application/json
-
-{
-  "model": "qwen",  # or "deepseek", "gpt-4", "pollinations", etc.
-  "messages": [
-    {"role": "user", "content": "Hello!"}
-  ]
-}
-```
-
-#### Image Generation
-```bash
-POST /v1/images/generations
-Content-Type: application/json
-
-{
-  "model": "flux",  # or "imagen-3", "pollinations", "jimeng", etc.
-  "prompt": "A beautiful sunset",
-  "n": 1,
-  "size": "1024x1024"
-}
-```
-
-#### Video Generation
-```bash
-POST /v1/videos/generations
-Content-Type: application/json
-
-{
-  "model": "veo-3",  # or "viggle", "tongyi", "vidu", etc.
-  "prompt": "A cat dancing",
-  "duration": 8.0,
-  "aspect_ratio": "16:9"
-}
-```
-
-#### OpenReason - Advanced Reasoning Engine
-OpenReason is automatically enabled for all chat completions, but you can also use it directly:
-
-```bash
-POST /v1/reasoning
-Content-Type: application/json
-
-{
-  "query": "What is the square root of 144?",
-  "config": {
-    "provider": "openai",  # or "anthropic", "google", "xai"
-    "memory": {
-      "enabled": false
-    }
-  }
-}
-```
-
-Response includes reasoning metadata:
-```json
-{
-  "query": "What is the square root of 144?",
-  "verdict": "12",
-  "confidence": 0.95,
-  "mode": "math",
-  "domain": "mathematics",
-  "complexity": 2,
-  "latency": 450,
-  "reasoning_engine": "OpenReason"
-}
-```
-
-#### OpenMemory - Long-Term Memory
-Query memories:
-```bash
-POST /v1/memory/query
-Content-Type: application/json
-
-{
-  "query": "What did I say about my favorite color?",
-  "k": 8,  # Number of results
-  "filters": {
-    "user_id": "user123",
-    "sector": "preferences"
-  }
-}
-```
-
-Add memory:
-```bash
-POST /v1/memory/add
-Content-Type: application/json
-
-{
-  "content": "User's favorite color is blue",
-  "tags": ["preferences", "color"],
-  "metadata": {
-    "source": "conversation",
-    "timestamp": "2025-01-01T00:00:00Z"
-  },
-  "user_id": "user123"
-}
-```
-
-Ingest documents:
-```bash
-POST /v1/memory/ingest
-Content-Type: application/json
-
-{
-  "content_type": "text/plain",
-  "data": "Base64 encoded content or text",
-  "metadata": {
-    "title": "Document Title",
-    "author": "Author Name"
-  },
-  "user_id": "user123"
-}
-```
-
-**Note**: OpenMemory requires `OPENMEMORY_URL` environment variable to be set. If not configured, endpoints will return a 503 status with instructions.
-
-### Enhanced Chat Completions with Reasoning
-All chat completions automatically include OpenReason enhancement. To disable it, set `use_reasoning: false`:
+## Quick Start
 
 ```bash
 POST /v1/chat/completions
@@ -210,79 +18,111 @@ Content-Type: application/json
 
 {
   "model": "qwen",
-  "messages": [
-    {"role": "user", "content": "Solve this math problem: 2x + 5 = 15"}
-  ],
-  "use_reasoning": true  # Default: true, set to false to disable
+  "messages": [{"role": "user", "content": "Hello!"}],
+  "session_id": "user123"  # Optional: enables session memory
 }
 ```
 
-The response will include a `reasoning` field with OpenReason metadata:
+## API Endpoints
+
+### Chat Completions (with Reasoning & Memory)
+```bash
+POST /v1/chat/completions
+{
+  "model": "qwen",  # or "deepseek", "gpt-4", etc.
+  "messages": [{"role": "user", "content": "Solve: 2x + 5 = 15"}],
+  "session_id": "session123",  # Enables session memory
+  "use_memory": true,  # Default: true (opt-out)
+  "use_reasoning": true  # Default: true
+}
+```
+
+Response includes reasoning metadata:
 ```json
 {
-  "choices": [{
-    "message": {
-      "content": "x = 5"
-    }
-  }],
+  "choices": [{"message": {"content": "x = 5"}}],
   "reasoning": {
     "engine": "OpenReason",
     "confidence": 0.92,
     "mode": "math",
-    "domain": "mathematics",
-    "complexity": 3
+    "domain": "mathematics"
   }
 }
 ```
 
-### Model Selection
+### Image Generation
+```bash
+POST /v1/images/generations
+{
+  "model": "jimeng-api",  # or "flux", "imagen-3", etc.
+  "prompt": "A beautiful sunset",
+  "n": 1
+}
+```
 
-The unified API automatically routes to the correct provider based on the `model` field. Available models:
+### Video Generation
+```bash
+POST /v1/videos/generations
+{
+  "model": "jimeng-api",  # or "veo-3", "viggle", etc.
+  "prompt": "A cat dancing",
+  "duration": 8.0
+}
+```
 
-**Text Models**: `qwen`, `deepseek`, `glm-4`, `doubao`, `kimi`, `minimax`, `step`, `groq`, `gpt-4`, `gpt-3.5`, `chatgpt`, `gemini-multimodal`, `gemini-2.5-pro`, `claude-code`, `qwen-code`, `pollinations`
+### Reasoning (Direct)
+```bash
+POST /v1/reasoning
+{
+  "query": "What is 2+2?",
+  "config": {"provider": "openai"}
+}
+```
 
-**Image Models**: `imagen-3`, `jimeng`, `imageai-google`, `imageai-openai`, `pollinations`, `flux`, `turbo`
+### Memory (Session-Based)
+```bash
+# Query session memories
+POST /v1/memory/query
+{
+  "query": "previous conversation",
+  "k": 5,
+  "filters": {"user_id": "session123"}
+}
 
-**Video Models**: `veo-3`, `veo-3-fast`, `veo-2`, `viggle`, `tongyi`, `vidu`, `pixverse`, `runway`, `stability-video`, `zhipu`, `luma`
+# Add to session (auto-done in chat, but available directly)
+POST /v1/memory/add
+{
+  "content": "User prefers dark mode",
+  "tags": ["preferences"],
+  "user_id": "session123"
+}
+```
 
-## Features
+## Available Models
 
-- **Unified API**: Single endpoint for all text, image, and video generation models
-- **OpenReason Integration**: Advanced reasoning engine automatically enhances all responses
-- **OpenMemory Support**: Optional long-term memory for context-aware conversations
-- **Zero Setup**: No environment variables required for most models
-- **OpenAI Compatible**: Drop-in replacement for OpenAI API
-- **Modern UI**: Beautiful Lavender Sapphire Mist themed interface
-- **Interactive Playground**: Test models directly in the browser with memory and reasoning controls
-- **Vercel Ready**: Fully optimized for serverless deployment
-- **Multi-Provider**: Access to 18+ text models, 6+ image models, and 11+ video models
-- **Enhanced Generation**: jimeng-api for advanced image and video generation
-- **Meme Creation**: Viggle AI integration for character animation and memes
+**Text**: `qwen`, `deepseek`, `glm-4`, `doubao`, `kimi`, `minimax`, `step`, `groq`, `gpt-4`, `gpt-3.5`, `chatgpt`, `gemini-3-pro`, `claude-opus-4.5`, `mistral-large`, `grok-4`, `llama-4-scout`, and more
 
-## Architecture
+**Image**: `jimeng-api`, `imagen-3`, `flux`, `turbo`, `pollinations`
 
-- **Frontend**: Next.js 14 with React, TypeScript, Tailwind CSS
-- **Backend**: Vercel Serverless Functions (Node.js, Go, Python)
-- **Routing**: Unified API gateway with intelligent model routing
-- **Packages**: Monorepo structure with individual provider packages
+**Video**: `jimeng-api`, `veo-3`, `viggle`, `tongyi`, `vidu`, `pixverse`, `runway`, `luma`
+
+## Memory Behavior
+
+- **Session-based**: Memory is tied to `session_id` and is temporary
+- **Opt-out**: Set `use_memory: false` to disable
+- **Auto-storage**: Conversations automatically stored per session
+- **Context-aware**: Previous messages in session are used for context
+
+## Reasoning Behavior
+
+- **Always enabled**: OpenReason enhances all responses by default
+- **Opt-out**: Set `use_reasoning: false` to disable
+- **Metadata**: Response includes confidence, mode, and domain
 
 ## Deployment
 
-The platform is designed for one-click deployment on Vercel:
+Deploy to Vercel with one click. No additional configuration needed.
 
-1. Connect your GitHub repository
-2. Vercel automatically detects Next.js
-3. Deploy - no additional configuration needed
+## License
 
-## Color Palette
-
-The UI uses the **Lavender Sapphire Mist** palette:
-- `#D9A69F` - Pale Pink/Lavender (Text/Accents)
-- `#6C739C` - Muted Purple (Primary Elements)
-- `#F0DAD5` - Very Pale Pink (Backgrounds/Text)
-- `#BABBB1` - Grey (Borders/Secondary Text)
-- `#C56B62` - Deep Pink (Hover/Active)
-- `#424658` - Dark Grey/Navy (Main Background)
-- `#DEA785` - Peach (Accents/Highlights)
-
-
+See individual package licenses.
