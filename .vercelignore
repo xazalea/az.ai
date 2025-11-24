@@ -1,0 +1,37 @@
+# Ignore unnecessary files from deployment to speed up builds
+packages/*/node_modules
+packages/*/dist
+packages/*/.git
+packages/*/tests
+packages/*/test
+packages/*/__tests__
+packages/*/__test__
+packages/*/*.test.*
+packages/*/*.spec.*
+packages/*/coverage
+packages/*/.next
+packages/*/build
+packages/*/tmp
+packages/*/temp
+packages/*/.cache
+packages/*/docs
+packages/*/examples
+packages/*/example
+packages/*/demo
+packages/*/demos
+
+# Pollinations directory (external projects)
+pollinations/
+
+# Development files
+*.log
+*.tmp
+.DS_Store
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# Build artifacts that will be regenerated
+.next/cache
+

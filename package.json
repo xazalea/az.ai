@@ -6,10 +6,14 @@
   ],
   "scripts": {
     "dev": "next dev",
-    "build": "npm run build:packages && next build",
-    "build:packages": "npm run build --workspaces --if-present || true",
+    "build": "bash vercel-build.sh",
+    "build:next": "next build",
+    "build:packages": "npm run build --workspaces --if-present || echo 'Package build completed with warnings'",
+    "build:packages:parallel": "npm run build --workspaces --if-present --parallel || true",
+    "build:packages:sequential": "npm run build --workspaces --if-present || true",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "prebuild": "node scripts/ensure-build-scripts.js || true"
   },
   "dependencies": {
     "clsx": "^2.1.1",

@@ -1,0 +1,9 @@
+{
+  "name": "gemini-multimodal-playground",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "build": "echo 'Gemini multimodal playground build skipped - not needed for API integration'"
+  }
+}
+
