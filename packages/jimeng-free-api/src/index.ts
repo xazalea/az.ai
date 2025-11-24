@@ -20,8 +20,6 @@ const startupTime = performance.now();
 
   server.attachRoutes(routes);
 
-  export default server.app.callback();
-
   if (!process.env.VERCEL) {
     await server.listen();
 
@@ -35,3 +33,5 @@ const startupTime = performance.now();
     )
   )
   .catch((err) => console.error(err));
+
+export default server.app.callback();
