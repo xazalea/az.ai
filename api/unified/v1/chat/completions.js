@@ -121,39 +121,36 @@ export default async function handler(req) {
     // Determine which handler to use based on model
     const requestBody = { ...body, messages: [...memoryContext, ...messages] };
     
-    // Package-based models (direct import)
+    // Package-based models (use generic proxy)
+    let packageName = null;
     if (m.includes('qwen')) {
-      const result = await callModelPackage('qwen-free-api', requestBody, req);
-      responseData = result.data;
-      responseStatus = result.status;
+      packageName = 'qwen-free-api';
     } else if (m.includes('deepseek') && !m.includes('free')) {
-      const result = await callModelPackage('deepseek-free-api', requestBody, req);
-      responseData = result.data;
-      responseStatus = result.status;
+      packageName = 'deepseek-free-api';
     } else if (m.includes('glm')) {
-      const result = await callModelPackage('glm-free-api', requestBody, req);
-      responseData = result.data;
-      responseStatus = result.status;
+      packageName = 'glm-free-api';
     } else if (m.includes('doubao')) {
-      const result = await callModelPackage('doubao-free-api', requestBody, req);
-      responseData = result.data;
-      responseStatus = result.status;
+      packageName = 'doubao-free-api';
     } else if (m.includes('kimi')) {
-      const result = await callModelPackage('kimi-free-api', requestBody, req);
-      responseData = result.data;
-      responseStatus = result.status;
+      packageName = 'kimi-free-api';
     } else if (m.includes('minimax') || m.includes('hailuo')) {
-      const result = await callModelPackage('minimax-free-api', requestBody, req);
-      responseData = result.data;
-      responseStatus = result.status;
+      packageName = 'minimax-free-api';
     } else if (m.includes('step') || m.includes('yuewen')) {
-      const result = await callModelPackage('step-free-api', requestBody, req);
-      responseData = result.data;
-      responseStatus = result.status;
+      packageName = 'step-free-api';
     } else if (m.includes('jimeng') && !m.includes('api')) {
-      const result = await callModelPackage('jimeng-free-api', requestBody, req);
-      responseData = result.data;
-      responseStatus = result.status;
+      packageName = 'jimeng-free-api';
+    }
+    
+    if (packageName) {
+      // Use generic model proxy
+      const proxyUrl = new URL(`/api/models/${packageName}/v1/chat/completions`, url.origin);
+      const response = await fetch(proxyUrl, {
+        method: 'POST',
+        headers: req.headers,
+        body: JSON.stringify(requestBody),
+      });
+      responseData = await response.json();
+      responseStatus = response.status;
     } else {
       // External API routes (Python/Go or services that need separate routes)
       const externalRoutes = {
