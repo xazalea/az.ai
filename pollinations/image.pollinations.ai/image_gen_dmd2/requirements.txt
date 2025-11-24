@@ -1,0 +1,11 @@
+torch==2.4.1
+transformers
+xformers
+diffusers
+accelerate
+peft
+gradio
+fastapi
+opencv-python
+hidiffusion
+compel
