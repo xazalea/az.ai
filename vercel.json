@@ -2,8 +2,24 @@
   "rewrites": [
     { "source": "/api/qwen/:path*", "destination": "/api/qwen/:path*" },
     { "source": "/api/groq/:path*", "destination": "/packages/Groq2API/api/router.go" },
+    { "source": "/api/doubao/:path*", "destination": "/api/doubao/:path*" },
+    { "source": "/api/glm/:path*", "destination": "/api/glm/:path*" },
+    { "source": "/api/deepseek/:path*", "destination": "/api/deepseek/:path*" },
+    { "source": "/api/kimi/:path*", "destination": "/api/kimi/:path*" },
+    { "source": "/api/minimax/:path*", "destination": "/api/minimax/:path*" },
+    { "source": "/api/step/:path*", "destination": "/api/step/:path*" },
+    { "source": "/api/jimeng/:path*", "destination": "/api/jimeng/:path*" },
+    
     { "source": "/qwen/:path*", "destination": "/api/qwen/:path*" },
     { "source": "/groq/:path*", "destination": "/packages/Groq2API/api/router.go" },
+    { "source": "/doubao/:path*", "destination": "/api/doubao/:path*" },
+    { "source": "/glm/:path*", "destination": "/api/glm/:path*" },
+    { "source": "/deepseek/:path*", "destination": "/api/deepseek/:path*" },
+    { "source": "/kimi/:path*", "destination": "/api/kimi/:path*" },
+    { "source": "/minimax/:path*", "destination": "/api/minimax/:path*" },
+    { "source": "/step/:path*", "destination": "/api/step/:path*" },
+    { "source": "/jimeng/:path*", "destination": "/api/jimeng/:path*" },
+
     { "source": "/v1/images/generations", "destination": "/api/imagefx/v1/images/generations" },
     { "source": "/imagefx/v1/images/generations", "destination": "/api/imagefx/v1/images/generations" },
     { "source": "/v1/chat/completions", "destination": "/api/unified/v1/chat/completions" }

@@ -23,10 +23,26 @@ export default async function handler(req) {
     const url = new URL(req.url);
     
     let targetEndpoint = '/api/groq/v1/chat/completions'; // Default to Groq
+    const m = model ? model.toLowerCase() : '';
 
-    if (model && model.toLowerCase().includes('qwen')) {
+    if (m.includes('qwen')) {
         targetEndpoint = '/api/qwen/v1/chat/completions';
+    } else if (m.includes('doubao')) {
+        targetEndpoint = '/api/doubao/v1/chat/completions';
+    } else if (m.includes('glm')) {
+        targetEndpoint = '/api/glm/v1/chat/completions';
+    } else if (m.includes('deepseek')) {
+        targetEndpoint = '/api/deepseek/v1/chat/completions';
+    } else if (m.includes('kimi')) {
+        targetEndpoint = '/api/kimi/v1/chat/completions';
+    } else if (m.includes('minimax') || m.includes('hailuo')) {
+        targetEndpoint = '/api/minimax/v1/chat/completions';
+    } else if (m.includes('step') || m.includes('yuewen')) {
+        targetEndpoint = '/api/step/v1/chat/completions';
     }
+
+    // Jimeng is image gen, so it's likely handled by the image endpoint, but if they have chat...
+    // The repo description says "Image generation top stream", so likely not chat.
 
     // Construct absolute URL for internal fetch
     const targetUrl = new URL(targetEndpoint, url.origin);
