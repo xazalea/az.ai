@@ -9,7 +9,7 @@
     { "source": "/v2/chat/completions", "destination": "/api/unified/v2/chat/completions" },
     
     { "source": "/v1/reasoning", "destination": "/api/openreason/reason" },
-    { "source": "/v1/memory/:path*", "destination": "/api/openmemory/memory/:path*" },
+    { "source": "/v1/memory/:path*", "destination": "/api/openmemory/memory/[...path]" },
     { "source": "/api/openreason/:path*", "destination": "/api/openreason/:path*" },
     { "source": "/api/openmemory/:path*", "destination": "/api/openmemory/:path*" },
     
