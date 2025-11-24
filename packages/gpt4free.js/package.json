@@ -1,0 +1,49 @@
+{
+  "name": "gpt4js",
+  "version": "1.7.8",
+  "description": "Using ChatGPT4/3.5-turbo/Gemini-Pro/BlackBox and etc. unlimited and free.",
+  "main": "index.js",
+  "type": "module",
+  "exports": {
+    ".": {
+      "import": "./index.js",
+      "require": "./index.js"
+    }
+  },
+  "devDependencies": {
+    "prettier": "3.3.3"
+  },
+  "scripts": {
+    "build": "echo 'No build needed for gpt4free.js'",
+    "prettier:format": "npx prettier --write .",
+    "prettier:check": "npx prettier --check .",
+    "test": "node --test tests/*.test.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/zachey01/gpt4free.js.git"
+  },
+  "author": "Zachey",
+  "license": "GNU",
+  "bugs": {
+    "url": "https://github.com/zachey01/gpt4free.js/issues"
+  },
+  "homepage": "https://github.com/zachey01/gpt4free.js#readme",
+  "keywords": [
+    "nodejs",
+    "bun",
+    "gpt-3",
+    "gpt-4",
+    "chatgpt",
+    "gpt4free",
+    "ollama",
+    "ollama-api",
+    "gemini",
+    "blackbox",
+    "javascript",
+    "ai",
+    "chatbot",
+    "nlp",
+    "machine-learning"
+  ]
+}
