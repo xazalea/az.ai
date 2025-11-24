@@ -31,14 +31,26 @@ export default async function handler(req) {
         targetEndpoint = '/api/doubao/v1/chat/completions';
     } else if (m.includes('glm')) {
         targetEndpoint = '/api/glm/v1/chat/completions';
-    } else if (m.includes('deepseek')) {
+    } else if (m.includes('deepseek') && !m.includes('free')) {
         targetEndpoint = '/api/deepseek/v1/chat/completions';
+    } else if (m.includes('deepseek') && m.includes('free')) {
+        targetEndpoint = '/api/deepseekfree/v1/chat/completions';
     } else if (m.includes('kimi')) {
         targetEndpoint = '/api/kimi/v1/chat/completions';
     } else if (m.includes('minimax') || m.includes('hailuo')) {
         targetEndpoint = '/api/minimax/v1/chat/completions';
     } else if (m.includes('step') || m.includes('yuewen')) {
         targetEndpoint = '/api/step/v1/chat/completions';
+    } else if (m.includes('gpt-4') || m.includes('gpt4')) {
+        // Route GPT-4 models to gpt4free-ts
+        targetEndpoint = '/api/gpt4free/v1/chat/completions';
+    } else if (m.includes('gpt-3.5') || m.includes('gpt3.5') || m.includes('gpt-3')) {
+        // Route GPT-3.5 to free-gpt3.5-2api or chatgptfree
+        targetEndpoint = '/api/freegpt/v1/chat/completions';
+    } else if (m.includes('chatgpt') || m.includes('chat-gpt')) {
+        targetEndpoint = '/api/chatgptfree/v1/chat/completions';
+    } else if (m.includes('gemini') && m.includes('multimodal')) {
+        targetEndpoint = '/api/gemini-multimodal/v1/chat/completions';
     }
 
     // Jimeng is image gen, so it's likely handled by the image endpoint, but if they have chat...

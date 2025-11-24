@@ -9,11 +9,16 @@ const MODELS = [
   { id: 'qwen', name: 'Qwen 2.5', type: 'chat', description: 'General purpose coding & chat' },
   { id: 'deepseek-chat', name: 'DeepSeek V3', type: 'chat', description: 'High performance general model' },
   { id: 'deepseek-reasoner', name: 'DeepSeek R1', type: 'chat', description: 'Reasoning focused model' },
+  { id: 'deepseek-free', name: 'DeepSeek Free', type: 'chat', description: 'Free DeepSeek access' },
   { id: 'glm-4', name: 'GLM-4', type: 'chat', description: 'Strong agentic capabilities' },
   { id: 'doubao-pro-32k', name: 'Doubao Pro', type: 'chat', description: 'Great Chinese understanding' },
   { id: 'kimi', name: 'Kimi', type: 'chat', description: 'Long context specialist' },
   { id: 'minimax', name: 'MiniMax', type: 'chat', description: 'Natural conversation' },
   { id: 'step', name: 'Step-1', type: 'chat', description: 'Multi-modal reasoning' },
+  { id: 'gpt-4', name: 'GPT-4 (Free)', type: 'chat', description: 'GPT-4 via gpt4free-ts' },
+  { id: 'gpt-3.5-turbo', name: 'GPT-3.5 Turbo (Free)', type: 'chat', description: 'Free GPT-3.5 access' },
+  { id: 'chatgpt', name: 'ChatGPT (Free)', type: 'chat', description: 'Free ChatGPT API' },
+  { id: 'gemini-multimodal', name: 'Gemini Multimodal', type: 'chat', description: 'Multimodal Gemini' },
 ];
 
 const IMAGE_MODELS = [

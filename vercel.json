@@ -20,6 +20,18 @@
     { "source": "/step/:path*", "destination": "/api/step/:path*" },
     { "source": "/jimeng/:path*", "destination": "/api/jimeng/:path*" },
 
+    { "source": "/api/gpt4free/:path*", "destination": "/api/gpt4free/:path*" },
+    { "source": "/api/chatgptfree/:path*", "destination": "/api/chatgptfree/:path*" },
+    { "source": "/api/freegpt/:path*", "destination": "/packages/free-gpt3.5-2api/api/router.go" },
+    { "source": "/api/deepseekfree/:path*", "destination": "/api/deepseekfree/:path*" },
+    { "source": "/api/gemini-multimodal/:path*", "destination": "/api/gemini-multimodal/:path*" },
+    
+    { "source": "/gpt4free/:path*", "destination": "/api/gpt4free/:path*" },
+    { "source": "/chatgptfree/:path*", "destination": "/api/chatgptfree/:path*" },
+    { "source": "/freegpt/:path*", "destination": "/packages/free-gpt3.5-2api/api/router.go" },
+    { "source": "/deepseekfree/:path*", "destination": "/api/deepseekfree/:path*" },
+    { "source": "/gemini-multimodal/:path*", "destination": "/api/gemini-multimodal/:path*" },
+
     { "source": "/v1/images/generations", "destination": "/api/imagefx/v1/images/generations" },
     { "source": "/imagefx/v1/images/generations", "destination": "/api/imagefx/v1/images/generations" },
     { "source": "/api/imageai/:path*", "destination": "/api/imageai/:path*" },
