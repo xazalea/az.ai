@@ -117,8 +117,8 @@ export default async function handler(req) {
           if (memoryRes.ok) {
             const memoryData = await memoryRes.json();
             if (memoryData.matches && memoryData.matches.length > 0) {
-              memoryContext = memoryData.matches.map((m: any) => ({
-                role: 'system' as const,
+              memoryContext = memoryData.matches.map((m) => ({
+                role: 'system',
                 content: `[Previous Context] ${m.content}`,
               }));
             }
@@ -127,7 +127,7 @@ export default async function handler(req) {
         
         // Also use recent conversation history as context (memory transfer across models)
         if (conversationHistory.length > 0) {
-          const recentContext = conversationHistory.slice(-6).map((msg: any) => ({
+          const recentContext = conversationHistory.slice(-6).map((msg) => ({
             role: msg.role,
             content: msg.content,
           }));
