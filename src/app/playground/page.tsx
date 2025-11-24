@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useRef, useEffect } from 'react';
-import { Send, Image as ImageIcon, MessageSquare, Loader2, Sparkles, Command, Terminal } from 'lucide-react';
+import { Send, Image as ImageIcon, MessageSquare, Loader2, Sparkles, Command, Terminal, Video } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { cn } from '@/lib/utils';
 
@@ -19,6 +19,9 @@ const MODELS = [
   { id: 'gpt-3.5-turbo', name: 'GPT-3.5 Turbo (Free)', type: 'chat', description: 'Free GPT-3.5 access' },
   { id: 'chatgpt', name: 'ChatGPT (Free)', type: 'chat', description: 'Free ChatGPT API' },
   { id: 'gemini-multimodal', name: 'Gemini Multimodal', type: 'chat', description: 'Multimodal Gemini' },
+  { id: 'gemini-2.5-pro', name: 'Gemini 2.5 Pro (CLI)', type: 'chat', description: 'Via CLIProxyAPI' },
+  { id: 'claude-code', name: 'Claude Code (CLI)', type: 'chat', description: 'Via CLIProxyAPI' },
+  { id: 'qwen-code', name: 'Qwen Code (CLI)', type: 'chat', description: 'Via CLIProxyAPI' },
 ];
 
 const IMAGE_MODELS = [
@@ -28,13 +31,20 @@ const IMAGE_MODELS = [
   { id: 'imageai-openai', name: 'ImageAI (OpenAI)', type: 'image', description: 'DALL-E via ImageAI wrapper' },
 ];
 
+const VIDEO_MODELS = [
+  { id: 'veo-3', name: 'Veo 3', type: 'video', description: 'Google Veo 3 video generation' },
+  { id: 'veo-3-fast', name: 'Veo 3 Fast', type: 'video', description: 'Faster generation' },
+  { id: 'veo-2', name: 'Veo 2', type: 'video', description: 'Previous generation model' },
+];
+
 export default function Playground() {
-  const [mode, setMode] = useState<'chat' | 'image'>('chat');
+  const [mode, setMode] = useState<'chat' | 'image' | 'video'>('chat');
   const [selectedModel, setSelectedModel] = useState(MODELS[0].id);
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [messages, setMessages] = useState<Array<{ role: 'user' | 'assistant', content: string }>>([]);
   const [generatedImage, setGeneratedImage] = useState<string | null>(null);
+  const [generatedVideo, setGeneratedVideo] = useState<string | null>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -114,6 +124,39 @@ export default function Playground() {
       } catch (error) {
         alert(`Failed to generate image: ${error instanceof Error ? error.message : 'Unknown error'}`);
       }
+    } else if (mode === 'video') {
+      // Video Generation
+      try {
+        const prompt = input;
+        setInput('');
+        setGeneratedVideo(null);
+        
+        const res = await fetch('/v1/videos/generations', {
+          method: 'POST',
+          headers: { 
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${process.env.NEXT_PUBLIC_GOOGLE_API_KEY || ''}`, // User should provide their key
+          },
+          body: JSON.stringify({
+            prompt,
+            model: selectedModel,
+            duration: 8.0,
+            aspect_ratio: '16:9'
+          })
+        });
+
+        const data = await res.json();
+        if (data.error) throw new Error(data.error);
+        
+        const url = data.data?.[0]?.url || data.data?.[0]?.b64_video
+          ? `data:video/mp4;base64,${data.data[0].b64_video || data.data[0].url.split(',')[1]}`
+          : null;
+        if (url) setGeneratedVideo(url);
+        else throw new Error("No video returned");
+
+      } catch (error) {
+        alert(`Failed to generate video: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      }
     }
 
     setIsLoading(false);
@@ -152,6 +195,16 @@ export default function Playground() {
               <ImageIcon className="w-4 h-4" />
               Imagine
             </button>
+            <button
+              onClick={() => setMode('video')}
+              className={cn(
+                "px-4 py-2 rounded-md text-sm font-medium transition-all duration-200 flex items-center gap-2",
+                mode === 'video' ? "bg-[#DEA785] text-[#424658] shadow-sm" : "text-[#BABBB1] hover:text-[#F0DAD5] hover:bg-[#DEA785]/20"
+              )}
+            >
+              <Video className="w-4 h-4" />
+              Video
+            </button>
           </nav>
         </div>
       </header>
@@ -164,7 +217,7 @@ export default function Playground() {
             <div className="space-y-2">
                 <label className="text-xs font-semibold text-[#BABBB1] uppercase tracking-wider">Model</label>
                 <div className="space-y-1">
-                    {(mode === 'chat' ? MODELS : IMAGE_MODELS).map(model => (
+                    {(mode === 'chat' ? MODELS : mode === 'image' ? IMAGE_MODELS : VIDEO_MODELS).map(model => (
                         <button
                             key={model.id}
                             onClick={() => setSelectedModel(model.id)}
@@ -190,7 +243,9 @@ export default function Playground() {
                 <p>
                     {mode === 'chat' 
                         ? "Try asking for code, analysis, or creative writing. Our unified API handles it all." 
-                        : "Be specific with your visual descriptions. Mention styles like 'oil painting' or 'cyberpunk'."}
+                        : mode === 'image'
+                        ? "Be specific with your visual descriptions. Mention styles like 'oil painting' or 'cyberpunk'."
+                        : "Describe the video scene you want. Include details about motion, camera angles, and style."}
                 </p>
             </div>
         </div>
@@ -249,7 +304,7 @@ export default function Playground() {
                                 )}
                             </div>
                         )
-                    ) : (
+                    ) : mode === 'image' ? (
                         <div className="h-full flex flex-col items-center justify-center">
                             {generatedImage ? (
                                 <motion.img 
@@ -275,6 +330,34 @@ export default function Playground() {
                                 )
                             )}
                         </div>
+                    ) : (
+                        <div className="h-full flex flex-col items-center justify-center">
+                            {generatedVideo ? (
+                                <motion.video 
+                                    initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }}
+                                    src={generatedVideo} 
+                                    controls
+                                    autoPlay
+                                    loop
+                                    className="max-w-full max-h-[600px] rounded-lg shadow-2xl border-4 border-[#DEA785]/20"
+                                />
+                            ) : (
+                                isLoading ? (
+                                    <div className="text-center space-y-4">
+                                        <div className="relative w-24 h-24 mx-auto">
+                                            <div className="absolute inset-0 rounded-full border-4 border-[#6C739C]/20"></div>
+                                            <div className="absolute inset-0 rounded-full border-4 border-[#DEA785] border-t-transparent animate-spin"></div>
+                                        </div>
+                                        <p className="text-[#DEA785] animate-pulse">Creating your video... This may take a few minutes.</p>
+                                    </div>
+                                ) : (
+                                    <div className="text-center space-y-4 text-[#BABBB1]/50">
+                                        <Video className="w-16 h-16 mx-auto" />
+                                        <p className="text-lg font-medium">Enter a prompt to generate a video</p>
+                                    </div>
+                                )
+                            )}
+                        </div>
                     )}
                 </AnimatePresence>
             </div>
@@ -291,7 +374,7 @@ export default function Playground() {
                                 handleSend();
                             }
                         }}
-                        placeholder={mode === 'chat' ? "Type your message..." : "Describe the image you want to see..."}
+                        placeholder={mode === 'chat' ? "Type your message..." : mode === 'image' ? "Describe the image you want to see..." : "Describe the video scene you want to create..."}
                         className="w-full bg-[#424658] text-[#F0DAD5] rounded-xl px-4 py-3 pr-12 border border-[#6C739C]/30 focus:border-[#D9A69F] focus:ring-1 focus:ring-[#D9A69F] outline-none resize-none h-[60px] placeholder:text-[#BABBB1]/30 transition-all"
                     />
                     <button
