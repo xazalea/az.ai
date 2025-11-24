@@ -15,7 +15,6 @@ const skipBuild = [
   'free-gpt3.5-2api', // Go package
   'ImageAI',       // Python package
   'deepseek4free', // Python package
-  'gemini-multimodal-playground', // Has its own build
   'Viggle-AI-WebUI', // Already has build script
 ];
 
@@ -24,6 +23,7 @@ const needDummyBuild = [
   'ChatGPTAPIFree',
   'gpt4free.js',
   'WebAI-to-API',
+  'gemini-multimodal-playground',
 ];
 
 function ensureBuildScript(packageName) {
