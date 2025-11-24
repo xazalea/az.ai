@@ -96,15 +96,14 @@ export default async function handler(req) {
     const responseData = await response.json();
 
     // Enhance with OpenReason if enabled and we have a response
-    if (use_reasoning && responseData.choices && responseData.choices[0]?.message?.content) {
+    if (use_reasoning !== false && responseData.choices && responseData.choices[0]?.message?.content) {
       try {
         const lastUserMessage = messages?.findLast(m => m.role === 'user')?.content || '';
-        const assistantResponse = responseData.choices[0].message.content;
         
-        // Use OpenReason to enhance the reasoning (non-blocking)
+        // Use OpenReason to enhance the reasoning
         // This adds reasoning capabilities to all responses
         const reasonUrl = new URL('/api/openreason/reason', url.origin);
-        fetch(reasonUrl, {
+        const reasonResponse = await fetch(reasonUrl, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
@@ -114,25 +113,24 @@ export default async function handler(req) {
               memory: { enabled: false }, // Can be enabled via OpenMemory
             },
           }),
-        }).then(reasonRes => reasonRes.json())
-          .then(reasonData => {
-            // Add reasoning metadata to response (async, won't block)
-            if (reasonData.verdict) {
-              responseData.reasoning = {
-                engine: 'OpenReason',
-                confidence: reasonData.confidence,
-                mode: reasonData.mode,
-                domain: reasonData.domain,
-              };
-            }
-          })
-          .catch(err => {
-            // Silently fail - reasoning is enhancement, not required
-            console.warn('OpenReason enhancement failed:', err);
-          });
+        });
+
+        if (reasonResponse.ok) {
+          const reasonData = await reasonResponse.json();
+          // Add reasoning metadata to response
+          if (reasonData.verdict) {
+            responseData.reasoning = {
+              engine: 'OpenReason',
+              confidence: reasonData.confidence,
+              mode: reasonData.mode,
+              domain: reasonData.domain,
+              complexity: reasonData.complexity,
+            };
+          }
+        }
       } catch (reasonError) {
-        // Silently fail - reasoning is enhancement
-        console.warn('OpenReason integration error:', reasonError);
+        // Silently fail - reasoning is enhancement, not required
+        console.warn('OpenReason enhancement failed:', reasonError);
       }
     }
 

@@ -8,6 +8,13 @@
     { "source": "/v1/videos/generations", "destination": "/api/unified/v1/videos/generations" },
     { "source": "/v2/chat/completions", "destination": "/api/unified/v2/chat/completions" },
     
+    { "source": "/v1/reasoning", "destination": "/api/openreason/reason" },
+    { "source": "/v1/memory/query", "destination": "/api/openmemory/memory/query" },
+    { "source": "/v1/memory/add", "destination": "/api/openmemory/memory/add" },
+    { "source": "/v1/memory/ingest", "destination": "/api/openmemory/memory/ingest" },
+    { "source": "/api/openreason/:path*", "destination": "/api/openreason/:path*" },
+    { "source": "/api/openmemory/:path*", "destination": "/api/openmemory/:path*" },
+    
     { "source": "/api/pollinations/:path*", "destination": "/api/pollinations/:path*" },
     { "source": "/api/viggle/:path*", "destination": "/api/viggle/:path*" },
     { "source": "/api/ai-video/:path*", "destination": "/api/ai-video/:path*" },

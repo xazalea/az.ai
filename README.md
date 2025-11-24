@@ -119,6 +119,122 @@ Content-Type: application/json
 }
 ```
 
+#### OpenReason - Advanced Reasoning Engine
+OpenReason is automatically enabled for all chat completions, but you can also use it directly:
+
+```bash
+POST /v1/reasoning
+Content-Type: application/json
+
+{
+  "query": "What is the square root of 144?",
+  "config": {
+    "provider": "openai",  # or "anthropic", "google", "xai"
+    "memory": {
+      "enabled": false
+    }
+  }
+}
+```
+
+Response includes reasoning metadata:
+```json
+{
+  "query": "What is the square root of 144?",
+  "verdict": "12",
+  "confidence": 0.95,
+  "mode": "math",
+  "domain": "mathematics",
+  "complexity": 2,
+  "latency": 450,
+  "reasoning_engine": "OpenReason"
+}
+```
+
+#### OpenMemory - Long-Term Memory
+Query memories:
+```bash
+POST /v1/memory/query
+Content-Type: application/json
+
+{
+  "query": "What did I say about my favorite color?",
+  "k": 8,  # Number of results
+  "filters": {
+    "user_id": "user123",
+    "sector": "preferences"
+  }
+}
+```
+
+Add memory:
+```bash
+POST /v1/memory/add
+Content-Type: application/json
+
+{
+  "content": "User's favorite color is blue",
+  "tags": ["preferences", "color"],
+  "metadata": {
+    "source": "conversation",
+    "timestamp": "2025-01-01T00:00:00Z"
+  },
+  "user_id": "user123"
+}
+```
+
+Ingest documents:
+```bash
+POST /v1/memory/ingest
+Content-Type: application/json
+
+{
+  "content_type": "text/plain",
+  "data": "Base64 encoded content or text",
+  "metadata": {
+    "title": "Document Title",
+    "author": "Author Name"
+  },
+  "user_id": "user123"
+}
+```
+
+**Note**: OpenMemory requires `OPENMEMORY_URL` environment variable to be set. If not configured, endpoints will return a 503 status with instructions.
+
+### Enhanced Chat Completions with Reasoning
+All chat completions automatically include OpenReason enhancement. To disable it, set `use_reasoning: false`:
+
+```bash
+POST /v1/chat/completions
+Content-Type: application/json
+
+{
+  "model": "qwen",
+  "messages": [
+    {"role": "user", "content": "Solve this math problem: 2x + 5 = 15"}
+  ],
+  "use_reasoning": true  # Default: true, set to false to disable
+}
+```
+
+The response will include a `reasoning` field with OpenReason metadata:
+```json
+{
+  "choices": [{
+    "message": {
+      "content": "x = 5"
+    }
+  }],
+  "reasoning": {
+    "engine": "OpenReason",
+    "confidence": 0.92,
+    "mode": "math",
+    "domain": "mathematics",
+    "complexity": 3
+  }
+}
+```
+
 ### Model Selection
 
 The unified API automatically routes to the correct provider based on the `model` field. Available models:
@@ -132,12 +248,15 @@ The unified API automatically routes to the correct provider based on the `model
 ## Features
 
 - **Unified API**: Single endpoint for all text, image, and video generation models
+- **OpenReason Integration**: Advanced reasoning engine automatically enhances all responses
+- **OpenMemory Support**: Optional long-term memory for context-aware conversations
 - **Zero Setup**: No environment variables required for most models
 - **OpenAI Compatible**: Drop-in replacement for OpenAI API
 - **Modern UI**: Beautiful Lavender Sapphire Mist themed interface
-- **Interactive Playground**: Test models directly in the browser
+- **Interactive Playground**: Test models directly in the browser with memory and reasoning controls
 - **Vercel Ready**: Fully optimized for serverless deployment
 - **Multi-Provider**: Access to 18+ text models, 6+ image models, and 11+ video models
+- **Enhanced Generation**: jimeng-api for advanced image and video generation
 - **Meme Creation**: Viggle AI integration for character animation and memes
 
 ## Architecture
