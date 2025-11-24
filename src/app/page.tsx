@@ -1,4 +1,9 @@
+"use client";
+
 import React from 'react';
+import { motion } from 'framer-motion';
+import { ArrowRight, Code, Zap, Image as ImageIcon, Box, Lock, Globe, Cpu, CheckCircle2 } from 'lucide-react';
+import Link from 'next/link';
 
 // Color Palette: Lavender Sapphire Mist
 // #D9A69F - Pale Pink/Lavender (Text/Accents)
@@ -11,172 +16,187 @@ import React from 'react';
 
 export default function Home() {
   return (
-    <main className="min-h-screen bg-[#424658] text-[#F0DAD5] selection:bg-[#6C739C] selection:text-white font-sans">
-      <div className="container mx-auto px-4 py-16 max-w-6xl">
+    <main className="min-h-screen bg-[#424658] text-[#F0DAD5] selection:bg-[#6C739C] selection:text-white font-sans overflow-x-hidden">
+      
+      {/* Navigation */}
+      <nav className="container mx-auto px-6 py-6 flex justify-between items-center relative z-20">
+        <div className="text-2xl font-bold tracking-tighter text-[#F0DAD5]">
+          az<span className="text-[#D9A69F]">.ai</span>
+        </div>
+        <div className="flex items-center gap-6">
+          <Link href="/playground" className="text-[#BABBB1] hover:text-[#D9A69F] transition-colors text-sm font-medium hidden md:block">
+            Playground
+          </Link>
+          <Link href="https://github.com/xazalea/az.ai" target="_blank" className="text-[#BABBB1] hover:text-[#D9A69F] transition-colors text-sm font-medium hidden md:block">
+            GitHub
+          </Link>
+          <Link href="/playground" className="px-5 py-2 bg-[#6C739C]/20 border border-[#6C739C]/50 rounded-full text-sm font-medium text-[#D9A69F] hover:bg-[#6C739C]/40 transition-all">
+            Launch App
+          </Link>
+        </div>
+      </nav>
+
+      {/* Hero Section */}
+      <section className="relative pt-20 pb-32 md:pt-32 md:pb-48 container mx-auto px-6 text-center z-10">
         
-        {/* Hero Section */}
-        <div className="flex flex-col items-center text-center space-y-8 mb-24">
-          <div className="inline-flex items-center px-3 py-1 rounded-full border border-[#6C739C] bg-[#6C739C]/20 text-xs font-medium text-[#D9A69F] mb-4 shadow-[0_0_10px_rgba(217,166,159,0.2)]">
+        {/* Background Elements */}
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-[#6C739C]/10 rounded-full blur-[120px] -z-10"></div>
+        
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.8 }}
+        >
+          <div className="inline-flex items-center px-3 py-1 rounded-full border border-[#D9A69F]/30 bg-[#D9A69F]/10 text-xs font-medium text-[#D9A69F] mb-8 backdrop-blur-sm">
             <span className="flex h-2 w-2 rounded-full bg-[#DEA785] mr-2 animate-pulse"></span>
-            Systems Operational
+            Unified Intelligence Layer
           </div>
-          <h1 className="text-5xl md:text-8xl font-extrabold tracking-tighter bg-clip-text text-transparent bg-gradient-to-r from-[#D9A69F] via-[#F0DAD5] to-[#6C739C] drop-shadow-lg">
-            az.ai
+          
+          <h1 className="text-5xl md:text-8xl font-extrabold tracking-tight mb-8 bg-clip-text text-transparent bg-gradient-to-b from-[#F0DAD5] via-[#F0DAD5] to-[#6C739C]">
+            One API for <br className="hidden md:block" />
+            <span className="text-[#D9A69F]">Everything AI</span>
           </h1>
-          <p className="text-xl md:text-2xl text-[#BABBB1] max-w-2xl font-light leading-relaxed">
-            The Unified AI Infrastructure.
-            <br />
-            <span className="text-[#D9A69F] text-lg font-normal">All your favorite models. One API. Zero friction.</span>
+          
+          <p className="text-lg md:text-xl text-[#BABBB1] max-w-2xl mx-auto mb-12 leading-relaxed">
+            Access the world's best models—Qwen, DeepSeek, GLM, Doubao, and more—through a single, high-performance, OpenAI-compatible endpoint.
           </p>
           
-          <div className="flex gap-4 mt-8">
-            <a href="#docs" className="px-8 py-3 rounded-lg bg-[#D9A69F] text-[#424658] font-bold hover:bg-[#DEA785] transition-all transform hover:scale-105 shadow-lg">
-              Get Started
-            </a>
-            <a href="#models" className="px-8 py-3 rounded-lg border border-[#BABBB1] text-[#F0DAD5] hover:border-[#D9A69F] hover:text-[#D9A69F] transition-all backdrop-blur-sm bg-white/5">
-              View Models
-            </a>
+          <div className="flex flex-col md:flex-row items-center justify-center gap-4">
+            <Link href="/playground" className="w-full md:w-auto px-8 py-4 rounded-xl bg-[#D9A69F] text-[#424658] font-bold text-lg hover:bg-[#DEA785] transition-all transform hover:-translate-y-1 shadow-lg shadow-[#D9A69F]/20 flex items-center justify-center gap-2">
+              Start Building <ArrowRight className="w-5 h-5" />
+            </Link>
+            <button className="w-full md:w-auto px-8 py-4 rounded-xl border border-[#6C739C]/50 text-[#F0DAD5] font-medium text-lg hover:bg-[#6C739C]/10 transition-all backdrop-blur-sm">
+              View Documentation
+            </button>
           </div>
-        </div>
+        </motion.div>
 
-        {/* Features Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-6 mb-24" id="models">
-          <FeatureCard 
-            title="Unified Chat" 
-            description="Access Qwen, GLM, DeepSeek, Kimi, Doubao, MiniMax, and more via a single endpoint."
-            endpoint="/v1/chat/completions"
-            tag="Text Gen"
-            highlight
-          />
-           <FeatureCard 
-            title="ImageFX" 
-            description="High-fidelity image generation powered by Google's Imagen models."
-            endpoint="/v1/images/generations"
-            tag="Image Gen"
-          />
-          <FeatureCard 
-            title="DeepSeek R1" 
-            description="Deep reasoning model with advanced logic capabilities."
-            endpoint="model: deepseek-r1"
-            tag="Reasoning"
-          />
-          <FeatureCard 
-            title="GLM-4" 
-            description="ChatGLM-4 Plus model with strong agent and tool capabilities."
-            endpoint="model: glm-4"
-            tag="Agentic"
-          />
-          <FeatureCard 
-            title="Doubao Pro" 
-            description="ByteDance's flagship model with excellent Chinese understanding."
-            endpoint="model: doubao-pro"
-            tag="General"
-          />
-          <FeatureCard 
-            title="Kimi" 
-            description="Long-context specialist for analyzing massive documents."
-            endpoint="model: kimi"
-            tag="Long Context"
-          />
-          <FeatureCard 
-            title="MiniMax" 
-            description="Known for natural conversation and high intelligence."
-            endpoint="model: minimax"
-            tag="Chat"
-          />
-          <FeatureCard 
-            title="Jimeng" 
-            description="State-of-the-art image generation capabilities."
-            endpoint="/v1/images/generations"
-            tag="Visual"
-          />
-        </div>
+        {/* Code Snippet */}
+        <motion.div 
+          initial={{ opacity: 0, y: 40 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.8, delay: 0.2 }}
+          className="mt-24 mx-auto max-w-3xl text-left rounded-xl overflow-hidden border border-[#6C739C]/30 bg-[#303340]/80 backdrop-blur-xl shadow-2xl"
+        >
+          <div className="flex items-center px-4 py-3 bg-[#252830] border-b border-[#6C739C]/20">
+            <div className="flex space-x-2">
+              <div className="w-3 h-3 rounded-full bg-[#C56B62]"></div>
+              <div className="w-3 h-3 rounded-full bg-[#DEA785]"></div>
+              <div className="w-3 h-3 rounded-full bg-[#D9A69F]"></div>
+            </div>
+            <div className="ml-4 text-xs text-[#BABBB1] font-mono">curl-request.sh</div>
+          </div>
+          <div className="p-6 overflow-x-auto">
+            <pre className="text-sm font-mono text-[#F0DAD5] whitespace-pre leading-relaxed">
+              <span className="text-[#D9A69F]">curl</span> https://az.ai/v1/chat/completions \<br/>
+              {"  "}-H <span className="text-[#DEA785]">"Content-Type: application/json"</span> \<br/>
+              {"  "}-H <span className="text-[#DEA785]">"Authorization: Bearer az-..."</span> \<br/>
+              {"  "}-d <span className="text-[#6C739C]">{'{'}</span><br/>
+              {"    "}<span className="text-[#DEA785]">"model"</span>: <span className="text-[#D9A69F]">"deepseek-chat"</span>,<br/>
+              {"    "}<span className="text-[#DEA785]">"messages"</span>: [<span className="text-[#6C739C]">{'{'}</span><span className="text-[#DEA785]">"role"</span>: <span className="text-[#D9A69F]">"user"</span>, <span className="text-[#DEA785]">"content"</span>: <span className="text-[#D9A69F]">"Hello!"</span><span className="text-[#6C739C]">{'}'}</span>]<br/>
+              {"  "}<span className="text-[#6C739C]">{'}'}</span>
+            </pre>
+          </div>
+        </motion.div>
+      </section>
 
-        {/* Documentation Section */}
-        <div className="border-t border-[#6C739C]/30 pt-16" id="docs">
-          <h2 className="text-3xl font-bold mb-8 text-[#F0DAD5]">Integration Guide</h2>
+      {/* Features Grid */}
+      <section className="py-24 bg-[#303340]/30 border-y border-[#6C739C]/10">
+        <div className="container mx-auto px-6">
+          <div className="text-center mb-16">
+            <h2 className="text-3xl md:text-4xl font-bold mb-4 text-[#F0DAD5]">Everything you need to build</h2>
+            <p className="text-[#BABBB1] max-w-2xl mx-auto">Enterprise-grade infrastructure for the next generation of AI applications.</p>
+          </div>
           
-          <div className="space-y-12">
-            <CodeBlock 
-              title="Unified Text Generation" 
-              lang="bash"
-              code={`curl https://az.ai/v1/chat/completions \\
-  -H "Content-Type: application/json" \\
-  -H "Authorization: Bearer <YOUR_TOKEN>" \\
-  -d '{
-    "model": "deepseek-chat", // or qwen, glm-4, doubao, etc.
-    "messages": [{"role": "user", "content": "Hello world"}]
-  }'`}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+            <FeatureCard 
+              icon={<Zap className="w-6 h-6 text-[#DEA785]" />}
+              title="Ultra Low Latency"
+              description="Optimized edge routing ensures your requests hit the fastest available provider instantly."
             />
-
-            <CodeBlock 
-              title="Image Generation" 
-              lang="bash"
-              code={`curl https://az.ai/v1/images/generations \\
-  -H "Content-Type: application/json" \\
-  -H "Authorization: Bearer <YOUR_COOKIE>" \\
-  -d '{
-    "prompt": "A futuristic city in lavender mist style",
-    "n": 1,
-    "size": "1024x1024"
-  }'`}
+            <FeatureCard 
+              icon={<Box className="w-6 h-6 text-[#D9A69F]" />}
+              title="Unified Interface"
+              description="Switch between Qwen, DeepSeek, and others by changing just one line of code."
+            />
+            <FeatureCard 
+              icon={<Lock className="w-6 h-6 text-[#C56B62]" />}
+              title="Enterprise Security"
+              description="Bank-grade encryption and privacy-first data handling for all your interactions."
+            />
+            <FeatureCard 
+              icon={<Image className="w-6 h-6 text-[#6C739C]" />}
+              title="Image Generation"
+              description="Create stunning visuals with ImageFX and Jimeng models via standard APIs."
+            />
+            <FeatureCard 
+              icon={<Globe className="w-6 h-6 text-[#F0DAD5]" />}
+              title="Global Edge Network"
+              description="Deployed on Vercel's global edge network for maximum reliability and speed."
+            />
+            <FeatureCard 
+              icon={<Code className="w-6 h-6 text-[#BABBB1]" />}
+              title="Developer First"
+              description="Comprehensive documentation, SDKs, and a community of builders."
             />
           </div>
         </div>
+      </section>
 
-        {/* Footer */}
-        <footer className="mt-24 border-t border-[#6C739C]/30 pt-8 text-center text-[#BABBB1] text-sm">
-          <p>© 2025 az.ai Inc. All rights reserved.</p>
-        </footer>
+      {/* Supported Models */}
+      <section className="py-24 container mx-auto px-6">
+        <div className="text-center mb-16">
+          <h2 className="text-3xl md:text-4xl font-bold mb-4 text-[#F0DAD5]">Powering the best models</h2>
+          <div className="flex flex-wrap justify-center gap-4 mt-8">
+            {['Qwen 2.5', 'DeepSeek V3', 'GLM-4', 'Doubao Pro', 'Kimi', 'MiniMax', 'Step-1', 'Imagen 3'].map((model) => (
+              <div key={model} className="px-6 py-3 rounded-xl bg-[#6C739C]/10 border border-[#6C739C]/20 text-[#BABBB1] font-medium hover:border-[#D9A69F]/50 hover:text-[#D9A69F] transition-all cursor-default">
+                {model}
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
 
+      {/* CTA */}
+      <section className="py-24 bg-gradient-to-br from-[#6C739C]/20 to-[#424658] border-t border-[#6C739C]/20">
+        <div className="container mx-auto px-6 text-center">
+          <h2 className="text-4xl font-bold mb-6 text-[#F0DAD5]">Ready to get started?</h2>
+          <p className="text-[#BABBB1] mb-10 max-w-xl mx-auto">Join thousands of developers building the future of AI with az.ai.</p>
+          <Link href="/playground" className="px-10 py-4 rounded-xl bg-[#D9A69F] text-[#424658] font-bold text-lg hover:bg-[#DEA785] transition-all shadow-lg shadow-[#D9A69F]/20 inline-flex items-center gap-2">
+            Open Playground <ArrowRight className="w-5 h-5" />
+          </Link>
+        </div>
+      </section>
+
+      {/* Footer */}
+      <footer className="py-12 border-t border-[#6C739C]/10 bg-[#303340]/50">
+        <div className="container mx-auto px-6 flex flex-col md:flex-row justify-between items-center gap-6">
+          <div className="text-xl font-bold tracking-tighter text-[#BABBB1]">
+            az<span className="text-[#D9A69F]">.ai</span>
+          </div>
+          <div className="text-sm text-[#6C739C]">
+            © 2025 az.ai Inc. All rights reserved.
+          </div>
       </div>
+      </footer>
+
     </main>
   );
 }
 
-function FeatureCard({ title, description, endpoint, tag, highlight = false }) {
+function FeatureCard({ title, description, icon }: { title: string, description: string, icon: React.ReactNode }) {
   return (
-    <div className={`p-6 rounded-xl border transition-all group h-full flex flex-col justify-between
-      ${highlight 
-        ? 'bg-[#6C739C]/20 border-[#D9A69F] shadow-[0_0_20px_rgba(217,166,159,0.15)]' 
-        : 'bg-[#424658] border-[#6C739C]/40 hover:border-[#D9A69F]/50 hover:bg-[#6C739C]/10'
-      }`}>
-      <div>
-        <div className="flex justify-between items-start mb-4">
-          <h3 className={`text-xl font-bold ${highlight ? 'text-[#D9A69F]' : 'text-[#F0DAD5]'}`}>{title}</h3>
-          <span className={`px-2 py-1 rounded text-xs font-mono ${highlight ? 'bg-[#D9A69F] text-[#424658]' : 'bg-[#6C739C]/30 text-[#BABBB1]'}`}>{tag}</span>
-        </div>
-        <p className="text-[#BABBB1] mb-6 text-sm leading-relaxed">{description}</p>
+    <div className="p-8 rounded-2xl border border-[#6C739C]/20 bg-[#424658]/50 hover:bg-[#6C739C]/10 transition-all hover:border-[#D9A69F]/30 group">
+      <div className="mb-4 p-3 rounded-lg bg-[#303340] w-fit group-hover:scale-110 transition-transform">
+        {icon}
       </div>
-      <div className="flex items-center text-xs text-[#6C739C] font-mono bg-[#303340] p-2 rounded break-all">
-        <span className="mr-2 text-[#DEA785]">$</span>
-        {endpoint}
-      </div>
+      <h3 className="text-xl font-bold mb-3 text-[#F0DAD5] group-hover:text-[#D9A69F] transition-colors">{title}</h3>
+      <p className="text-[#BABBB1] leading-relaxed text-sm">{description}</p>
     </div>
   );
 }
 
-function CodeBlock({ title, code, lang }) {
-  return (
-    <div>
-      <h3 className="text-lg font-semibold mb-4 flex items-center text-[#D9A69F]">
-        {title}
-      </h3>
-      <div className="relative rounded-lg overflow-hidden bg-[#303340] border border-[#6C739C]/30 shadow-xl">
-        <div className="flex items-center px-4 py-2 bg-[#252830] border-b border-[#6C739C]/20">
-          <div className="flex space-x-2">
-            <div className="w-3 h-3 rounded-full bg-[#C56B62]"></div>
-            <div className="w-3 h-3 rounded-full bg-[#DEA785]"></div>
-            <div className="w-3 h-3 rounded-full bg-[#D9A69F]"></div>
-          </div>
-          <div className="ml-4 text-xs text-[#BABBB1] font-mono uppercase">{lang}</div>
-        </div>
-        <div className="p-4 overflow-x-auto">
-          <pre className="text-sm font-mono text-[#F0DAD5] whitespace-pre">
-            {code}
-          </pre>
-        </div>
-      </div>
-    </div>
-  );
+// Helper for Image icon
+function Image({ className }: { className?: string }) {
+    return <ImageIcon className={className} />;
 }
