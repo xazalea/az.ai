@@ -4,35 +4,7 @@ export const config = {
   runtime: 'edge',
 };
 
-// Unified image generation routing
-const IMAGE_MODEL_ROUTES = {
-  'jimeng-api': '/api/jimeng-api/v1/images/generations',
-  'jimeng-enhanced': '/api/jimeng-api/v1/images/generations',
-  'imagen-3': '/api/imagefx/v1/images/generations',
-  'imagefx': '/api/imagefx/v1/images/generations',
-  'jimeng': '/api/jimeng/v1/images/generations',
-  'imageai-google': '/api/imageai/v1/images/generations',
-  'imageai-openai': '/api/imageai/v1/images/generations',
-  'imageai-stability': '/api/imageai/v1/images/generations',
-  'pollinations': '/api/pollinations/v1/images/generations',
-  'flux': '/api/pollinations/v1/images/generations',
-  'turbo': '/api/pollinations/v1/images/generations',
-};
-
-function findImageModelRoute(model) {
-  if (!model) return '/api/imagefx/v1/images/generations'; // Default
-  
-  const m = model.toLowerCase();
-  
-  for (const [key, route] of Object.entries(IMAGE_MODEL_ROUTES)) {
-    if (m === key || m.includes(key)) {
-      return route;
-    }
-  }
-  
-  return '/api/imagefx/v1/images/generations';
-}
-
+// Unified image generation - all models accessible via /v1/images/generations with model parameter
 export default async function handler(req) {
   if (req.method === 'OPTIONS') {
     return new NextResponse(null, {
@@ -47,16 +19,35 @@ export default async function handler(req) {
 
   try {
     const body = await req.json();
-    const { model } = body;
+    const { model, prompt, n = 1, size = "1024x1024" } = body;
     const url = new URL(req.url);
     
-    const targetEndpoint = findImageModelRoute(model);
-    const targetUrl = new URL(targetEndpoint, url.origin);
+    if (!prompt) {
+      return NextResponse.json({ error: 'Missing prompt' }, { status: 400 });
+    }
+    
+    const m = model?.toLowerCase() || '';
+    
+    // Route to appropriate handler based on model
+    let targetUrl;
+    
+    if (m.includes('jimeng') || m.includes('jimeng-api')) {
+      targetUrl = new URL('/api/jimeng-api/v1/images/generations', url.origin);
+    } else if (m.includes('pollinations') || m.includes('flux') || m.includes('turbo')) {
+      targetUrl = new URL('/api/pollinations/v1/images/generations', url.origin);
+    } else if (m.includes('imagefx') || m.includes('imagen')) {
+      targetUrl = new URL('/api/imagefx/v1/images/generations', url.origin);
+    } else if (m.includes('imageai')) {
+      targetUrl = new URL('/api/imageai/v1/images/generations', url.origin);
+    } else {
+      // Default to pollinations
+      targetUrl = new URL('/api/pollinations/v1/images/generations', url.origin);
+    }
 
     const response = await fetch(targetUrl, {
       method: 'POST',
       headers: req.headers,
-      body: JSON.stringify(body),
+      body: JSON.stringify({ ...body, prompt, n, size }),
     });
 
     return response;
@@ -64,4 +55,3 @@ export default async function handler(req) {
     return NextResponse.json({ error: 'Internal Server Error', details: error.message }, { status: 500 });
   }
 }
-
