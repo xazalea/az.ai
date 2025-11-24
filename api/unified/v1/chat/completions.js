@@ -1,67 +1,70 @@
 import { NextResponse } from 'next/server';
 
 export const config = {
-  runtime: 'nodejs', // Changed to nodejs to support package imports
+  runtime: 'edge',
 };
 
 // Unified model routing - all models accessible via /v1/chat/completions with model parameter
 // Models are specified in the request body: { "model": "qwen", ... }
 
-async function getModelHandler(model) {
-  if (!model) return null;
+// Map models to their package handlers or API routes
+const MODEL_HANDLERS = {
+  // Direct package imports (will be handled via dynamic imports)
+  'qwen': 'qwen-free-api',
+  'deepseek': 'deepseek-free-api',
+  'deepseek-free': 'deepseek-free-api',
+  'glm': 'glm-free-api',
+  'doubao': 'doubao-free-api',
+  'kimi': 'kimi-free-api',
+  'minimax': 'minimax-free-api',
+  'hailuo': 'minimax-free-api',
+  'step': 'step-free-api',
+  'yuewen': 'step-free-api',
+  'jimeng': 'jimeng-free-api',
+  
+  // External API routes (Python/Go or external services)
+  'groq': '/api/groq/v1/chat/completions',
+  'gpt-4': '/api/gpt4freejs/v1/chat/completions',
+  'gpt4': '/api/gpt4freejs/v1/chat/completions',
+  'gpt-3.5': '/api/gpt4freejs/v1/chat/completions',
+  'gpt3.5': '/api/gpt4freejs/v1/chat/completions',
+  'gpt-3': '/api/gpt4freejs/v1/chat/completions',
+  'chatgpt': '/api/gpt4freejs/v1/chat/completions',
+  'gemini-multimodal': '/api/gemini-multimodal/v1/chat/completions',
+  'gemini-2.5-pro': '/api/gpt4freejs/v1/chat/completions',
+  'pollinations': '/api/pollinations/v1/chat/completions',
+  'blackbox': '/api/gpt4freejs/v1/chat/completions',
+  'ollama': '/api/gpt4freejs/v1/chat/completions',
+  'webai': '/api/webai/v1/chat/completions',
+  'g4f': '/api/webai/v1/chat/completions',
+  'claude-opus-4.5': '/api/webai/v1/chat/completions',
+  'claude-sonnet-4.5': '/api/webai/v1/chat/completions',
+  'gemini-3-pro': '/api/webai/v1/chat/completions',
+  'gpt-5.1-high': '/api/webai/v1/chat/completions',
+  'gpt-5-chat': '/api/webai/v1/chat/completions',
+  'gpt-oss-120b': '/api/webai/v1/chat/completions',
+  'deepseek-v3.1': '/api/webai/v1/chat/completions',
+  'mistral-large': '/api/webai/v1/chat/completions',
+  'grok-4': '/api/webai/v1/chat/completions',
+  'llama-4-scout': '/api/webai/v1/chat/completions',
+  'llama-4-maverick': '/api/webai/v1/chat/completions',
+};
+
+function findModelHandler(model) {
+  if (!model) return '/api/gpt4freejs/v1/chat/completions'; // Default
   
   const m = model.toLowerCase();
   
-  try {
-    // Import model packages directly
-    if (m === 'qwen' || m.includes('qwen')) {
-      const qwen = await import('../../packages/qwen-free-api/dist/index.mjs');
-      return qwen.default || qwen;
+  for (const [key, handler] of Object.entries(MODEL_HANDLERS)) {
+    if (m === key || m.includes(key)) {
+      return handler;
     }
-    if (m === 'deepseek' || m.includes('deepseek')) {
-      if (m.includes('free')) {
-        const deepseek = await import('../../packages/deepseek-free-api/dist/index.mjs');
-        return deepseek.default || deepseek;
-      }
-      const deepseek = await import('../../packages/deepseek-free-api/dist/index.mjs');
-      return deepseek.default || deepseek;
-    }
-    if (m === 'glm' || m.includes('glm')) {
-      const glm = await import('../../packages/glm-free-api/dist/index.mjs');
-      return glm.default || glm;
-    }
-    if (m === 'doubao' || m.includes('doubao')) {
-      const doubao = await import('../../packages/doubao-free-api/dist/index.mjs');
-      return doubao.default || doubao;
-    }
-    if (m === 'kimi' || m.includes('kimi')) {
-      const kimi = await import('../../packages/kimi-free-api/dist/index.mjs');
-      return kimi.default || kimi;
-    }
-    if (m === 'minimax' || m.includes('minimax') || m.includes('hailuo')) {
-      const minimax = await import('../../packages/minimax-free-api/dist/index.mjs');
-      return minimax.default || minimax;
-    }
-    if (m === 'step' || m.includes('step') || m.includes('yuewen')) {
-      const step = await import('../../packages/step-free-api/dist/index.mjs');
-      return step.default || step;
-    }
-    if (m === 'jimeng' || m.includes('jimeng')) {
-      const jimeng = await import('../../packages/jimeng-free-api/dist/index.mjs');
-      return jimeng.default || jimeng;
-    }
-    
-    // For other models, we'll need to use fetch to external services or keep minimal routes
-    // For now, return null to use fallback
-    return null;
-  } catch (error) {
-    console.error(`Failed to load model handler for ${model}:`, error);
-    return null;
   }
+  
+  return '/api/gpt4freejs/v1/chat/completions'; // Fallback
 }
 
 export default async function handler(req) {
-  // Handle CORS preflight
   if (req.method === 'OPTIONS') {
     return new NextResponse(null, {
       status: 200,
@@ -86,8 +89,7 @@ export default async function handler(req) {
     const sessionKey = `${clientIP}-${userAgent}`;
     const sessionId = body.session_id || `session_${Buffer.from(sessionKey).toString('base64').substring(0, 16).replace(/[^a-zA-Z0-9]/g, '')}`;
     
-    // Try to get model handler
-    const modelHandler = await getModelHandler(model);
+    const modelHandler = findModelHandler(model);
     
     // Session-based memory
     let memoryContext = [];
@@ -130,32 +132,50 @@ export default async function handler(req) {
     }
 
     let responseData;
+    let targetUrl;
     
-    // If we have a direct handler, use it
-    if (modelHandler) {
-      // Create a Koa-like request/response for the handler
-      // Most of these packages expect Koa middleware
-      const ctx = {
-        request: {
-          body: { ...body, messages: [...memoryContext, ...messages] },
-          headers: Object.fromEntries(req.headers.entries()),
-        },
-        response: {
-          body: null,
-          status: 200,
-          headers: {},
-        },
-        set: function(key, value) { this.response.headers[key] = value; },
-        status: 200,
-      };
-      
+    // If handler is a package name, we'll need to call it via a proxy route
+    // For now, route all package-based models through a single proxy
+    if (typeof modelHandler === 'string' && !modelHandler.startsWith('/')) {
+      // Package-based model - use a proxy route
+      // Since we removed individual routes, we'll create a generic proxy
+      targetUrl = new URL(`/api/models/${modelHandler}/v1/chat/completions`, url.origin);
+    } else {
+      // API route
+      targetUrl = new URL(modelHandler, url.origin);
+    }
+    
+    // For package models, we'll need a fallback since we removed individual routes
+    // Create a minimal proxy handler on-the-fly or use fetch to packages directly
+    if (typeof modelHandler === 'string' && !modelHandler.startsWith('/')) {
+      // Try to import and use the package directly
       try {
-        await modelHandler(ctx, async () => {});
+        const packagePath = `../../packages/${modelHandler}/dist/index.mjs`;
+        const pkg = await import(packagePath);
+        const handler = pkg.default || pkg;
+        
+        // Create a mock Koa context
+        const ctx = {
+          request: {
+            body: { ...body, messages: [...memoryContext, ...messages] },
+            headers: Object.fromEntries(req.headers.entries()),
+          },
+          response: {
+            body: null,
+            status: 200,
+            set: function(key, value) { this.headers = this.headers || {}; this.headers[key] = value; },
+            headers: {},
+          },
+          set: function(key, value) { this.response.headers[key] = value; },
+          status: 200,
+        };
+        
+        await handler(ctx, async () => {});
         responseData = ctx.response.body;
-      } catch (error) {
-        // Fallback to fetch if handler fails
-        const fallbackUrl = new URL(`/api/${model}/v1/chat/completions`, url.origin);
-        const response = await fetch(fallbackUrl, {
+      } catch (importError) {
+        // Fallback to gpt4freejs if package import fails
+        targetUrl = new URL('/api/gpt4freejs/v1/chat/completions', url.origin);
+        const response = await fetch(targetUrl, {
           method: 'POST',
           headers: req.headers,
           body: JSON.stringify({ ...body, messages: [...memoryContext, ...messages] }),
@@ -163,25 +183,8 @@ export default async function handler(req) {
         responseData = await response.json();
       }
     } else {
-      // Fallback: use external API routes for models we can't import directly
-      // This includes Python/Go models and external services
-      const fallbackRoutes = {
-        'gpt-4': '/api/gpt4freejs/v1/chat/completions',
-        'gpt4': '/api/gpt4freejs/v1/chat/completions',
-        'gpt-3.5': '/api/gpt4freejs/v1/chat/completions',
-        'gpt3.5': '/api/gpt4freejs/v1/chat/completions',
-        'chatgpt': '/api/gpt4freejs/v1/chat/completions',
-        'pollinations': '/api/pollinations/v1/chat/completions',
-        'webai': '/api/webai/v1/chat/completions',
-        'g4f': '/api/webai/v1/chat/completions',
-        'gemini-multimodal': '/api/gemini-multimodal/v1/chat/completions',
-        'groq': '/api/groq/v1/chat/completions',
-      };
-      
-      const fallbackRoute = fallbackRoutes[model?.toLowerCase()] || '/api/gpt4freejs/v1/chat/completions';
-      const fallbackUrl = new URL(fallbackRoute, url.origin);
-      
-      const response = await fetch(fallbackUrl, {
+      // Use fetch for API routes
+      const response = await fetch(targetUrl, {
         method: 'POST',
         headers: req.headers,
         body: JSON.stringify({ ...body, messages: [...memoryContext, ...messages] }),
