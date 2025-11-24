@@ -2,7 +2,7 @@
 
 import React from 'react';
 import { motion } from 'framer-motion';
-import { ArrowRight, Code, Zap, Image as ImageIcon, Box, Lock, Globe, Cpu, CheckCircle2 } from 'lucide-react';
+import { ArrowRight, Code, Zap, Image as ImageIcon, Box, Lock, Globe, Cpu, CheckCircle2, Brain, Database, Sparkles } from 'lucide-react';
 import Link from 'next/link';
 
 // Color Palette: Lavender Sapphire Mist
@@ -143,6 +143,98 @@ export default function Home() {
         </div>
       </section>
 
+      {/* Advanced Features: OpenReason & OpenMemory */}
+      <section className="py-24 bg-gradient-to-br from-[#6C739C]/10 to-[#424658] border-y border-[#6C739C]/20">
+        <div className="container mx-auto px-6">
+          <div className="text-center mb-16">
+            <h2 className="text-3xl md:text-4xl font-bold mb-4 text-[#F0DAD5]">Powered by Advanced AI Systems</h2>
+            <p className="text-[#BABBB1] max-w-2xl mx-auto mb-12">
+              Beyond just API access—az.ai includes cutting-edge reasoning and memory systems to enhance every interaction.
+            </p>
+          </div>
+          
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-4xl mx-auto">
+            {/* OpenReason */}
+            <div className="p-8 rounded-2xl border border-[#DEA785]/30 bg-gradient-to-br from-[#DEA785]/10 to-[#424658] hover:border-[#DEA785]/50 transition-all">
+              <div className="flex items-center gap-3 mb-4">
+                <div className="p-3 rounded-lg bg-[#DEA785]/20">
+                  <Brain className="w-6 h-6 text-[#DEA785]" />
+                </div>
+                <div>
+                  <h3 className="text-xl font-bold text-[#F0DAD5]">OpenReason</h3>
+                  <div className="flex items-center gap-2 mt-1">
+                    <span className="px-2 py-0.5 rounded bg-[#DEA785]/20 text-xs text-[#DEA785] font-medium">Always Enabled</span>
+                    <span className="px-2 py-0.5 rounded bg-[#6C739C]/20 text-xs text-[#6C739C] font-medium">Reasoning Engine</span>
+                  </div>
+                </div>
+              </div>
+              <p className="text-[#BABBB1] mb-4 leading-relaxed">
+                Advanced reasoning engine that enhances all AI responses with multi-domain cognitive capabilities. 
+                Includes specialized solvers for Math, Logic, Causal reasoning, Ethics, and more.
+              </p>
+              <ul className="space-y-2 text-sm text-[#BABBB1]">
+                <li className="flex items-center gap-2">
+                  <CheckCircle2 className="w-4 h-4 text-[#DEA785] flex-shrink-0" />
+                  <span>Unified reasoning graph with reflexive self-audit</span>
+                </li>
+                <li className="flex items-center gap-2">
+                  <CheckCircle2 className="w-4 h-4 text-[#DEA785] flex-shrink-0" />
+                  <span>Automatic quality verification and repair</span>
+                </li>
+                <li className="flex items-center gap-2">
+                  <CheckCircle2 className="w-4 h-4 text-[#DEA785] flex-shrink-0" />
+                  <span>Domain-specific reasoning (Math, Logic, Ethics)</span>
+                </li>
+              </ul>
+            </div>
+
+            {/* OpenMemory */}
+            <div className="p-8 rounded-2xl border border-[#D9A69F]/30 bg-gradient-to-br from-[#D9A69F]/10 to-[#424658] hover:border-[#D9A69F]/50 transition-all">
+              <div className="flex items-center gap-3 mb-4">
+                <div className="p-3 rounded-lg bg-[#D9A69F]/20">
+                  <Database className="w-6 h-6 text-[#D9A69F]" />
+                </div>
+                <div>
+                  <h3 className="text-xl font-bold text-[#F0DAD5]">OpenMemory</h3>
+                  <div className="flex items-center gap-2 mt-1">
+                    <span className="px-2 py-0.5 rounded bg-[#D9A69F]/20 text-xs text-[#D9A69F] font-medium">Optional</span>
+                    <span className="px-2 py-0.5 rounded bg-[#6C739C]/20 text-xs text-[#6C739C] font-medium">Long-Term Memory</span>
+                  </div>
+                </div>
+              </div>
+              <p className="text-[#BABBB1] mb-4 leading-relaxed">
+                Persistent memory system that enables context-aware conversations across sessions. 
+                Remember user preferences, conversation history, and important details.
+              </p>
+              <ul className="space-y-2 text-sm text-[#BABBB1]">
+                <li className="flex items-center gap-2">
+                  <CheckCircle2 className="w-4 h-4 text-[#D9A69F] flex-shrink-0" />
+                  <span>Semantic search and retrieval</span>
+                </li>
+                <li className="flex items-center gap-2">
+                  <CheckCircle2 className="w-4 h-4 text-[#D9A69F] flex-shrink-0" />
+                  <span>User-specific memory isolation</span>
+                </li>
+                <li className="flex items-center gap-2">
+                  <CheckCircle2 className="w-4 h-4 text-[#D9A69F] flex-shrink-0" />
+                  <span>Enable in playground settings</span>
+                </li>
+              </ul>
+            </div>
+          </div>
+
+          <div className="mt-12 text-center">
+            <p className="text-sm text-[#BABBB1] mb-4">
+              <Sparkles className="w-4 h-4 inline mr-2 text-[#DEA785]" />
+              OpenReason enhances all responses automatically. Enable OpenMemory in the playground for context-aware conversations.
+            </p>
+            <Link href="/playground" className="inline-flex items-center gap-2 px-6 py-3 rounded-lg bg-[#6C739C]/20 border border-[#6C739C]/50 text-[#F0DAD5] hover:bg-[#6C739C]/30 transition-all">
+              Try in Playground <ArrowRight className="w-4 h-4" />
+            </Link>
+          </div>
+        </div>
+      </section>
+
       {/* Supported Models */}
       <section className="py-24 container mx-auto px-6">
         <div className="text-center mb-16">
@@ -209,7 +301,7 @@ export default function Home() {
             <div className="p-6 rounded-xl bg-[#6C739C]/10 border border-[#6C739C]/20">
               <h3 className="text-lg font-bold text-[#D9A69F] mb-3">Chinese Providers</h3>
               <div className="space-y-2 text-sm text-[#BABBB1]">
-                {['Qwen 2.5', 'GLM-4', 'Doubao Pro', 'Kimi', 'MiniMax', 'Step-1', 'Jimeng'].map((model) => (
+                {['Qwen 2.5', 'GLM-4', 'Doubao Pro', 'Kimi', 'MiniMax', 'Step-1', 'Jimeng', 'Jimeng API (Enhanced)'].map((model) => (
                   <div key={model} className="flex items-center gap-2">
                     <CheckCircle2 className="w-4 h-4 text-[#DEA785]" />
                     {model}

@@ -6,6 +6,8 @@ export const config = {
 
 // Unified image generation routing
 const IMAGE_MODEL_ROUTES = {
+  'jimeng-api': '/api/jimeng-api/v1/images/generations',
+  'jimeng-enhanced': '/api/jimeng-api/v1/images/generations',
   'imagen-3': '/api/imagefx/v1/images/generations',
   'imagefx': '/api/imagefx/v1/images/generations',
   'jimeng': '/api/jimeng/v1/images/generations',

@@ -117,6 +117,7 @@ export const PROVIDER_GROUPS: ProviderGroup[] = [
     id: 'image',
     name: 'Image Generation',
     models: [
+      { id: 'jimeng-api', name: 'Jimeng API (Enhanced)', description: 'Advanced image generation with composition', type: 'image', provider: 'image' },
       { id: 'imageai-google', name: 'ImageAI (Google)', description: 'Enhanced prompts', type: 'image', provider: 'image' },
       { id: 'imageai-openai', name: 'ImageAI (OpenAI)', description: 'DALL-E wrapper', type: 'image', provider: 'image' },
       { id: 'pollinations-image-flux', name: 'Pollinations (Flux)', description: 'High quality Flux', type: 'image', provider: 'image' },
@@ -127,6 +128,7 @@ export const PROVIDER_GROUPS: ProviderGroup[] = [
     id: 'video',
     name: 'Video Generation',
     models: [
+      { id: 'jimeng-api', name: 'Jimeng API (Enhanced)', description: 'Advanced video generation', type: 'video', provider: 'video' },
       { id: 'viggle', name: 'Viggle AI', description: 'Meme creation & animation', type: 'video', provider: 'video' },
       { id: 'tongyi', name: 'Tongyi', description: 'Alibaba video generation', type: 'video', provider: 'video' },
       { id: 'vidu', name: 'Vidu', description: 'High quality video', type: 'video', provider: 'video' },

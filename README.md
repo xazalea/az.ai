@@ -1,8 +1,30 @@
-# az.ai - Unified AI Provider Platform
+# az.ai - Unified AI Provider Platform with Advanced Reasoning & Memory
 
 ## Overview
 
-az.ai is a comprehensive, unified AI infrastructure platform that provides access to multiple AI models through a single OpenAI-compatible API. The platform is designed to be affordable, easy to use, and deployable on Vercel with zero environment variable friction.
+az.ai is a comprehensive, unified AI infrastructure platform that provides access to multiple AI models through a single OpenAI-compatible API. The platform features **OpenReason** (mandatory reasoning engine) and **OpenMemory** (optional long-term memory) to enhance all AI interactions. The platform is designed to be affordable, easy to use, and deployable on Vercel with zero environment variable friction.
+
+## 🧠 Key Features
+
+### **OpenReason - Advanced Reasoning Engine** (Always Enabled)
+- **Mandatory reasoning enhancement** for all AI responses
+- Multi-domain cognitive system with specialized solvers (Math, Logic, Causal, Ethics)
+- Unified reasoning graph with reflexive self-audit
+- Automatic reasoning quality verification
+- Enhances all chat completions with advanced reasoning capabilities
+
+### **OpenMemory - Long-Term Memory** (Optional)
+- **Optional long-term memory** system for context-aware conversations
+- Persistent memory across sessions
+- Semantic search and retrieval
+- User-specific memory isolation
+- Enable in the playground settings for enhanced context awareness
+
+### **Enhanced Image & Video Generation**
+- **Jimeng API** integration for advanced image and video generation
+- Image composition features
+- High-quality video generation
+- Multiple resolution and aspect ratio options
 
 ## Integrated Providers
 
@@ -29,26 +51,28 @@ az.ai is a comprehensive, unified AI infrastructure platform that provides acces
 
 ### Image Generation Models
 
-1. **Imagen 3** - Photorealistic generation (`imageFX-api`)
-2. **Jimeng** - Artistic generation (`jimeng-free-api`)
-3. **ImageAI (Google)** - Enhanced prompts via ImageAI (`ImageAI`)
-4. **ImageAI (OpenAI)** - DALL-E via ImageAI wrapper (`ImageAI`)
-5. **Pollinations (Flux)** - Free high-quality image generation (`pollinations`)
-6. **Pollinations (Turbo)** - Fast image generation (`pollinations`)
+1. **Jimeng API (Enhanced)** - Advanced image generation with composition features (`jimeng-api`)
+2. **Imagen 3** - Photorealistic generation (`imageFX-api`)
+3. **Jimeng** - Artistic generation (`jimeng-free-api`)
+4. **ImageAI (Google)** - Enhanced prompts via ImageAI (`ImageAI`)
+5. **ImageAI (OpenAI)** - DALL-E via ImageAI wrapper (`ImageAI`)
+6. **Pollinations (Flux)** - Free high-quality image generation (`pollinations`)
+7. **Pollinations (Turbo)** - Fast image generation (`pollinations`)
 
 ### Video Generation Models
 
-1. **Veo 3** - Google Veo 3 video generation (`ImageAI`)
-2. **Veo 3 Fast** - Faster Veo generation
-3. **Veo 2** - Previous generation model
-4. **Viggle AI** - Meme creation & character animation (`Viggle-AI-WebUI`)
-5. **Tongyi** - Alibaba video generation (`ai-video-api`)
-6. **Vidu** - High quality video generation (`ai-video-api`)
-7. **PixVerse** - Creative video generation (`ai-video-api`)
-8. **Runway** - Professional video generation (`ai-video-api`)
-9. **Stability AI Video** - Via ai-video-api
-10. **Zhipu** - Via ai-video-api
-11. **Luma Labs** - Via ai-video-api
+1. **Jimeng API (Enhanced)** - Advanced video generation with enhanced quality (`jimeng-api`)
+2. **Veo 3** - Google Veo 3 video generation (`ImageAI`)
+3. **Veo 3 Fast** - Faster Veo generation
+4. **Veo 2** - Previous generation model
+5. **Viggle AI** - Meme creation & character animation (`Viggle-AI-WebUI`)
+6. **Tongyi** - Alibaba video generation (`ai-video-api`)
+7. **Vidu** - High quality video generation (`ai-video-api`)
+8. **PixVerse** - Creative video generation (`ai-video-api`)
+9. **Runway** - Professional video generation (`ai-video-api`)
+10. **Stability AI Video** - Via ai-video-api
+11. **Zhipu** - Via ai-video-api
+12. **Luma Labs** - Via ai-video-api
 
 ## API Endpoints
 

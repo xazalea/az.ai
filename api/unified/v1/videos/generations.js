@@ -6,6 +6,8 @@ export const config = {
 
 // Unified video generation routing
 const VIDEO_MODEL_ROUTES = {
+  'jimeng-api': '/api/jimeng-api/v1/videos/generations',
+  'jimeng-enhanced': '/api/jimeng-api/v1/videos/generations',
   'veo-3': '/api/video/v1/videos/generations.py',
   'veo-3-fast': '/api/video/v1/videos/generations.py',
   'veo-2': '/api/video/v1/videos/generations.py',

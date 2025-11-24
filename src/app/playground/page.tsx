@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useRef, useEffect } from 'react';
-import { Send, Image as ImageIcon, MessageSquare, Loader2, Sparkles, Command, Terminal, Video, ChevronDown, ChevronRight, Zap } from 'lucide-react';
+import { Send, Image as ImageIcon, MessageSquare, Loader2, Sparkles, Command, Terminal, Video, ChevronDown, ChevronRight, Zap, Brain, Database, Settings, Copy, Download, Share2, History, Trash2 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { cn } from '@/lib/utils';
 import { PROVIDER_GROUPS, getProviderGroupsByType, type Model } from '@/lib/models';
@@ -12,9 +12,13 @@ export default function Playground() {
   const [expandedProviders, setExpandedProviders] = useState<Set<string>>(new Set(['openai', 'google', 'deepseek'])); // Default expanded
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
-  const [messages, setMessages] = useState<Array<{ role: 'user' | 'assistant', content: string }>>([]);
+  const [messages, setMessages] = useState<Array<{ role: 'user' | 'assistant', content: string, reasoning?: any, timestamp?: number }>>([]);
   const [generatedImage, setGeneratedImage] = useState<string | null>(null);
   const [generatedVideo, setGeneratedVideo] = useState<string | null>(null);
+  const [openMemoryEnabled, setOpenMemoryEnabled] = useState(false);
+  const [reasoningEnabled, setReasoningEnabled] = useState(true); // OpenReason always enabled by default
+  const [showSettings, setShowSettings] = useState(false);
+  const [conversationHistory, setConversationHistory] = useState<Array<{ id: string, title: string, messages: any[], timestamp: number }>>([]);
   const scrollRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -47,13 +51,40 @@ export default function Playground() {
       setInput('');
 
       try {
+        // Query OpenMemory if enabled
+        let memoryContext = [];
+        if (openMemoryEnabled) {
+          try {
+            const memoryRes = await fetch('/api/openmemory/memory/query', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                query: input,
+                k: 5,
+              }),
+            });
+            if (memoryRes.ok) {
+              const memoryData = await memoryRes.json();
+              if (memoryData.matches && memoryData.matches.length > 0) {
+                memoryContext = memoryData.matches.map((m: any) => ({
+                  role: 'system' as const,
+                  content: `[Memory Context] ${m.content} (relevance: ${(m.score * 100).toFixed(1)}%)`,
+                }));
+              }
+            }
+          } catch (memError) {
+            console.warn('OpenMemory query failed:', memError);
+          }
+        }
+
         const res = await fetch('/v1/chat/completions', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
             model: selectedModel,
-            messages: newMessages,
-            stream: false
+            messages: [...memoryContext, ...newMessages],
+            stream: false,
+            use_reasoning: reasoningEnabled, // OpenReason enhancement
           })
         });
 
@@ -61,7 +92,31 @@ export default function Playground() {
         if (data.error) throw new Error(data.error);
 
         const content = data.choices?.[0]?.message?.content || "No response generated.";
-        setMessages(prev => [...prev, { role: 'assistant', content }]);
+        const reasoning = data.reasoning; // OpenReason metadata
+        
+        // Store in OpenMemory if enabled
+        if (openMemoryEnabled && content) {
+          try {
+            await fetch('/api/openmemory/memory/add', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                content: `User: ${input}\nAssistant: ${content}`,
+                tags: ['playground', 'chat'],
+                metadata: { model: selectedModel, mode: 'chat' },
+              }),
+            });
+          } catch (memError) {
+            console.warn('OpenMemory storage failed:', memError);
+          }
+        }
+
+        setMessages(prev => [...prev, { 
+          role: 'assistant', 
+          content,
+          reasoning,
+          timestamp: Date.now(),
+        }]);
       } catch (error) {
         console.error(error);
         setMessages(prev => [...prev, { role: 'assistant', content: `Error: ${error instanceof Error ? error.message : 'Failed to fetch response'}` }]);
@@ -240,6 +295,70 @@ export default function Playground() {
                 </div>
             </div>
             
+            {/* Settings Panel */}
+            <div className="space-y-3">
+                <button
+                    onClick={() => setShowSettings(!showSettings)}
+                    className="w-full px-3 py-2 rounded-lg bg-[#6C739C]/10 hover:bg-[#6C739C]/20 border border-[#6C739C]/20 flex items-center justify-between text-sm font-medium text-[#F0DAD5] transition-colors"
+                >
+                    <div className="flex items-center gap-2">
+                        <Settings className="w-4 h-4" />
+                        <span>Settings</span>
+                    </div>
+                    {showSettings ? <ChevronDown className="w-4 h-4" /> : <ChevronRight className="w-4 h-4" />}
+                </button>
+                
+                <AnimatePresence>
+                    {showSettings && (
+                        <motion.div
+                            initial={{ height: 0, opacity: 0 }}
+                            animate={{ height: 'auto', opacity: 1 }}
+                            exit={{ height: 0, opacity: 0 }}
+                            className="overflow-hidden"
+                        >
+                            <div className="p-3 rounded-lg bg-[#303340] border border-[#6C739C]/20 space-y-3">
+                                {/* OpenReason - Always Enabled */}
+                                <div className="flex items-center justify-between">
+                                    <div className="flex items-center gap-2">
+                                        <Brain className="w-4 h-4 text-[#DEA785]" />
+                                        <div>
+                                            <div className="text-sm font-medium text-[#F0DAD5]">OpenReason</div>
+                                            <div className="text-xs text-[#BABBB1]/70">Reasoning Engine</div>
+                                        </div>
+                                    </div>
+                                    <div className="px-2 py-1 rounded bg-[#DEA785]/20 text-xs text-[#DEA785] font-medium">
+                                        Always On
+                                    </div>
+                                </div>
+                                
+                                {/* OpenMemory - Optional */}
+                                <div className="flex items-center justify-between">
+                                    <div className="flex items-center gap-2">
+                                        <Database className="w-4 h-4 text-[#D9A69F]" />
+                                        <div>
+                                            <div className="text-sm font-medium text-[#F0DAD5]">OpenMemory</div>
+                                            <div className="text-xs text-[#BABBB1]/70">Long-term Memory</div>
+                                        </div>
+                                    </div>
+                                    <button
+                                        onClick={() => setOpenMemoryEnabled(!openMemoryEnabled)}
+                                        className={cn(
+                                            "relative w-11 h-6 rounded-full transition-colors",
+                                            openMemoryEnabled ? "bg-[#D9A69F]" : "bg-[#6C739C]/30"
+                                        )}
+                                    >
+                                        <div className={cn(
+                                            "absolute top-0.5 left-0.5 w-5 h-5 rounded-full bg-white transition-transform",
+                                            openMemoryEnabled ? "translate-x-5" : "translate-x-0"
+                                        )} />
+                                    </button>
+                                </div>
+                            </div>
+                        </motion.div>
+                    )}
+                </AnimatePresence>
+            </div>
+            
             <div className="p-4 rounded-xl bg-[#303340] border border-[#6C739C]/20 text-xs text-[#BABBB1]">
                 <div className="flex items-center gap-2 mb-2 text-[#D9A69F]">
                     <Sparkles className="w-3 h-3" />
@@ -247,7 +366,7 @@ export default function Playground() {
                 </div>
                 <p>
                     {mode === 'chat' 
-                        ? "Use /v2/chat/completions for fastest models. Perfect for small projects!" 
+                        ? "OpenReason enhances all responses with advanced reasoning. Enable OpenMemory for context-aware conversations!" 
                         : mode === 'image'
                         ? "Be specific with your visual descriptions. Mention styles like 'oil painting' or 'cyberpunk'."
                         : "Describe the video scene you want. Include details about motion, camera angles, and style."}
@@ -295,6 +414,14 @@ export default function Playground() {
                                                 : "bg-[#424658] text-[#F0DAD5] border border-[#6C739C]/30 rounded-tl-none"
                                         )}>
                                             {msg.content}
+                                            {msg.reasoning && (
+                                                <div className="mt-2 pt-2 border-t border-[#6C739C]/20">
+                                                    <div className="flex items-center gap-2 text-xs text-[#DEA785]">
+                                                        <Brain className="w-3 h-3" />
+                                                        <span>Reasoning: {msg.reasoning.mode} ({msg.reasoning.confidence ? (msg.reasoning.confidence * 100).toFixed(0) : 'N/A'}% confidence)</span>
+                                                    </div>
+                                                </div>
+                                            )}
                                         </div>
                                     </motion.div>
                                 ))}
