@@ -91,7 +91,7 @@ export default function Playground() {
         console.error(error);
         setMessages(prev => [...prev, { role: 'assistant', content: `Error: ${error instanceof Error ? error.message : 'Failed to fetch response'}` }]);
       }
-    } else {
+    } else if (mode === 'image') {
       // Image Generation
       try {
         const prompt = input;
