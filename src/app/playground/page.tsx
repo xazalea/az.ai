@@ -1,69 +1,15 @@
 "use client";
 
 import React, { useState, useRef, useEffect } from 'react';
-import { Send, Image as ImageIcon, MessageSquare, Loader2, Sparkles, Command, Terminal, Video } from 'lucide-react';
+import { Send, Image as ImageIcon, MessageSquare, Loader2, Sparkles, Command, Terminal, Video, ChevronDown, ChevronRight, Zap } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { cn } from '@/lib/utils';
-
-const MODELS = [
-  { id: 'qwen', name: 'Qwen 2.5', type: 'chat', description: 'General purpose coding & chat' },
-  { id: 'deepseek-chat', name: 'DeepSeek V3', type: 'chat', description: 'High performance general model' },
-  { id: 'deepseek-reasoner', name: 'DeepSeek R1', type: 'chat', description: 'Reasoning focused model' },
-  { id: 'deepseek-free', name: 'DeepSeek Free', type: 'chat', description: 'Free DeepSeek access' },
-  { id: 'glm-4', name: 'GLM-4', type: 'chat', description: 'Strong agentic capabilities' },
-  { id: 'doubao-pro-32k', name: 'Doubao Pro', type: 'chat', description: 'Great Chinese understanding' },
-  { id: 'kimi', name: 'Kimi', type: 'chat', description: 'Long context specialist' },
-  { id: 'minimax', name: 'MiniMax', type: 'chat', description: 'Natural conversation' },
-  { id: 'step', name: 'Step-1', type: 'chat', description: 'Multi-modal reasoning' },
-  { id: 'gpt-4', name: 'GPT-4 (Free)', type: 'chat', description: 'GPT-4 via gpt4free-ts' },
-  { id: 'gpt-3.5-turbo', name: 'GPT-3.5 Turbo (Free)', type: 'chat', description: 'Free GPT-3.5 access' },
-  { id: 'chatgpt', name: 'ChatGPT (Free)', type: 'chat', description: 'Free ChatGPT API' },
-  { id: 'gemini-multimodal', name: 'Gemini Multimodal', type: 'chat', description: 'Multimodal Gemini' },
-  { id: 'gemini-2.5-pro', name: 'Gemini 2.5 Pro (CLI)', type: 'chat', description: 'Via CLIProxyAPI' },
-  { id: 'claude-code', name: 'Claude Code (CLI)', type: 'chat', description: 'Via CLIProxyAPI' },
-  { id: 'qwen-code', name: 'Qwen Code (CLI)', type: 'chat', description: 'Via CLIProxyAPI' },
-  { id: 'pollinations', name: 'Pollinations', type: 'chat', description: 'Free text generation via Pollinations' },
-  // gpt4free.js models
-  { id: 'blackbox', name: 'BlackBox (gpt4free.js)', type: 'chat', description: 'BlackBox AI via gpt4free.js' },
-  { id: 'ollama', name: 'Ollama (gpt4free.js)', type: 'chat', description: 'Ollama models via gpt4free.js' },
-  // g4f (WebAI-to-API) models - popular ones
-  { id: 'claude-opus-4.5', name: 'Claude Opus 4.5 (g4f)', type: 'chat', description: 'Anthropic Claude Opus 4.5' },
-  { id: 'claude-sonnet-4.5', name: 'Claude Sonnet 4.5 (g4f)', type: 'chat', description: 'Anthropic Claude Sonnet 4.5' },
-  { id: 'gemini-3-pro', name: 'Gemini 3 Pro (g4f)', type: 'chat', description: 'Google Gemini 3 Pro' },
-  { id: 'gpt-5.1-high', name: 'GPT-5.1 High (g4f)', type: 'chat', description: 'OpenAI GPT-5.1 High' },
-  { id: 'gpt-5-chat', name: 'GPT-5 Chat (g4f)', type: 'chat', description: 'OpenAI GPT-5 Chat' },
-  { id: 'gpt-oss-120b', name: 'GPT-OSS 120B (g4f)', type: 'chat', description: 'OpenAI OSS 120B model' },
-  { id: 'deepseek-v3.1', name: 'DeepSeek V3.1 (g4f)', type: 'chat', description: 'DeepSeek V3.1' },
-  { id: 'mistral-large', name: 'Mistral Large (g4f)', type: 'chat', description: 'Mistral Large model' },
-  { id: 'grok-4', name: 'Grok-4 (g4f)', type: 'chat', description: 'xAI Grok-4' },
-  { id: 'llama-4-scout', name: 'Llama 4 Scout (g4f)', type: 'chat', description: 'Meta Llama 4 Scout' },
-  { id: 'llama-4-maverick', name: 'Llama 4 Maverick (g4f)', type: 'chat', description: 'Meta Llama 4 Maverick' },
-];
-
-const IMAGE_MODELS = [
-  { id: 'imagen-3', name: 'Imagen 3', type: 'image', description: 'Photorealistic generation (ImageFX)' },
-  { id: 'jimeng', name: 'Jimeng', type: 'image', description: 'Artistic generation' },
-  { id: 'imageai-google', name: 'ImageAI (Google)', type: 'image', description: 'Enhanced prompts via ImageAI' },
-  { id: 'imageai-openai', name: 'ImageAI (OpenAI)', type: 'image', description: 'DALL-E via ImageAI wrapper' },
-  { id: 'pollinations', name: 'Pollinations (Flux)', type: 'image', description: 'Free image generation via Pollinations' },
-  { id: 'flux', name: 'Flux (Pollinations)', type: 'image', description: 'High quality Flux model' },
-  { id: 'turbo', name: 'Turbo (Pollinations)', type: 'image', description: 'Fast generation model' },
-];
-
-const VIDEO_MODELS = [
-  { id: 'veo-3', name: 'Veo 3', type: 'video', description: 'Google Veo 3 video generation' },
-  { id: 'veo-3-fast', name: 'Veo 3 Fast', type: 'video', description: 'Faster generation' },
-  { id: 'veo-2', name: 'Veo 2', type: 'video', description: 'Previous generation model' },
-  { id: 'viggle', name: 'Viggle AI', type: 'video', description: 'Meme creation & character animation' },
-  { id: 'tongyi', name: 'Tongyi (AI Video)', type: 'video', description: 'Alibaba video generation' },
-  { id: 'vidu', name: 'Vidu (AI Video)', type: 'video', description: 'High quality video generation' },
-  { id: 'pixverse', name: 'PixVerse (AI Video)', type: 'video', description: 'Creative video generation' },
-  { id: 'runway', name: 'Runway (AI Video)', type: 'video', description: 'Professional video generation' },
-];
+import { PROVIDER_GROUPS, getProviderGroupsByType, type Model } from '@/lib/models';
 
 export default function Playground() {
   const [mode, setMode] = useState<'chat' | 'image' | 'video'>('chat');
-  const [selectedModel, setSelectedModel] = useState(MODELS[0].id);
+  const [selectedModel, setSelectedModel] = useState('qwen');
+  const [expandedProviders, setExpandedProviders] = useState<Set<string>>(new Set(['openai', 'google', 'deepseek'])); // Default expanded
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [messages, setMessages] = useState<Array<{ role: 'user' | 'assistant', content: string }>>([]);
@@ -75,7 +21,21 @@ export default function Playground() {
     if (scrollRef.current) {
       scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
     }
-  }, [messages]);
+  }, [messages, generatedImage, generatedVideo]);
+
+  const toggleProvider = (providerId: string) => {
+    setExpandedProviders(prev => {
+      const next = new Set(prev);
+      if (next.has(providerId)) {
+        next.delete(providerId);
+      } else {
+        next.add(providerId);
+      }
+      return next;
+    });
+  };
+
+  const providerGroups = getProviderGroupsByType(mode);
 
   const handleSend = async () => {
     if (!input.trim() || isLoading) return;
@@ -91,7 +51,7 @@ export default function Playground() {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
-            model: selectedModel, // Unified endpoint routes based on model
+            model: selectedModel,
             messages: newMessages,
             stream: false
           })
@@ -107,21 +67,17 @@ export default function Playground() {
         setMessages(prev => [...prev, { role: 'assistant', content: `Error: ${error instanceof Error ? error.message : 'Failed to fetch response'}` }]);
       }
     } else if (mode === 'image') {
-      // Image Generation
       try {
         const prompt = input;
         setInput('');
         setGeneratedImage(null);
         
-        // Use unified endpoint - routing handled by model parameter
         const res = await fetch('/v1/images/generations', {
           method: 'POST',
-          headers: { 
-            'Content-Type': 'application/json',
-          },
+          headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
             prompt,
-            model: selectedModel, // Unified endpoint routes based on model
+            model: selectedModel,
             n: 1,
             size: "1024x1024"
           })
@@ -140,22 +96,20 @@ export default function Playground() {
         alert(`Failed to generate image: ${error instanceof Error ? error.message : 'Unknown error'}`);
       }
     } else if (mode === 'video') {
-      // Video Generation
       try {
         const prompt = input;
         setInput('');
         setGeneratedVideo(null);
         
-        // Use unified endpoint - routing handled by model parameter
         const res = await fetch('/v1/videos/generations', {
           method: 'POST',
           headers: { 
             'Content-Type': 'application/json',
-            'Authorization': `Bearer ${process.env.NEXT_PUBLIC_GOOGLE_API_KEY || ''}`, // For Veo models
+            'Authorization': `Bearer ${process.env.NEXT_PUBLIC_GOOGLE_API_KEY || ''}`,
           },
           body: JSON.stringify({
             prompt,
-            model: selectedModel, // Unified endpoint routes based on model
+            model: selectedModel,
             duration: 8.0,
             aspect_ratio: '16:9'
           })
@@ -164,25 +118,8 @@ export default function Playground() {
         const data = await res.json();
         if (data.error) throw new Error(data.error);
         
-        // Handle different video response formats
-        const videoData = data.data?.[0];
-        let url = null;
-        
-        if (videoData?.b64_video) {
-          url = `data:video/mp4;base64,${videoData.b64_video}`;
-        } else if (videoData?.url) {
-          url = videoData.url.includes('base64') 
-            ? videoData.url 
-            : `data:video/mp4;base64,${videoData.url.split(',')[1] || videoData.url}`;
-        } else if (data.b64_video) {
-          url = `data:video/mp4;base64,${data.b64_video}`;
-        } else if (data.url) {
-          url = data.url.includes('base64') 
-            ? data.url 
-            : `data:video/mp4;base64,${data.url.split(',')[1] || data.url}`;
-        }
-        
-        if (url) setGeneratedVideo(url);
+        const videoUrl = data.data?.[0]?.url || null;
+        if (videoUrl) setGeneratedVideo(videoUrl);
         else throw new Error("No video returned");
 
       } catch (error) {
@@ -230,11 +167,11 @@ export default function Playground() {
               onClick={() => setMode('video')}
               className={cn(
                 "px-4 py-2 rounded-md text-sm font-medium transition-all duration-200 flex items-center gap-2",
-                mode === 'video' ? "bg-[#DEA785] text-[#424658] shadow-sm" : "text-[#BABBB1] hover:text-[#F0DAD5] hover:bg-[#DEA785]/20"
+                mode === 'video' ? "bg-[#C56B62] text-white shadow-sm" : "text-[#BABBB1] hover:text-[#F0DAD5] hover:bg-[#C56B62]/20"
               )}
             >
               <Video className="w-4 h-4" />
-              Video
+              Animate
             </button>
           </nav>
         </div>
@@ -243,26 +180,63 @@ export default function Playground() {
       {/* Main Content */}
       <main className="flex-1 container mx-auto px-4 py-8 max-w-5xl flex gap-6">
         
-        {/* Sidebar / Settings */}
-        <div className="w-64 flex-shrink-0 space-y-6 hidden md:block">
+        {/* Sidebar / Model Selection */}
+        <div className="w-64 flex-shrink-0 space-y-4 hidden md:block overflow-y-auto max-h-[calc(100vh-8rem)]">
             <div className="space-y-2">
-                <label className="text-xs font-semibold text-[#BABBB1] uppercase tracking-wider">Model</label>
+                <label className="text-xs font-semibold text-[#BABBB1] uppercase tracking-wider flex items-center gap-2">
+                  <Zap className="w-3 h-3" />
+                  Models
+                </label>
                 <div className="space-y-1">
-                    {(mode === 'chat' ? MODELS : mode === 'image' ? IMAGE_MODELS : VIDEO_MODELS).map(model => (
-                        <button
-                            key={model.id}
-                            onClick={() => setSelectedModel(model.id)}
-                            className={cn(
-                                "w-full text-left px-3 py-2 rounded-lg text-sm transition-colors",
-                                selectedModel === model.id 
-                                    ? "bg-[#6C739C]/20 text-[#D9A69F] border border-[#6C739C]/50" 
-                                    : "text-[#F0DAD5]/80 hover:bg-[#6C739C]/10"
+                    {providerGroups.map(group => {
+                      const isExpanded = expandedProviders.has(group.id);
+                      return (
+                        <div key={group.id} className="border border-[#6C739C]/20 rounded-lg overflow-hidden">
+                          <button
+                            onClick={() => toggleProvider(group.id)}
+                            className="w-full text-left px-3 py-2 bg-[#6C739C]/10 hover:bg-[#6C739C]/20 transition-colors flex items-center justify-between text-sm font-medium text-[#F0DAD5]"
+                          >
+                            <span>{group.name}</span>
+                            {isExpanded ? <ChevronDown className="w-4 h-4" /> : <ChevronRight className="w-4 h-4" />}
+                          </button>
+                          <AnimatePresence>
+                            {isExpanded && (
+                              <motion.div
+                                initial={{ height: 0, opacity: 0 }}
+                                animate={{ height: 'auto', opacity: 1 }}
+                                exit={{ height: 0, opacity: 0 }}
+                                transition={{ duration: 0.2 }}
+                                className="overflow-hidden"
+                              >
+                                <div className="p-1 space-y-1">
+                                  {group.models.map(model => (
+                                    <button
+                                      key={model.id}
+                                      onClick={() => setSelectedModel(model.id)}
+                                      className={cn(
+                                        "w-full text-left px-3 py-2 rounded-md text-sm transition-colors",
+                                        selectedModel === model.id 
+                                          ? "bg-[#6C739C]/20 text-[#D9A69F] border border-[#6C739C]/50" 
+                                          : "text-[#F0DAD5]/80 hover:bg-[#6C739C]/10"
+                                      )}
+                                    >
+                                      <div className="font-medium">{model.name}</div>
+                                      <div className="text-xs text-[#BABBB1]/70 truncate">{model.description}</div>
+                                      {model.speed === 'fast' && (
+                                        <div className="flex items-center gap-1 mt-1">
+                                          <Zap className="w-3 h-3 text-[#DEA785]" />
+                                          <span className="text-xs text-[#DEA785]">Fast</span>
+                                        </div>
+                                      )}
+                                    </button>
+                                  ))}
+                                </div>
+                              </motion.div>
                             )}
-                        >
-                            <div className="font-medium">{model.name}</div>
-                            <div className="text-xs text-[#BABBB1]/70 truncate">{model.description}</div>
-                        </button>
-                    ))}
+                          </AnimatePresence>
+                        </div>
+                      );
+                    })}
                 </div>
             </div>
             
@@ -273,7 +247,7 @@ export default function Playground() {
                 </div>
                 <p>
                     {mode === 'chat' 
-                        ? "Try asking for code, analysis, or creative writing. Our unified API handles it all." 
+                        ? "Use /v2/chat/completions for fastest models. Perfect for small projects!" 
                         : mode === 'image'
                         ? "Be specific with your visual descriptions. Mention styles like 'oil painting' or 'cyberpunk'."
                         : "Describe the video scene you want. Include details about motion, camera angles, and style."}
@@ -294,7 +268,8 @@ export default function Playground() {
                                 className="h-full flex flex-col items-center justify-center text-center space-y-4 text-[#BABBB1]/50"
                             >
                                 <MessageSquare className="w-16 h-16" />
-                                <p className="text-lg font-medium">Start a conversation with {MODELS.find(m => m.id === selectedModel)?.name}</p>
+                                <p className="text-lg font-medium">Start a conversation</p>
+                                <p className="text-sm">Selected: {providerGroups.flatMap(g => g.models).find(m => m.id === selectedModel)?.name || selectedModel}</p>
                             </motion.div>
                         ) : (
                             <div className="space-y-6">
@@ -364,22 +339,20 @@ export default function Playground() {
                     ) : (
                         <div className="h-full flex flex-col items-center justify-center">
                             {generatedVideo ? (
-                                <motion.video 
+                                <motion.video
                                     initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }}
-                                    src={generatedVideo} 
+                                    src={generatedVideo}
                                     controls
-                                    autoPlay
-                                    loop
-                                    className="max-w-full max-h-[600px] rounded-lg shadow-2xl border-4 border-[#DEA785]/20"
+                                    className="max-w-full max-h-[600px] rounded-lg shadow-2xl border-4 border-[#C56B62]/20"
                                 />
                             ) : (
                                 isLoading ? (
                                     <div className="text-center space-y-4">
                                         <div className="relative w-24 h-24 mx-auto">
                                             <div className="absolute inset-0 rounded-full border-4 border-[#6C739C]/20"></div>
-                                            <div className="absolute inset-0 rounded-full border-4 border-[#DEA785] border-t-transparent animate-spin"></div>
+                                            <div className="absolute inset-0 rounded-full border-4 border-[#C56B62] border-t-transparent animate-spin"></div>
                                         </div>
-                                        <p className="text-[#DEA785] animate-pulse">Creating your video... This may take a few minutes.</p>
+                                        <p className="text-[#C56B62] animate-pulse">Crafting your video...</p>
                                     </div>
                                 ) : (
                                     <div className="text-center space-y-4 text-[#BABBB1]/50">
@@ -405,7 +378,7 @@ export default function Playground() {
                                 handleSend();
                             }
                         }}
-                        placeholder={mode === 'chat' ? "Type your message..." : mode === 'image' ? "Describe the image you want to see..." : "Describe the video scene you want to create..."}
+                        placeholder={mode === 'chat' ? "Type your message..." : mode === 'image' ? "Describe the image you want to see..." : "Describe the video you want to create..."}
                         className="w-full bg-[#424658] text-[#F0DAD5] rounded-xl px-4 py-3 pr-12 border border-[#6C739C]/30 focus:border-[#D9A69F] focus:ring-1 focus:ring-[#D9A69F] outline-none resize-none h-[60px] placeholder:text-[#BABBB1]/30 transition-all"
                     />
                     <button
@@ -425,4 +398,3 @@ export default function Playground() {
     </div>
   );
 }
-

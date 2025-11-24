@@ -3,6 +3,7 @@
     { "source": "/v1/chat/completions", "destination": "/api/unified/v1/chat/completions" },
     { "source": "/v1/images/generations", "destination": "/api/unified/v1/images/generations" },
     { "source": "/v1/videos/generations", "destination": "/api/unified/v1/videos/generations" },
+    { "source": "/v2/chat/completions", "destination": "/api/unified/v2/chat/completions" },
     
     { "source": "/api/pollinations/:path*", "destination": "/api/pollinations/:path*" },
     { "source": "/api/viggle/:path*", "destination": "/api/viggle/:path*" },

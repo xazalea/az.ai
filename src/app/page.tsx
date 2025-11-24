@@ -147,12 +147,106 @@ export default function Home() {
       <section className="py-24 container mx-auto px-6">
         <div className="text-center mb-16">
           <h2 className="text-3xl md:text-4xl font-bold mb-4 text-[#F0DAD5]">Powering the best models</h2>
-          <div className="flex flex-wrap justify-center gap-4 mt-8">
-            {['Qwen 2.5', 'DeepSeek V3', 'GLM-4', 'Doubao Pro', 'Kimi', 'MiniMax', 'Step-1', 'Imagen 3'].map((model) => (
-              <div key={model} className="px-6 py-3 rounded-xl bg-[#6C739C]/10 border border-[#6C739C]/20 text-[#BABBB1] font-medium hover:border-[#D9A69F]/50 hover:text-[#D9A69F] transition-all cursor-default">
-                {model}
+          <p className="text-[#BABBB1] max-w-2xl mx-auto mb-12">
+            Access 50+ models from leading AI providers through a single, unified API.
+          </p>
+          
+          {/* Model Categories */}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mt-12 text-left">
+            {/* OpenAI */}
+            <div className="p-6 rounded-xl bg-[#6C739C]/10 border border-[#6C739C]/20">
+              <h3 className="text-lg font-bold text-[#D9A69F] mb-3">OpenAI</h3>
+              <div className="space-y-2 text-sm text-[#BABBB1]">
+                {['GPT-5.1 High', 'GPT-5 Chat', 'GPT-4', 'GPT-3.5 Turbo', 'GPT-OSS 120B', 'ChatGPT'].map((model) => (
+                  <div key={model} className="flex items-center gap-2">
+                    <CheckCircle2 className="w-4 h-4 text-[#DEA785]" />
+                    {model}
+                  </div>
+                ))}
               </div>
-            ))}
+            </div>
+
+            {/* Anthropic */}
+            <div className="p-6 rounded-xl bg-[#6C739C]/10 border border-[#6C739C]/20">
+              <h3 className="text-lg font-bold text-[#D9A69F] mb-3">Anthropic</h3>
+              <div className="space-y-2 text-sm text-[#BABBB1]">
+                {['Claude Opus 4.5', 'Claude Sonnet 4.5', 'Claude Code'].map((model) => (
+                  <div key={model} className="flex items-center gap-2">
+                    <CheckCircle2 className="w-4 h-4 text-[#DEA785]" />
+                    {model}
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Google */}
+            <div className="p-6 rounded-xl bg-[#6C739C]/10 border border-[#6C739C]/20">
+              <h3 className="text-lg font-bold text-[#D9A69F] mb-3">Google</h3>
+              <div className="space-y-2 text-sm text-[#BABBB1]">
+                {['Gemini 3 Pro', 'Gemini 2.5 Pro', 'Gemini 2.5 Flash', 'Imagen 3', 'Veo 3'].map((model) => (
+                  <div key={model} className="flex items-center gap-2">
+                    <CheckCircle2 className="w-4 h-4 text-[#DEA785]" />
+                    {model}
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* DeepSeek */}
+            <div className="p-6 rounded-xl bg-[#6C739C]/10 border border-[#6C739C]/20">
+              <h3 className="text-lg font-bold text-[#D9A69F] mb-3">DeepSeek</h3>
+              <div className="space-y-2 text-sm text-[#BABBB1]">
+                {['DeepSeek V3', 'DeepSeek R1', 'DeepSeek V3.1', 'DeepSeek Free'].map((model) => (
+                  <div key={model} className="flex items-center gap-2">
+                    <CheckCircle2 className="w-4 h-4 text-[#DEA785]" />
+                    {model}
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Chinese Providers */}
+            <div className="p-6 rounded-xl bg-[#6C739C]/10 border border-[#6C739C]/20">
+              <h3 className="text-lg font-bold text-[#D9A69F] mb-3">Chinese Providers</h3>
+              <div className="space-y-2 text-sm text-[#BABBB1]">
+                {['Qwen 2.5', 'GLM-4', 'Doubao Pro', 'Kimi', 'MiniMax', 'Step-1', 'Jimeng'].map((model) => (
+                  <div key={model} className="flex items-center gap-2">
+                    <CheckCircle2 className="w-4 h-4 text-[#DEA785]" />
+                    {model}
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Other Providers */}
+            <div className="p-6 rounded-xl bg-[#6C739C]/10 border border-[#6C739C]/20">
+              <h3 className="text-lg font-bold text-[#D9A69F] mb-3">More Providers</h3>
+              <div className="space-y-2 text-sm text-[#BABBB1]">
+                {['Mistral Large', 'Grok-4', 'Llama 4 Scout', 'Llama 4 Maverick', 'Groq LPU™', 'BlackBox', 'Ollama', 'Pollinations'].map((model) => (
+                  <div key={model} className="flex items-center gap-2">
+                    <CheckCircle2 className="w-4 h-4 text-[#DEA785]" />
+                    {model}
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+
+          {/* v2 API Notice */}
+          <div className="mt-12 p-6 rounded-xl bg-gradient-to-r from-[#6C739C]/20 to-[#D9A69F]/10 border border-[#6C739C]/30 max-w-3xl mx-auto">
+            <div className="flex items-start gap-4">
+              <Zap className="w-6 h-6 text-[#DEA785] flex-shrink-0 mt-1" />
+              <div className="text-left">
+                <h3 className="text-lg font-bold text-[#F0DAD5] mb-2">⚡ v2 API - Optimized for Speed</h3>
+                <p className="text-sm text-[#BABBB1] mb-3">
+                  Use <code className="px-2 py-1 rounded bg-[#424658] text-[#D9A69F]">/v2/chat/completions</code> for ultra-fast models. 
+                  Perfect for small projects that need low latency!
+                </p>
+                <p className="text-xs text-[#BABBB1]/70">
+                  Routes to fastest models: Groq, Qwen, DeepSeek, Gemini Flash, GPT-3.5, and more.
+                </p>
+              </div>
+            </div>
           </div>
         </div>
       </section>
