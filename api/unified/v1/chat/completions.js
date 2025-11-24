@@ -80,25 +80,38 @@ export default async function handler(req) {
 
   try {
     const body = await req.json();
-    const { model, messages, use_memory = true, use_reasoning = true, session_id } = body; // Both enabled by default, opt-out
+    const { model, messages, use_memory = true, use_reasoning = true } = body; // Both enabled by default, opt-out
     const url = new URL(req.url);
+    
+    // Auto-generate session ID from request (IP + User-Agent hash, or use existing if provided)
+    const clientIP = req.headers.get('x-forwarded-for')?.split(',')[0] || 
+                     req.headers.get('x-real-ip') || 
+                     'anonymous';
+    const userAgent = req.headers.get('user-agent') || '';
+    const sessionKey = `${clientIP}-${userAgent}`;
+    // Simple hash for session ID
+    const sessionId = body.session_id || `session_${Buffer.from(sessionKey).toString('base64').substring(0, 16).replace(/[^a-zA-Z0-9]/g, '')}`;
     
     const targetEndpoint = findModelRoute(model);
     const targetUrl = new URL(targetEndpoint, url.origin);
 
-    // Session-based memory: store conversation context per session
+    // Session-based memory: store conversation context per session (auto-enabled)
     let memoryContext = [];
-    if (use_memory !== false && session_id) {
+    if (use_memory !== false) {
       try {
+        // Get all previous messages from this session for context
+        const conversationHistory = messages?.filter(m => m.role !== 'system').slice(0, -1) || [];
         const lastUserMessage = messages?.findLast(m => m.role === 'user')?.content || '';
+        
         if (lastUserMessage) {
+          // Query memory for relevant context from this session
           const memoryRes = await fetch(new URL('/api/openmemory/memory/query', url.origin), {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
               query: lastUserMessage,
-              k: 3,
-              filters: { user_id: session_id },
+              k: 5,
+              filters: { user_id: sessionId },
             }),
           });
           if (memoryRes.ok) {
@@ -106,10 +119,19 @@ export default async function handler(req) {
             if (memoryData.matches && memoryData.matches.length > 0) {
               memoryContext = memoryData.matches.map((m: any) => ({
                 role: 'system' as const,
-                content: `[Context] ${m.content}`,
+                content: `[Previous Context] ${m.content}`,
               }));
             }
           }
+        }
+        
+        // Also use recent conversation history as context (memory transfer across models)
+        if (conversationHistory.length > 0) {
+          const recentContext = conversationHistory.slice(-6).map((msg: any) => ({
+            role: msg.role,
+            content: msg.content,
+          }));
+          memoryContext = [...memoryContext, ...recentContext];
         }
       } catch (memError) {
         console.warn('Memory query failed:', memError);
@@ -128,31 +150,36 @@ export default async function handler(req) {
 
     const responseData = await response.json();
 
-    // Store in session memory if enabled
-    if (use_memory !== false && session_id && responseData.choices && responseData.choices[0]?.message?.content) {
+    // Store in session memory if enabled (auto-storage, transfers across models)
+    if (use_memory !== false && responseData.choices && responseData.choices[0]?.message?.content) {
       try {
         const lastUserMessage = messages?.findLast(m => m.role === 'user')?.content || '';
         const assistantResponse = responseData.choices[0].message.content;
         
-        // Store conversation in session memory (not persistent forever)
+        // Store conversation in session memory (transfers across models)
         await fetch(new URL('/api/openmemory/memory/add', url.origin), {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
             content: `User: ${lastUserMessage}\nAssistant: ${assistantResponse}`,
-            tags: ['session', 'chat'],
+            tags: ['session', 'chat', model], // Include model tag for filtering
             metadata: { 
               model, 
-              session_id,
+              session_id: sessionId,
               timestamp: Date.now(),
               temporary: true, // Mark as session-based
             },
-            user_id: session_id,
+            user_id: sessionId,
           }),
         });
       } catch (memError) {
         console.warn('Memory storage failed:', memError);
       }
+    }
+    
+    // Return session_id in response for client tracking (optional)
+    if (use_memory !== false) {
+      responseData.session_id = sessionId;
     }
 
     // Enhance with OpenReason if enabled and we have a response

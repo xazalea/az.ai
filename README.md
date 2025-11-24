@@ -18,8 +18,8 @@ Content-Type: application/json
 
 {
   "model": "qwen",
-  "messages": [{"role": "user", "content": "Hello!"}],
-  "session_id": "user123"  # Optional: enables session memory
+  "messages": [{"role": "user", "content": "Hello!"}]
+  # session_id auto-generated, memory enabled by default
 }
 ```
 
@@ -31,10 +31,10 @@ POST /v1/chat/completions
 {
   "model": "qwen",  # or "deepseek", "gpt-4", etc.
   "messages": [{"role": "user", "content": "Solve: 2x + 5 = 15"}],
-  "session_id": "session123",  # Enables session memory
-  "use_memory": true,  # Default: true (opt-out)
+  "use_memory": true,  # Default: true (opt-out) - auto session management
   "use_reasoning": true  # Default: true
 }
+# session_id auto-generated, memory transfers across models
 ```
 
 Response includes reasoning metadata:
@@ -108,10 +108,12 @@ POST /v1/memory/add
 
 ## Memory Behavior
 
-- **Session-based**: Memory is tied to `session_id` and is temporary
+- **Auto-managed**: Session IDs automatically generated (no need to provide)
+- **Model-agnostic**: Memory transfers across different models in same session
+- **Session-based**: Memory is temporary and tied to auto-generated session
 - **Opt-out**: Set `use_memory: false` to disable
-- **Auto-storage**: Conversations automatically stored per session
-- **Context-aware**: Previous messages in session are used for context
+- **Auto-storage**: Conversations automatically stored and retrieved
+- **Context-aware**: Previous messages and memories used for context
 
 ## Reasoning Behavior
 
