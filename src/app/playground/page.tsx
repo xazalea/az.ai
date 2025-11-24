@@ -23,6 +23,21 @@ const MODELS = [
   { id: 'claude-code', name: 'Claude Code (CLI)', type: 'chat', description: 'Via CLIProxyAPI' },
   { id: 'qwen-code', name: 'Qwen Code (CLI)', type: 'chat', description: 'Via CLIProxyAPI' },
   { id: 'pollinations', name: 'Pollinations', type: 'chat', description: 'Free text generation via Pollinations' },
+  // gpt4free.js models
+  { id: 'blackbox', name: 'BlackBox (gpt4free.js)', type: 'chat', description: 'BlackBox AI via gpt4free.js' },
+  { id: 'ollama', name: 'Ollama (gpt4free.js)', type: 'chat', description: 'Ollama models via gpt4free.js' },
+  // g4f (WebAI-to-API) models - popular ones
+  { id: 'claude-opus-4.5', name: 'Claude Opus 4.5 (g4f)', type: 'chat', description: 'Anthropic Claude Opus 4.5' },
+  { id: 'claude-sonnet-4.5', name: 'Claude Sonnet 4.5 (g4f)', type: 'chat', description: 'Anthropic Claude Sonnet 4.5' },
+  { id: 'gemini-3-pro', name: 'Gemini 3 Pro (g4f)', type: 'chat', description: 'Google Gemini 3 Pro' },
+  { id: 'gpt-5.1-high', name: 'GPT-5.1 High (g4f)', type: 'chat', description: 'OpenAI GPT-5.1 High' },
+  { id: 'gpt-5-chat', name: 'GPT-5 Chat (g4f)', type: 'chat', description: 'OpenAI GPT-5 Chat' },
+  { id: 'gpt-oss-120b', name: 'GPT-OSS 120B (g4f)', type: 'chat', description: 'OpenAI OSS 120B model' },
+  { id: 'deepseek-v3.1', name: 'DeepSeek V3.1 (g4f)', type: 'chat', description: 'DeepSeek V3.1' },
+  { id: 'mistral-large', name: 'Mistral Large (g4f)', type: 'chat', description: 'Mistral Large model' },
+  { id: 'grok-4', name: 'Grok-4 (g4f)', type: 'chat', description: 'xAI Grok-4' },
+  { id: 'llama-4-scout', name: 'Llama 4 Scout (g4f)', type: 'chat', description: 'Meta Llama 4 Scout' },
+  { id: 'llama-4-maverick', name: 'Llama 4 Maverick (g4f)', type: 'chat', description: 'Meta Llama 4 Maverick' },
 ];
 
 const IMAGE_MODELS = [

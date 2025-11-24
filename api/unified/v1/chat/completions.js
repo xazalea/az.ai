@@ -29,6 +29,24 @@ const MODEL_ROUTES = {
   'claude-code': '/api/cliproxy/v1/chat/completions',
   'qwen-code': '/api/cliproxy/v1/chat/completions',
   'pollinations': '/api/pollinations/v1/chat/completions',
+  // gpt4free.js models
+  'blackbox': '/api/gpt4freejs/v1/chat/completions',
+  'ollama': '/api/gpt4freejs/v1/chat/completions',
+  // WebAI-to-API (g4f) models - supports all g4f models
+  'g4f': '/api/webai/v1/chat/completions',
+  'webai': '/api/webai/v1/chat/completions',
+  // Common g4f model names
+  'claude-opus-4.5': '/api/webai/v1/chat/completions',
+  'claude-sonnet-4.5': '/api/webai/v1/chat/completions',
+  'gemini-3-pro': '/api/webai/v1/chat/completions',
+  'gpt-5.1-high': '/api/webai/v1/chat/completions',
+  'gpt-5-chat': '/api/webai/v1/chat/completions',
+  'gpt-oss-120b': '/api/webai/v1/chat/completions',
+  'deepseek-v3.1': '/api/webai/v1/chat/completions',
+  'mistral-large': '/api/webai/v1/chat/completions',
+  'grok-4': '/api/webai/v1/chat/completions',
+  'llama-4-scout': '/api/webai/v1/chat/completions',
+  'llama-4-maverick': '/api/webai/v1/chat/completions',
 };
 
 function findModelRoute(model) {
