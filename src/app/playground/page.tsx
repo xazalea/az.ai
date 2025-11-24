@@ -17,8 +17,10 @@ const MODELS = [
 ];
 
 const IMAGE_MODELS = [
-  { id: 'imagen-3', name: 'Imagen 3', type: 'image', description: 'Photorealistic generation' },
+  { id: 'imagen-3', name: 'Imagen 3', type: 'image', description: 'Photorealistic generation (ImageFX)' },
   { id: 'jimeng', name: 'Jimeng', type: 'image', description: 'Artistic generation' },
+  { id: 'imageai-google', name: 'ImageAI (Google)', type: 'image', description: 'Enhanced prompts via ImageAI' },
+  { id: 'imageai-openai', name: 'ImageAI (OpenAI)', type: 'image', description: 'DALL-E via ImageAI wrapper' },
 ];
 
 export default function Playground() {
@@ -72,7 +74,15 @@ export default function Playground() {
         setInput('');
         setGeneratedImage(null);
         
-        const res = await fetch('/v1/images/generations', {
+        // Route to ImageAI if selected, otherwise use default ImageFX
+        const endpoint = selectedModel.startsWith('imageai-') 
+          ? '/api/imageai/v1/images/generations'
+          : '/v1/images/generations';
+        
+        const provider = selectedModel === 'imageai-google' ? 'google' : 
+                        selectedModel === 'imageai-openai' ? 'openai' : undefined;
+        
+        const res = await fetch(endpoint, {
           method: 'POST',
           headers: { 
             'Content-Type': 'application/json',
@@ -81,6 +91,7 @@ export default function Playground() {
           body: JSON.stringify({
             prompt,
             model: selectedModel,
+            provider,
             n: 1,
             size: "1024x1024"
           })
@@ -89,7 +100,9 @@ export default function Playground() {
         const data = await res.json();
         if (data.error) throw new Error(data.error);
         
-        const url = data.data?.[0]?.url;
+        const url = data.data?.[0]?.url || data.data?.[0]?.b64_json 
+          ? `data:image/png;base64,${data.data[0].b64_json || data.data[0].url.split(',')[1]}`
+          : null;
         if (url) setGeneratedImage(url);
         else throw new Error("No image returned");
 

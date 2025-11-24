@@ -1,0 +1,222 @@
+# JetBrains (PyCharm)
+Debug
+Sample
+.idea/
+*.iml
+out/
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+
+# C extensions
+*.so
+
+# Distribution / packaging
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+share/python-wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+
+# PyInstaller
+*.manifest
+*.spec
+
+# Installer logs
+pip-log.txt
+pip-delete-this-directory.txt
+
+# Unit test / coverage reports
+htmlcov/
+.tox/
+.nox/
+.coverage
+.coverage.*
+.cache
+nosetests.xml
+coverage.xml
+*.cover
+*.py,cover
+.hypothesis/
+.pytest_cache/
+
+# Translations
+*.mo
+*.pot
+
+# Django stuff:
+*.log
+local_settings.py
+db.sqlite3
+
+# Flask stuff:
+instance/
+.webassets-cache
+
+# Scrapy stuff:
+.scrapy
+
+# Sphinx documentation
+docs/_build/
+
+# Jupyter Notebook
+.ipynb_checkpoints
+
+# IPython
+profile_default/
+ipython_config.py
+
+# pyenv
+.python-version
+
+# pipenv
+# Pipfile.lock is generally committed; uncomment if you prefer to ignore it
+# Pipfile.lock
+
+# poetry
+# poetry.lock is generally committed; uncomment if you prefer to ignore it
+# poetry.lock
+
+# PEP 582; used by e.g. github.com/David-OConnor/pyflow
+__pypackages__/
+
+# Celery stuff
+celerybeat-schedule
+celerybeat.pid
+
+# SageMath parsed files
+*.sage.py
+
+# Environments
+.env
+.venv/
+.venv_linux
+env/
+venv/
+ENV/
+env.bak/
+venv.bak/
+
+# Spyder project settings
+.spyderproject
+.spyproject
+
+# Rope project settings
+.ropeproject
+
+# mkdocs documentation
+/site
+
+# mypy
+.mypy_cache/
+.dmypy.json
+dmypy.json
+
+# Pyre type checker
+.pyre/
+
+# pytype static type analyzer
+.pytype/
+
+# Cython debug symbols
+cython_debug/
+
+# Project-specific
+# User configuration and generated images
+config.json
+generated/
+
+# Backup files from refactoring
+main_original.py
+
+# API keys and credentials
+*.key
+*.json.key
+google_key.txt
+openai_key.txt
+api_key.txt
+*_api_key.txt
+
+# Google Cloud credentials
+application_default_credentials.json
+gcloud/
+.gcloud/
+
+# VSCode
+.vscode/
+*.code-workspace
+
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+
+# Windows
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+
+# Temporary files
+*.tmp
+*.temp
+*.bak
+*.swp
+*~
+
+# Test outputs
+test_output/
+test_*.png
+test_*.jpg
+
+_screenshots
+test_gcloud.py
+test_gcloud_ps.py
+imageai_current_project.json
+Plans/ImageAI-Prompt-Enhancer-Pack.zip
+Notes/Dictation.md
+test_*.py
+!test_ollama.py
+Notes/discord-rich-presence-kit-AgentReady/src/discord_presence_helper/encryption.py
+Notes/discord-rich-presence-kit-AgentReady/src/discord_presence_helper/client.py
+Notes/discord-rich-presence-kit-AgentReady/src/discord_presence_helper/agent_api.py
+Notes/discord-rich-presence-kit-AgentReady/src/discord_presence_helper/__init__.py
+Notes/discord-rich-presence-kit-AgentReady/setup.cfg
+Notes/discord-rich-presence-kit-AgentReady/requirements.txt
+Notes/discord-rich-presence-kit-AgentReady/README.md
+Notes/discord-rich-presence-kit-AgentReady/pyproject.toml
+Notes/discord-rich-presence-kit-AgentReady/LICENSE
+Notes/discord-rich-presence-kit-AgentReady/examples/presence_stdio.py
+Notes/discord-rich-presence-kit-AgentReady/examples/presence_server.py
+Notes/discord-rich-presence-kit-AgentReady/examples/presence_cli.py
+Notes/discord-rich-presence-kit-AgentReady/examples/example_app.py
+Notes/discord-rich-presence-kit-AgentReady/docs/QUICKSTART.html
+Notes/discord-rich-presence-kit-AgentReady/docs/AGENT.md
+Notes/discord-rich-presence-kit-AgentReady/assets/small_icon.png
+Notes/discord-rich-presence-kit-AgentReady/assets/large_icon.png
+Notes/discord-rich-presence-kit-AgentReady/agent_tools/openai_tools.json
+Notes/discord-rich-presence-kit-AgentReady.zip
+Notes/₿ Bitcoin Wealth Builder.md
+test_lyrics.txt
+.claude/settings.local.json
+EXTRACT_FRAMES_README.md
+extract_all_last_frames.py
+extract_all_last_frames.ps1
+npm_update.sh
+_Research
+_transfer
+SampleData/Ice*

@@ -22,6 +22,7 @@
 
     { "source": "/v1/images/generations", "destination": "/api/imagefx/v1/images/generations" },
     { "source": "/imagefx/v1/images/generations", "destination": "/api/imagefx/v1/images/generations" },
+    { "source": "/api/imageai/:path*", "destination": "/api/imageai/:path*" },
     { "source": "/v1/chat/completions", "destination": "/api/unified/v1/chat/completions" }
   ]
 }
