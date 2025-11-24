@@ -5,68 +5,62 @@ import { motion } from 'framer-motion';
 import { ArrowRight, Code, Zap, Image as ImageIcon, Box, Lock, Globe, Cpu, CheckCircle2, Brain, Database, Sparkles } from 'lucide-react';
 import Link from 'next/link';
 
-// Color Palette: Lavender Sapphire Mist
-// #D9A69F - Pale Pink/Lavender (Text/Accents)
-// #6C739C - Muted Purple (Primary Elements)
-// #F0DAD5 - Very Pale Pink (Backgrounds/Text)
-// #BABBB1 - Grey (Borders/Secondary Text)
-// #C56B62 - Deep Pink (Hover/Active)
-// #424658 - Dark Grey/Navy (Main Background)
-// #DEA785 - Peach (Accents/Highlights)
+// Professional Matte Color Palette
+// #1a1a1a - Near Black (Background)
+// #2a2a2a - Dark Grey (Cards)
+// #3a3a3a - Medium Grey (Borders)
+// #ffffff - White (Text)
+// #888888 - Light Grey (Secondary Text)
+// #4a9eff - Blue (Accents)
 
 export default function Home() {
   return (
-    <main className="min-h-screen bg-[#424658] text-[#F0DAD5] selection:bg-[#6C739C] selection:text-white font-sans overflow-x-hidden">
+    <main className="min-h-screen bg-[#1a1a1a] text-white font-sans overflow-x-hidden">
       
       {/* Navigation */}
-      <nav className="container mx-auto px-6 py-6 flex justify-between items-center relative z-20">
-        <div className="text-2xl font-bold tracking-tighter text-[#F0DAD5]">
-          az<span className="text-[#D9A69F]">.ai</span>
+      <nav className="container mx-auto px-6 py-6 flex justify-between items-center border-b border-[#3a3a3a]">
+        <div className="text-2xl font-semibold text-white">
+          az<span className="text-[#4a9eff]">.ai</span>
         </div>
         <div className="flex items-center gap-6">
-          <Link href="/playground" className="text-[#BABBB1] hover:text-[#D9A69F] transition-colors text-sm font-medium hidden md:block">
+          <Link href="/playground" className="text-[#888888] hover:text-white transition-colors text-sm font-medium hidden md:block">
             Playground
           </Link>
-          <Link href="https://github.com/xazalea/az.ai" target="_blank" className="text-[#BABBB1] hover:text-[#D9A69F] transition-colors text-sm font-medium hidden md:block">
+          <Link href="https://github.com/xazalea/az.ai" target="_blank" className="text-[#888888] hover:text-white transition-colors text-sm font-medium hidden md:block">
             GitHub
           </Link>
-          <Link href="/playground" className="px-5 py-2 bg-[#6C739C]/20 border border-[#6C739C]/50 rounded-full text-sm font-medium text-[#D9A69F] hover:bg-[#6C739C]/40 transition-all">
+          <Link href="/playground" className="px-5 py-2 bg-[#2a2a2a] border border-[#3a3a3a] rounded text-sm font-medium text-white hover:bg-[#3a3a3a] transition-colors">
             Launch App
           </Link>
         </div>
       </nav>
 
       {/* Hero Section */}
-      <section className="relative pt-20 pb-32 md:pt-32 md:pb-48 container mx-auto px-6 text-center z-10">
-        
-        {/* Background Elements */}
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-[#6C739C]/10 rounded-full blur-[120px] -z-10"></div>
-        
+      <section className="pt-20 pb-32 md:pt-32 md:pb-48 container mx-auto px-6 text-center">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8 }}
+          transition={{ duration: 0.6 }}
         >
-          <div className="inline-flex items-center px-3 py-1 rounded-full border border-[#D9A69F]/30 bg-[#D9A69F]/10 text-xs font-medium text-[#D9A69F] mb-8 backdrop-blur-sm">
-            <span className="flex h-2 w-2 rounded-full bg-[#DEA785] mr-2 animate-pulse"></span>
-            Unified Intelligence Layer
+          <div className="inline-flex items-center px-3 py-1 rounded border border-[#3a3a3a] bg-[#2a2a2a] text-xs font-medium text-[#888888] mb-8">
+            Unified AI Platform
           </div>
           
-          <h1 className="text-5xl md:text-8xl font-extrabold tracking-tight mb-8 bg-clip-text text-transparent bg-gradient-to-b from-[#F0DAD5] via-[#F0DAD5] to-[#6C739C]">
+          <h1 className="text-5xl md:text-7xl font-semibold tracking-tight mb-6 text-white">
             One API for <br className="hidden md:block" />
-            <span className="text-[#D9A69F]">Everything AI</span>
+            <span className="text-[#4a9eff]">Everything AI</span>
           </h1>
           
-          <p className="text-lg md:text-xl text-[#BABBB1] max-w-2xl mx-auto mb-12 leading-relaxed">
-            Access the world's best models—Qwen, DeepSeek, GLM, Doubao, and more—through a single, high-performance, OpenAI-compatible endpoint.
+          <p className="text-lg md:text-xl text-[#888888] max-w-2xl mx-auto mb-12 leading-relaxed">
+            Access 50+ models through a single OpenAI-compatible endpoint with reasoning and memory.
           </p>
           
           <div className="flex flex-col md:flex-row items-center justify-center gap-4">
-            <Link href="/playground" className="w-full md:w-auto px-8 py-4 rounded-xl bg-[#D9A69F] text-[#424658] font-bold text-lg hover:bg-[#DEA785] transition-all transform hover:-translate-y-1 shadow-lg shadow-[#D9A69F]/20 flex items-center justify-center gap-2">
+            <Link href="/playground" className="w-full md:w-auto px-8 py-4 rounded bg-[#4a9eff] text-white font-medium text-lg hover:bg-[#3a8eef] transition-colors flex items-center justify-center gap-2">
               Start Building <ArrowRight className="w-5 h-5" />
             </Link>
-            <button className="w-full md:w-auto px-8 py-4 rounded-xl border border-[#6C739C]/50 text-[#F0DAD5] font-medium text-lg hover:bg-[#6C739C]/10 transition-all backdrop-blur-sm">
-              View Documentation
+            <button className="w-full md:w-auto px-8 py-4 rounded border border-[#3a3a3a] text-white font-medium text-lg hover:bg-[#2a2a2a] transition-colors">
+              Documentation
             </button>
           </div>
         </motion.div>
@@ -75,162 +69,113 @@ export default function Home() {
         <motion.div 
           initial={{ opacity: 0, y: 40 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8, delay: 0.2 }}
-          className="mt-24 mx-auto max-w-3xl text-left rounded-xl overflow-hidden border border-[#6C739C]/30 bg-[#303340]/80 backdrop-blur-xl shadow-2xl"
+          transition={{ duration: 0.6, delay: 0.2 }}
+          className="mt-24 mx-auto max-w-3xl text-left rounded overflow-hidden border border-[#3a3a3a] bg-[#2a2a2a]"
         >
-          <div className="flex items-center px-4 py-3 bg-[#252830] border-b border-[#6C739C]/20">
+          <div className="flex items-center px-4 py-3 bg-[#1a1a1a] border-b border-[#3a3a3a]">
             <div className="flex space-x-2">
-              <div className="w-3 h-3 rounded-full bg-[#C56B62]"></div>
-              <div className="w-3 h-3 rounded-full bg-[#DEA785]"></div>
-              <div className="w-3 h-3 rounded-full bg-[#D9A69F]"></div>
+              <div className="w-3 h-3 rounded-full bg-[#3a3a3a]"></div>
+              <div className="w-3 h-3 rounded-full bg-[#3a3a3a]"></div>
+              <div className="w-3 h-3 rounded-full bg-[#3a3a3a]"></div>
             </div>
-            <div className="ml-4 text-xs text-[#BABBB1] font-mono">curl-request.sh</div>
+            <div className="ml-4 text-xs text-[#888888] font-mono">curl</div>
           </div>
-          <div className="p-6 overflow-x-auto">
-            <pre className="text-sm font-mono text-[#F0DAD5] whitespace-pre leading-relaxed">
-              <span className="text-[#D9A69F]">curl</span> https://az.ai/v1/chat/completions \<br/>
-              {"  "}-H <span className="text-[#DEA785]">"Content-Type: application/json"</span> \<br/>
-              {"  "}-H <span className="text-[#DEA785]">"Authorization: Bearer az-..."</span> \<br/>
-              {"  "}-d <span className="text-[#6C739C]">{'{'}</span><br/>
-              {"    "}<span className="text-[#DEA785]">"model"</span>: <span className="text-[#D9A69F]">"deepseek-chat"</span>,<br/>
-              {"    "}<span className="text-[#DEA785]">"messages"</span>: [<span className="text-[#6C739C]">{'{'}</span><span className="text-[#DEA785]">"role"</span>: <span className="text-[#D9A69F]">"user"</span>, <span className="text-[#DEA785]">"content"</span>: <span className="text-[#D9A69F]">"Hello!"</span><span className="text-[#6C739C]">{'}'}</span>]<br/>
-              {"  "}<span className="text-[#6C739C]">{'}'}</span>
+          <div className="p-6 overflow-x-auto bg-[#1a1a1a]">
+            <pre className="text-sm font-mono text-white whitespace-pre leading-relaxed">
+              <span className="text-[#4a9eff]">curl</span> https://az.ai/v1/chat/completions \<br/>
+              {"  "}-H <span className="text-[#888888]">"Content-Type: application/json"</span> \<br/>
+              {"  "}-d <span className="text-white">{'{'}</span><br/>
+              {"    "}<span className="text-[#888888]">"model"</span>: <span className="text-[#4a9eff]">"qwen"</span>,<br/>
+              {"    "}<span className="text-[#888888]">"messages"</span>: [<span className="text-white">{'{'}</span><span className="text-[#888888]">"role"</span>: <span className="text-[#4a9eff]">"user"</span>, <span className="text-[#888888]">"content"</span>: <span className="text-[#4a9eff]">"Hello!"</span><span className="text-white">{'}'}</span>]<br/>
+              {"  "}<span className="text-white">{'}'}</span>
             </pre>
           </div>
         </motion.div>
       </section>
 
       {/* Features Grid */}
-      <section className="py-24 bg-[#303340]/30 border-y border-[#6C739C]/10">
+      <section className="py-24 border-y border-[#3a3a3a]">
         <div className="container mx-auto px-6">
           <div className="text-center mb-16">
-            <h2 className="text-3xl md:text-4xl font-bold mb-4 text-[#F0DAD5]">Everything you need to build</h2>
-            <p className="text-[#BABBB1] max-w-2xl mx-auto">Enterprise-grade infrastructure for the next generation of AI applications.</p>
+            <h2 className="text-3xl md:text-4xl font-semibold mb-4 text-white">Everything you need</h2>
+            <p className="text-[#888888] max-w-2xl mx-auto">Unified AI infrastructure for modern applications.</p>
           </div>
           
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             <FeatureCard 
-              icon={<Zap className="w-6 h-6 text-[#DEA785]" />}
-              title="Ultra Low Latency"
-              description="Optimized edge routing ensures your requests hit the fastest available provider instantly."
+              icon={<Zap className="w-5 h-5 text-[#4a9eff]" />}
+              title="Low Latency"
+              description="Optimized routing to fastest available providers."
             />
             <FeatureCard 
-              icon={<Box className="w-6 h-6 text-[#D9A69F]" />}
-              title="Unified Interface"
-              description="Switch between Qwen, DeepSeek, and others by changing just one line of code."
+              icon={<Box className="w-5 h-5 text-[#4a9eff]" />}
+              title="Unified API"
+              description="Switch models by changing one parameter."
             />
             <FeatureCard 
-              icon={<Lock className="w-6 h-6 text-[#C56B62]" />}
-              title="Enterprise Security"
-              description="Bank-grade encryption and privacy-first data handling for all your interactions."
+              icon={<Lock className="w-5 h-5 text-[#4a9eff]" />}
+              title="Secure"
+              description="Privacy-first data handling."
             />
             <FeatureCard 
-              icon={<Image className="w-6 h-6 text-[#6C739C]" />}
-              title="Image Generation"
-              description="Create stunning visuals with ImageFX and Jimeng models via standard APIs."
+              icon={<Image className="w-5 h-5 text-[#4a9eff]" />}
+              title="Image & Video"
+              description="Generate images and videos via API."
             />
             <FeatureCard 
-              icon={<Globe className="w-6 h-6 text-[#F0DAD5]" />}
-              title="Global Edge Network"
-              description="Deployed on Vercel's global edge network for maximum reliability and speed."
+              icon={<Brain className="w-5 h-5 text-[#4a9eff]" />}
+              title="Reasoning"
+              description="Advanced reasoning engine included."
             />
             <FeatureCard 
-              icon={<Code className="w-6 h-6 text-[#BABBB1]" />}
-              title="Developer First"
-              description="Comprehensive documentation, SDKs, and a community of builders."
+              icon={<Database className="w-5 h-5 text-[#4a9eff]" />}
+              title="Memory"
+              description="Session-based memory system."
             />
           </div>
         </div>
       </section>
 
-      {/* Advanced Features: OpenReason & OpenMemory */}
-      <section className="py-24 bg-gradient-to-br from-[#6C739C]/10 to-[#424658] border-y border-[#6C739C]/20">
+      {/* Advanced Features */}
+      <section className="py-24 border-y border-[#3a3a3a]">
         <div className="container mx-auto px-6">
           <div className="text-center mb-16">
-            <h2 className="text-3xl md:text-4xl font-bold mb-4 text-[#F0DAD5]">Powered by Advanced AI Systems</h2>
-            <p className="text-[#BABBB1] max-w-2xl mx-auto mb-12">
-              Beyond just API access—az.ai includes cutting-edge reasoning and memory systems to enhance every interaction.
+            <h2 className="text-3xl md:text-4xl font-semibold mb-4 text-white">Advanced Features</h2>
+            <p className="text-[#888888] max-w-2xl mx-auto">
+              Reasoning and memory systems included.
             </p>
           </div>
           
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-4xl mx-auto">
-            {/* OpenReason */}
-            <div className="p-8 rounded-2xl border border-[#DEA785]/30 bg-gradient-to-br from-[#DEA785]/10 to-[#424658] hover:border-[#DEA785]/50 transition-all">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-4xl mx-auto">
+            <div className="p-6 rounded border border-[#3a3a3a] bg-[#2a2a2a]">
               <div className="flex items-center gap-3 mb-4">
-                <div className="p-3 rounded-lg bg-[#DEA785]/20">
-                  <Brain className="w-6 h-6 text-[#DEA785]" />
+                <div className="p-2 rounded bg-[#1a1a1a]">
+                  <Brain className="w-5 h-5 text-[#4a9eff]" />
                 </div>
                 <div>
-                  <h3 className="text-xl font-bold text-[#F0DAD5]">OpenReason</h3>
-                  <div className="flex items-center gap-2 mt-1">
-                    <span className="px-2 py-0.5 rounded bg-[#DEA785]/20 text-xs text-[#DEA785] font-medium">Always Enabled</span>
-                    <span className="px-2 py-0.5 rounded bg-[#6C739C]/20 text-xs text-[#6C739C] font-medium">Reasoning Engine</span>
-                  </div>
+                  <h3 className="text-lg font-semibold text-white">Reasoning</h3>
+                  <p className="text-xs text-[#888888]">Always enabled</p>
                 </div>
               </div>
-              <p className="text-[#BABBB1] mb-4 leading-relaxed">
-                Advanced reasoning engine that enhances all AI responses with multi-domain cognitive capabilities. 
-                Includes specialized solvers for Math, Logic, Causal reasoning, Ethics, and more.
+              <p className="text-[#888888] text-sm">
+                Advanced reasoning engine enhances all responses with multi-domain capabilities.
               </p>
-              <ul className="space-y-2 text-sm text-[#BABBB1]">
-                <li className="flex items-center gap-2">
-                  <CheckCircle2 className="w-4 h-4 text-[#DEA785] flex-shrink-0" />
-                  <span>Unified reasoning graph with reflexive self-audit</span>
-                </li>
-                <li className="flex items-center gap-2">
-                  <CheckCircle2 className="w-4 h-4 text-[#DEA785] flex-shrink-0" />
-                  <span>Automatic quality verification and repair</span>
-                </li>
-                <li className="flex items-center gap-2">
-                  <CheckCircle2 className="w-4 h-4 text-[#DEA785] flex-shrink-0" />
-                  <span>Domain-specific reasoning (Math, Logic, Ethics)</span>
-                </li>
-              </ul>
             </div>
 
-            {/* OpenMemory */}
-            <div className="p-8 rounded-2xl border border-[#D9A69F]/30 bg-gradient-to-br from-[#D9A69F]/10 to-[#424658] hover:border-[#D9A69F]/50 transition-all">
+            <div className="p-6 rounded border border-[#3a3a3a] bg-[#2a2a2a]">
               <div className="flex items-center gap-3 mb-4">
-                <div className="p-3 rounded-lg bg-[#D9A69F]/20">
-                  <Database className="w-6 h-6 text-[#D9A69F]" />
+                <div className="p-2 rounded bg-[#1a1a1a]">
+                  <Database className="w-5 h-5 text-[#4a9eff]" />
                 </div>
                 <div>
-                  <h3 className="text-xl font-bold text-[#F0DAD5]">OpenMemory</h3>
-                  <div className="flex items-center gap-2 mt-1">
-                    <span className="px-2 py-0.5 rounded bg-[#D9A69F]/20 text-xs text-[#D9A69F] font-medium">Optional</span>
-                    <span className="px-2 py-0.5 rounded bg-[#6C739C]/20 text-xs text-[#6C739C] font-medium">Long-Term Memory</span>
-                  </div>
+                  <h3 className="text-lg font-semibold text-white">Memory</h3>
+                  <p className="text-xs text-[#888888]">Auto-enabled</p>
                 </div>
               </div>
-              <p className="text-[#BABBB1] mb-4 leading-relaxed">
-                Persistent memory system that enables context-aware conversations across sessions. 
-                Remember user preferences, conversation history, and important details.
+              <p className="text-[#888888] text-sm">
+                Session-based memory for context-aware conversations across models.
               </p>
-              <ul className="space-y-2 text-sm text-[#BABBB1]">
-                <li className="flex items-center gap-2">
-                  <CheckCircle2 className="w-4 h-4 text-[#D9A69F] flex-shrink-0" />
-                  <span>Semantic search and retrieval</span>
-                </li>
-                <li className="flex items-center gap-2">
-                  <CheckCircle2 className="w-4 h-4 text-[#D9A69F] flex-shrink-0" />
-                  <span>User-specific memory isolation</span>
-                </li>
-                <li className="flex items-center gap-2">
-                  <CheckCircle2 className="w-4 h-4 text-[#D9A69F] flex-shrink-0" />
-                  <span>Enable in playground settings</span>
-                </li>
-              </ul>
             </div>
-          </div>
-
-          <div className="mt-12 text-center">
-            <p className="text-sm text-[#BABBB1] mb-4">
-              <Sparkles className="w-4 h-4 inline mr-2 text-[#DEA785]" />
-              OpenReason enhances all responses automatically. Enable OpenMemory in the playground for context-aware conversations.
-            </p>
-            <Link href="/playground" className="inline-flex items-center gap-2 px-6 py-3 rounded-lg bg-[#6C739C]/20 border border-[#6C739C]/50 text-[#F0DAD5] hover:bg-[#6C739C]/30 transition-all">
-              Try in Playground <ArrowRight className="w-4 h-4" />
-            </Link>
           </div>
         </div>
       </section>
@@ -238,20 +183,20 @@ export default function Home() {
       {/* Supported Models */}
       <section className="py-24 container mx-auto px-6">
         <div className="text-center mb-16">
-          <h2 className="text-3xl md:text-4xl font-bold mb-4 text-[#F0DAD5]">Powering the best models</h2>
-          <p className="text-[#BABBB1] max-w-2xl mx-auto mb-12">
-            Access 50+ models from leading AI providers through a single, unified API.
+          <h2 className="text-3xl md:text-4xl font-semibold mb-4 text-white">50+ Models</h2>
+          <p className="text-[#888888] max-w-2xl mx-auto">
+            Access leading AI providers through a single API.
           </p>
           
           {/* Model Categories */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mt-12 text-left">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mt-12 text-left">
             {/* OpenAI */}
-            <div className="p-6 rounded-xl bg-[#6C739C]/10 border border-[#6C739C]/20">
-              <h3 className="text-lg font-bold text-[#D9A69F] mb-3">OpenAI</h3>
-              <div className="space-y-2 text-sm text-[#BABBB1]">
+            <div className="p-6 rounded border border-[#3a3a3a] bg-[#2a2a2a]">
+              <h3 className="text-lg font-semibold text-white mb-3">OpenAI</h3>
+              <div className="space-y-2 text-sm text-[#888888]">
                 {['GPT-5.1 High', 'GPT-5 Chat', 'GPT-4', 'GPT-3.5 Turbo', 'GPT-OSS 120B', 'ChatGPT'].map((model) => (
                   <div key={model} className="flex items-center gap-2">
-                    <CheckCircle2 className="w-4 h-4 text-[#DEA785]" />
+                    <CheckCircle2 className="w-4 h-4 text-[#4a9eff]" />
                     {model}
                   </div>
                 ))}
@@ -259,12 +204,12 @@ export default function Home() {
             </div>
 
             {/* Anthropic */}
-            <div className="p-6 rounded-xl bg-[#6C739C]/10 border border-[#6C739C]/20">
-              <h3 className="text-lg font-bold text-[#D9A69F] mb-3">Anthropic</h3>
-              <div className="space-y-2 text-sm text-[#BABBB1]">
+            <div className="p-6 rounded border border-[#3a3a3a] bg-[#2a2a2a]">
+              <h3 className="text-lg font-semibold text-white mb-3">Anthropic</h3>
+              <div className="space-y-2 text-sm text-[#888888]">
                 {['Claude Opus 4.5', 'Claude Sonnet 4.5', 'Claude Code'].map((model) => (
                   <div key={model} className="flex items-center gap-2">
-                    <CheckCircle2 className="w-4 h-4 text-[#DEA785]" />
+                    <CheckCircle2 className="w-4 h-4 text-[#4a9eff]" />
                     {model}
                   </div>
                 ))}
@@ -272,12 +217,12 @@ export default function Home() {
             </div>
 
             {/* Google */}
-            <div className="p-6 rounded-xl bg-[#6C739C]/10 border border-[#6C739C]/20">
-              <h3 className="text-lg font-bold text-[#D9A69F] mb-3">Google</h3>
-              <div className="space-y-2 text-sm text-[#BABBB1]">
+            <div className="p-6 rounded border border-[#3a3a3a] bg-[#2a2a2a]">
+              <h3 className="text-lg font-semibold text-white mb-3">Google</h3>
+              <div className="space-y-2 text-sm text-[#888888]">
                 {['Gemini 3 Pro', 'Gemini 2.5 Pro', 'Gemini 2.5 Flash', 'Imagen 3', 'Veo 3'].map((model) => (
                   <div key={model} className="flex items-center gap-2">
-                    <CheckCircle2 className="w-4 h-4 text-[#DEA785]" />
+                    <CheckCircle2 className="w-4 h-4 text-[#4a9eff]" />
                     {model}
                   </div>
                 ))}
@@ -285,12 +230,12 @@ export default function Home() {
             </div>
 
             {/* DeepSeek */}
-            <div className="p-6 rounded-xl bg-[#6C739C]/10 border border-[#6C739C]/20">
-              <h3 className="text-lg font-bold text-[#D9A69F] mb-3">DeepSeek</h3>
-              <div className="space-y-2 text-sm text-[#BABBB1]">
+            <div className="p-6 rounded border border-[#3a3a3a] bg-[#2a2a2a]">
+              <h3 className="text-lg font-semibold text-white mb-3">DeepSeek</h3>
+              <div className="space-y-2 text-sm text-[#888888]">
                 {['DeepSeek V3', 'DeepSeek R1', 'DeepSeek V3.1', 'DeepSeek Free'].map((model) => (
                   <div key={model} className="flex items-center gap-2">
-                    <CheckCircle2 className="w-4 h-4 text-[#DEA785]" />
+                    <CheckCircle2 className="w-4 h-4 text-[#4a9eff]" />
                     {model}
                   </div>
                 ))}
@@ -298,12 +243,12 @@ export default function Home() {
             </div>
 
             {/* Chinese Providers */}
-            <div className="p-6 rounded-xl bg-[#6C739C]/10 border border-[#6C739C]/20">
-              <h3 className="text-lg font-bold text-[#D9A69F] mb-3">Chinese Providers</h3>
-              <div className="space-y-2 text-sm text-[#BABBB1]">
-                {['Qwen 2.5', 'GLM-4', 'Doubao Pro', 'Kimi', 'MiniMax', 'Step-1', 'Jimeng', 'Jimeng API (Enhanced)'].map((model) => (
+            <div className="p-6 rounded border border-[#3a3a3a] bg-[#2a2a2a]">
+              <h3 className="text-lg font-semibold text-white mb-3">Chinese</h3>
+              <div className="space-y-2 text-sm text-[#888888]">
+                {['Qwen 2.5', 'GLM-4', 'Doubao Pro', 'Kimi', 'MiniMax', 'Step-1', 'Jimeng'].map((model) => (
                   <div key={model} className="flex items-center gap-2">
-                    <CheckCircle2 className="w-4 h-4 text-[#DEA785]" />
+                    <CheckCircle2 className="w-4 h-4 text-[#4a9eff]" />
                     {model}
                   </div>
                 ))}
@@ -311,32 +256,15 @@ export default function Home() {
             </div>
 
             {/* Other Providers */}
-            <div className="p-6 rounded-xl bg-[#6C739C]/10 border border-[#6C739C]/20">
-              <h3 className="text-lg font-bold text-[#D9A69F] mb-3">More Providers</h3>
-              <div className="space-y-2 text-sm text-[#BABBB1]">
-                {['Mistral Large', 'Grok-4', 'Llama 4 Scout', 'Llama 4 Maverick', 'Groq LPU™', 'BlackBox', 'Ollama', 'Pollinations'].map((model) => (
+            <div className="p-6 rounded border border-[#3a3a3a] bg-[#2a2a2a]">
+              <h3 className="text-lg font-semibold text-white mb-3">More</h3>
+              <div className="space-y-2 text-sm text-[#888888]">
+                {['Mistral Large', 'Grok-4', 'Llama 4', 'Groq LPU™', 'Pollinations'].map((model) => (
                   <div key={model} className="flex items-center gap-2">
-                    <CheckCircle2 className="w-4 h-4 text-[#DEA785]" />
+                    <CheckCircle2 className="w-4 h-4 text-[#4a9eff]" />
                     {model}
                   </div>
                 ))}
-              </div>
-            </div>
-          </div>
-
-          {/* v2 API Notice */}
-          <div className="mt-12 p-6 rounded-xl bg-gradient-to-r from-[#6C739C]/20 to-[#D9A69F]/10 border border-[#6C739C]/30 max-w-3xl mx-auto">
-            <div className="flex items-start gap-4">
-              <Zap className="w-6 h-6 text-[#DEA785] flex-shrink-0 mt-1" />
-              <div className="text-left">
-                <h3 className="text-lg font-bold text-[#F0DAD5] mb-2">⚡ v2 API - Optimized for Speed</h3>
-                <p className="text-sm text-[#BABBB1] mb-3">
-                  Use <code className="px-2 py-1 rounded bg-[#424658] text-[#D9A69F]">/v2/chat/completions</code> for ultra-fast models. 
-                  Perfect for small projects that need low latency!
-                </p>
-                <p className="text-xs text-[#BABBB1]/70">
-                  Routes to fastest models: Groq, Qwen, DeepSeek, Gemini Flash, GPT-3.5, and more.
-                </p>
               </div>
             </div>
           </div>
@@ -344,24 +272,24 @@ export default function Home() {
       </section>
 
       {/* CTA */}
-      <section className="py-24 bg-gradient-to-br from-[#6C739C]/20 to-[#424658] border-t border-[#6C739C]/20">
+      <section className="py-24 border-t border-[#3a3a3a]">
         <div className="container mx-auto px-6 text-center">
-          <h2 className="text-4xl font-bold mb-6 text-[#F0DAD5]">Ready to get started?</h2>
-          <p className="text-[#BABBB1] mb-10 max-w-xl mx-auto">Join thousands of developers building the future of AI with az.ai.</p>
-          <Link href="/playground" className="px-10 py-4 rounded-xl bg-[#D9A69F] text-[#424658] font-bold text-lg hover:bg-[#DEA785] transition-all shadow-lg shadow-[#D9A69F]/20 inline-flex items-center gap-2">
+          <h2 className="text-4xl font-semibold mb-6 text-white">Get Started</h2>
+          <p className="text-[#888888] mb-10 max-w-xl mx-auto">Start building with az.ai today.</p>
+          <Link href="/playground" className="px-10 py-4 rounded bg-[#4a9eff] text-white font-medium text-lg hover:bg-[#3a8eef] transition-colors inline-flex items-center gap-2">
             Open Playground <ArrowRight className="w-5 h-5" />
           </Link>
         </div>
       </section>
 
       {/* Footer */}
-      <footer className="py-12 border-t border-[#6C739C]/10 bg-[#303340]/50">
+      <footer className="py-12 border-t border-[#3a3a3a]">
         <div className="container mx-auto px-6 flex flex-col md:flex-row justify-between items-center gap-6">
-          <div className="text-xl font-bold tracking-tighter text-[#BABBB1]">
-            az<span className="text-[#D9A69F]">.ai</span>
+          <div className="text-xl font-semibold text-white">
+            az<span className="text-[#4a9eff]">.ai</span>
           </div>
-          <div className="text-sm text-[#6C739C]">
-            © 2025 az.ai Inc. All rights reserved.
+          <div className="text-sm text-[#888888]">
+            © 2025 az.ai
           </div>
       </div>
       </footer>
@@ -372,12 +300,12 @@ export default function Home() {
 
 function FeatureCard({ title, description, icon }: { title: string, description: string, icon: React.ReactNode }) {
   return (
-    <div className="p-8 rounded-2xl border border-[#6C739C]/20 bg-[#424658]/50 hover:bg-[#6C739C]/10 transition-all hover:border-[#D9A69F]/30 group">
-      <div className="mb-4 p-3 rounded-lg bg-[#303340] w-fit group-hover:scale-110 transition-transform">
+    <div className="p-6 rounded border border-[#3a3a3a] bg-[#2a2a2a] hover:border-[#4a9eff] transition-colors">
+      <div className="mb-4 p-2 rounded bg-[#1a1a1a] w-fit">
         {icon}
       </div>
-      <h3 className="text-xl font-bold mb-3 text-[#F0DAD5] group-hover:text-[#D9A69F] transition-colors">{title}</h3>
-      <p className="text-[#BABBB1] leading-relaxed text-sm">{description}</p>
+      <h3 className="text-lg font-semibold mb-2 text-white">{title}</h3>
+      <p className="text-[#888888] leading-relaxed text-sm">{description}</p>
     </div>
   );
 }

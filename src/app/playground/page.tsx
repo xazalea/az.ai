@@ -186,23 +186,23 @@ export default function Playground() {
   };
 
   return (
-    <div className="min-h-screen bg-[#424658] text-[#F0DAD5] font-sans flex flex-col">
+    <div className="min-h-screen bg-[#1a1a1a] text-white font-sans flex flex-col">
       {/* Header */}
-      <header className="border-b border-[#6C739C]/30 bg-[#424658]/80 backdrop-blur-md sticky top-0 z-10">
+      <header className="border-b border-[#3a3a3a] bg-[#1a1a1a] sticky top-0 z-10">
         <div className="container mx-auto px-4 h-16 flex items-center justify-between">
           <div className="flex items-center space-x-3">
-             <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-[#D9A69F] to-[#C56B62] flex items-center justify-center shadow-lg shadow-[#C56B62]/20">
-                <Terminal className="w-5 h-5 text-white" />
+             <div className="w-8 h-8 rounded bg-[#2a2a2a] border border-[#3a3a3a] flex items-center justify-center">
+                <Terminal className="w-5 h-5 text-[#4a9eff]" />
              </div>
-             <h1 className="text-xl font-bold tracking-tight text-[#F0DAD5]">az.ai <span className="opacity-50 font-light">Playground</span></h1>
+             <h1 className="text-xl font-semibold text-white">az.ai <span className="opacity-50 font-normal">Playground</span></h1>
           </div>
           
-          <nav className="flex items-center space-x-1 bg-[#303340] p-1 rounded-lg border border-[#6C739C]/30">
+          <nav className="flex items-center space-x-1 bg-[#2a2a2a] p-1 rounded border border-[#3a3a3a]">
             <button
               onClick={() => setMode('chat')}
               className={cn(
-                "px-4 py-2 rounded-md text-sm font-medium transition-all duration-200 flex items-center gap-2",
-                mode === 'chat' ? "bg-[#6C739C] text-white shadow-sm" : "text-[#BABBB1] hover:text-[#F0DAD5] hover:bg-[#6C739C]/20"
+                "px-4 py-2 rounded text-sm font-medium transition-colors flex items-center gap-2",
+                mode === 'chat' ? "bg-[#4a9eff] text-white" : "text-[#888888] hover:text-white hover:bg-[#2a2a2a]"
               )}
             >
               <MessageSquare className="w-4 h-4" />
@@ -211,22 +211,22 @@ export default function Playground() {
             <button
               onClick={() => setMode('image')}
               className={cn(
-                "px-4 py-2 rounded-md text-sm font-medium transition-all duration-200 flex items-center gap-2",
-                mode === 'image' ? "bg-[#D9A69F] text-[#424658] shadow-sm" : "text-[#BABBB1] hover:text-[#F0DAD5] hover:bg-[#D9A69F]/20"
+                "px-4 py-2 rounded text-sm font-medium transition-colors flex items-center gap-2",
+                mode === 'image' ? "bg-[#4a9eff] text-white" : "text-[#888888] hover:text-white hover:bg-[#2a2a2a]"
               )}
             >
               <ImageIcon className="w-4 h-4" />
-              Imagine
+              Image
             </button>
             <button
               onClick={() => setMode('video')}
               className={cn(
-                "px-4 py-2 rounded-md text-sm font-medium transition-all duration-200 flex items-center gap-2",
-                mode === 'video' ? "bg-[#C56B62] text-white shadow-sm" : "text-[#BABBB1] hover:text-[#F0DAD5] hover:bg-[#C56B62]/20"
+                "px-4 py-2 rounded text-sm font-medium transition-colors flex items-center gap-2",
+                mode === 'video' ? "bg-[#4a9eff] text-white" : "text-[#888888] hover:text-white hover:bg-[#2a2a2a]"
               )}
             >
               <Video className="w-4 h-4" />
-              Animate
+              Video
             </button>
           </nav>
         </div>
@@ -238,21 +238,21 @@ export default function Playground() {
         {/* Sidebar / Model Selection */}
         <div className="w-64 flex-shrink-0 space-y-4 hidden md:block overflow-y-auto max-h-[calc(100vh-8rem)]">
             <div className="space-y-2">
-                <label className="text-xs font-semibold text-[#BABBB1] uppercase tracking-wider flex items-center gap-2">
-                  <Zap className="w-3 h-3" />
+                <label className="text-xs font-semibold text-[#888888] uppercase tracking-wider flex items-center gap-2">
+                  <Zap className="w-3 h-3 text-[#4a9eff]" />
                   Models
                 </label>
                 <div className="space-y-1">
                     {providerGroups.map(group => {
                       const isExpanded = expandedProviders.has(group.id);
                       return (
-                        <div key={group.id} className="border border-[#6C739C]/20 rounded-lg overflow-hidden">
+                        <div key={group.id} className="border border-[#3a3a3a] rounded overflow-hidden bg-[#2a2a2a]">
                           <button
                             onClick={() => toggleProvider(group.id)}
-                            className="w-full text-left px-3 py-2 bg-[#6C739C]/10 hover:bg-[#6C739C]/20 transition-colors flex items-center justify-between text-sm font-medium text-[#F0DAD5]"
+                            className="w-full text-left px-3 py-2 hover:bg-[#1a1a1a] transition-colors flex items-center justify-between text-sm font-medium text-white"
                           >
                             <span>{group.name}</span>
-                            {isExpanded ? <ChevronDown className="w-4 h-4" /> : <ChevronRight className="w-4 h-4" />}
+                            {isExpanded ? <ChevronDown className="w-4 h-4 text-[#888888]" /> : <ChevronRight className="w-4 h-4 text-[#888888]" />}
                           </button>
                           <AnimatePresence>
                             {isExpanded && (
@@ -269,18 +269,18 @@ export default function Playground() {
                                       key={model.id}
                                       onClick={() => setSelectedModel(model.id)}
                                       className={cn(
-                                        "w-full text-left px-3 py-2 rounded-md text-sm transition-colors",
+                                        "w-full text-left px-3 py-2 rounded text-sm transition-colors",
                                         selectedModel === model.id 
-                                          ? "bg-[#6C739C]/20 text-[#D9A69F] border border-[#6C739C]/50" 
-                                          : "text-[#F0DAD5]/80 hover:bg-[#6C739C]/10"
+                                          ? "bg-[#4a9eff] text-white" 
+                                          : "text-[#888888] hover:text-white hover:bg-[#1a1a1a]"
                                       )}
                                     >
                                       <div className="font-medium">{model.name}</div>
-                                      <div className="text-xs text-[#BABBB1]/70 truncate">{model.description}</div>
+                                      <div className="text-xs text-[#888888] truncate">{model.description}</div>
                                       {model.speed === 'fast' && (
                                         <div className="flex items-center gap-1 mt-1">
-                                          <Zap className="w-3 h-3 text-[#DEA785]" />
-                                          <span className="text-xs text-[#DEA785]">Fast</span>
+                                          <Zap className="w-3 h-3 text-[#4a9eff]" />
+                                          <span className="text-xs text-[#4a9eff]">Fast</span>
                                         </div>
                                       )}
                                     </button>
@@ -299,13 +299,13 @@ export default function Playground() {
             <div className="space-y-3">
                 <button
                     onClick={() => setShowSettings(!showSettings)}
-                    className="w-full px-3 py-2 rounded-lg bg-[#6C739C]/10 hover:bg-[#6C739C]/20 border border-[#6C739C]/20 flex items-center justify-between text-sm font-medium text-[#F0DAD5] transition-colors"
+                    className="w-full px-3 py-2 rounded border border-[#3a3a3a] bg-[#2a2a2a] hover:bg-[#1a1a1a] flex items-center justify-between text-sm font-medium text-white transition-colors"
                 >
                     <div className="flex items-center gap-2">
-                        <Settings className="w-4 h-4" />
+                        <Settings className="w-4 h-4 text-[#4a9eff]" />
                         <span>Settings</span>
                     </div>
-                    {showSettings ? <ChevronDown className="w-4 h-4" /> : <ChevronRight className="w-4 h-4" />}
+                    {showSettings ? <ChevronDown className="w-4 h-4 text-[#888888]" /> : <ChevronRight className="w-4 h-4 text-[#888888]" />}
                 </button>
                 
                 <AnimatePresence>
@@ -316,35 +316,35 @@ export default function Playground() {
                             exit={{ height: 0, opacity: 0 }}
                             className="overflow-hidden"
                         >
-                            <div className="p-3 rounded-lg bg-[#303340] border border-[#6C739C]/20 space-y-3">
+                            <div className="p-3 rounded border border-[#3a3a3a] bg-[#2a2a2a] space-y-3">
                                 {/* OpenReason - Always Enabled */}
                                 <div className="flex items-center justify-between">
                                     <div className="flex items-center gap-2">
-                                        <Brain className="w-4 h-4 text-[#DEA785]" />
+                                        <Brain className="w-4 h-4 text-[#4a9eff]" />
                                         <div>
-                                            <div className="text-sm font-medium text-[#F0DAD5]">OpenReason</div>
-                                            <div className="text-xs text-[#BABBB1]/70">Reasoning Engine</div>
+                                            <div className="text-sm font-medium text-white">Reasoning</div>
+                                            <div className="text-xs text-[#888888]">Always enabled</div>
                                         </div>
                                     </div>
-                                    <div className="px-2 py-1 rounded bg-[#DEA785]/20 text-xs text-[#DEA785] font-medium">
-                                        Always On
+                                    <div className="px-2 py-1 rounded bg-[#1a1a1a] border border-[#3a3a3a] text-xs text-[#4a9eff] font-medium">
+                                        On
                                     </div>
                                 </div>
                                 
                                 {/* OpenMemory - Optional */}
                                 <div className="flex items-center justify-between">
                                     <div className="flex items-center gap-2">
-                                        <Database className="w-4 h-4 text-[#D9A69F]" />
+                                        <Database className="w-4 h-4 text-[#4a9eff]" />
                                         <div>
-                                            <div className="text-sm font-medium text-[#F0DAD5]">OpenMemory</div>
-                                            <div className="text-xs text-[#BABBB1]/70">Long-term Memory</div>
+                                            <div className="text-sm font-medium text-white">Memory</div>
+                                            <div className="text-xs text-[#888888]">Session-based</div>
                                         </div>
                                     </div>
                                     <button
                                         onClick={() => setOpenMemoryEnabled(!openMemoryEnabled)}
                                         className={cn(
                                             "relative w-11 h-6 rounded-full transition-colors",
-                                            openMemoryEnabled ? "bg-[#D9A69F]" : "bg-[#6C739C]/30"
+                                            openMemoryEnabled ? "bg-[#4a9eff]" : "bg-[#3a3a3a]"
                                         )}
                                     >
                                         <div className={cn(
@@ -359,17 +359,17 @@ export default function Playground() {
                 </AnimatePresence>
             </div>
             
-            <div className="p-4 rounded-xl bg-[#303340] border border-[#6C739C]/20 text-xs text-[#BABBB1]">
-                <div className="flex items-center gap-2 mb-2 text-[#D9A69F]">
+            <div className="p-4 rounded border border-[#3a3a3a] bg-[#2a2a2a] text-xs text-[#888888]">
+                <div className="flex items-center gap-2 mb-2 text-[#4a9eff]">
                     <Sparkles className="w-3 h-3" />
-                    <span>Pro Tip</span>
+                    <span className="font-medium">Tip</span>
                 </div>
                 <p>
                     {mode === 'chat' 
-                        ? "OpenReason enhances all responses with advanced reasoning. Enable OpenMemory for context-aware conversations!" 
+                        ? "Memory transfers across models. Reasoning enhances all responses." 
                         : mode === 'image'
-                        ? "Be specific with your visual descriptions. Mention styles like 'oil painting' or 'cyberpunk'."
-                        : "Describe the video scene you want. Include details about motion, camera angles, and style."}
+                        ? "Be specific with visual descriptions."
+                        : "Describe the video scene with details."}
                 </p>
             </div>
         </div>
@@ -378,17 +378,17 @@ export default function Playground() {
         <div className="flex-1 bg-[#303340]/50 rounded-2xl border border-[#6C739C]/30 overflow-hidden flex flex-col shadow-2xl">
             
             {/* Output Stage */}
-            <div className="flex-1 p-6 overflow-y-auto min-h-[400px]" ref={scrollRef}>
+            <div className="flex-1 p-6 overflow-y-auto min-h-[400px] bg-[#1a1a1a]" ref={scrollRef}>
                 <AnimatePresence mode="wait">
                     {mode === 'chat' ? (
                         messages.length === 0 ? (
                             <motion.div 
                                 initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}
-                                className="h-full flex flex-col items-center justify-center text-center space-y-4 text-[#BABBB1]/50"
+                                className="h-full flex flex-col items-center justify-center text-center space-y-4 text-[#888888]"
                             >
-                                <MessageSquare className="w-16 h-16" />
-                                <p className="text-lg font-medium">Start a conversation</p>
-                                <p className="text-sm">Selected: {providerGroups.flatMap(g => g.models).find(m => m.id === selectedModel)?.name || selectedModel}</p>
+                                <MessageSquare className="w-16 h-16 text-[#4a9eff]" />
+                                <p className="text-lg font-medium text-white">Start a conversation</p>
+                                <p className="text-sm text-[#888888]">Selected: {providerGroups.flatMap(g => g.models).find(m => m.id === selectedModel)?.name || selectedModel}</p>
                             </motion.div>
                         ) : (
                             <div className="space-y-6">
@@ -402,23 +402,23 @@ export default function Playground() {
                                         )}
                                     >
                                         <div className={cn(
-                                            "w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0",
-                                            msg.role === 'user' ? "bg-[#D9A69F] text-[#424658]" : "bg-[#6C739C] text-white"
+                                            "w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 border border-[#3a3a3a]",
+                                            msg.role === 'user' ? "bg-[#2a2a2a] text-white" : "bg-[#4a9eff] text-white"
                                         )}>
                                             {msg.role === 'user' ? 'U' : 'AI'}
                                         </div>
                                         <div className={cn(
-                                            "p-4 rounded-2xl text-sm leading-relaxed shadow-sm",
+                                            "p-4 rounded text-sm leading-relaxed border",
                                             msg.role === 'user' 
-                                                ? "bg-[#D9A69F]/10 text-[#F0DAD5] border border-[#D9A69F]/20 rounded-tr-none" 
-                                                : "bg-[#424658] text-[#F0DAD5] border border-[#6C739C]/30 rounded-tl-none"
+                                                ? "bg-[#2a2a2a] text-white border-[#3a3a3a]" 
+                                                : "bg-[#2a2a2a] text-white border-[#3a3a3a]"
                                         )}>
                                             {msg.content}
                                             {msg.reasoning && (
-                                                <div className="mt-2 pt-2 border-t border-[#6C739C]/20">
-                                                    <div className="flex items-center gap-2 text-xs text-[#DEA785]">
+                                                <div className="mt-2 pt-2 border-t border-[#3a3a3a]">
+                                                    <div className="flex items-center gap-2 text-xs text-[#4a9eff]">
                                                         <Brain className="w-3 h-3" />
-                                                        <span>Reasoning: {msg.reasoning.mode} ({msg.reasoning.confidence ? (msg.reasoning.confidence * 100).toFixed(0) : 'N/A'}% confidence)</span>
+                                                        <span>Reasoning: {msg.reasoning.mode} ({msg.reasoning.confidence ? (msg.reasoning.confidence * 100).toFixed(0) : 'N/A'}%)</span>
                                                     </div>
                                                 </div>
                                             )}
@@ -427,10 +427,10 @@ export default function Playground() {
                                 ))}
                                 {isLoading && (
                                     <div className="flex gap-4">
-                                        <div className="w-8 h-8 rounded-full bg-[#6C739C] flex items-center justify-center">
+                                        <div className="w-8 h-8 rounded-full bg-[#4a9eff] flex items-center justify-center">
                                             <Loader2 className="w-4 h-4 animate-spin text-white" />
                                         </div>
-                                        <div className="p-4 rounded-2xl bg-[#424658] border border-[#6C739C]/30 rounded-tl-none text-[#BABBB1] text-sm flex items-center gap-2">
+                                        <div className="p-4 rounded bg-[#2a2a2a] border border-[#3a3a3a] text-[#888888] text-sm flex items-center gap-2">
                                             Thinking...
                                         </div>
                                     </div>
@@ -444,21 +444,21 @@ export default function Playground() {
                                     initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }}
                                     src={generatedImage} 
                                     alt="Generated" 
-                                    className="max-w-full max-h-[600px] rounded-lg shadow-2xl border-4 border-[#D9A69F]/20"
+                                    className="max-w-full max-h-[600px] rounded border border-[#3a3a3a]"
                                 />
                             ) : (
                                 isLoading ? (
                                     <div className="text-center space-y-4">
                                         <div className="relative w-24 h-24 mx-auto">
-                                            <div className="absolute inset-0 rounded-full border-4 border-[#6C739C]/20"></div>
-                                            <div className="absolute inset-0 rounded-full border-4 border-[#D9A69F] border-t-transparent animate-spin"></div>
+                                            <div className="absolute inset-0 rounded-full border-4 border-[#3a3a3a]"></div>
+                                            <div className="absolute inset-0 rounded-full border-4 border-[#4a9eff] border-t-transparent animate-spin"></div>
                                         </div>
-                                        <p className="text-[#D9A69F] animate-pulse">Dreaming up your image...</p>
+                                        <p className="text-[#4a9eff]">Generating image...</p>
                                     </div>
                                 ) : (
-                                    <div className="text-center space-y-4 text-[#BABBB1]/50">
+                                    <div className="text-center space-y-4 text-[#888888]">
                                         <ImageIcon className="w-16 h-16 mx-auto" />
-                                        <p className="text-lg font-medium">Enter a prompt to generate an image</p>
+                                        <p className="text-lg font-medium text-white">Enter a prompt to generate an image</p>
                                     </div>
                                 )
                             )}
@@ -470,21 +470,21 @@ export default function Playground() {
                                     initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }}
                                     src={generatedVideo}
                                     controls
-                                    className="max-w-full max-h-[600px] rounded-lg shadow-2xl border-4 border-[#C56B62]/20"
+                                    className="max-w-full max-h-[600px] rounded border border-[#3a3a3a]"
                                 />
                             ) : (
                                 isLoading ? (
                                     <div className="text-center space-y-4">
                                         <div className="relative w-24 h-24 mx-auto">
-                                            <div className="absolute inset-0 rounded-full border-4 border-[#6C739C]/20"></div>
-                                            <div className="absolute inset-0 rounded-full border-4 border-[#C56B62] border-t-transparent animate-spin"></div>
+                                            <div className="absolute inset-0 rounded-full border-4 border-[#3a3a3a]"></div>
+                                            <div className="absolute inset-0 rounded-full border-4 border-[#4a9eff] border-t-transparent animate-spin"></div>
                                         </div>
-                                        <p className="text-[#C56B62] animate-pulse">Crafting your video...</p>
+                                        <p className="text-[#4a9eff]">Generating video...</p>
                                     </div>
                                 ) : (
-                                    <div className="text-center space-y-4 text-[#BABBB1]/50">
+                                    <div className="text-center space-y-4 text-[#888888]">
                                         <Video className="w-16 h-16 mx-auto" />
-                                        <p className="text-lg font-medium">Enter a prompt to generate a video</p>
+                                        <p className="text-lg font-medium text-white">Enter a prompt to generate a video</p>
                                     </div>
                                 )
                             )}
@@ -494,7 +494,7 @@ export default function Playground() {
             </div>
 
             {/* Input Area */}
-            <div className="p-4 bg-[#303340] border-t border-[#6C739C]/30">
+            <div className="p-4 bg-[#2a2a2a] border-t border-[#3a3a3a]">
                 <div className="relative">
                     <textarea
                         value={input}
@@ -505,19 +505,16 @@ export default function Playground() {
                                 handleSend();
                             }
                         }}
-                        placeholder={mode === 'chat' ? "Type your message..." : mode === 'image' ? "Describe the image you want to see..." : "Describe the video you want to create..."}
-                        className="w-full bg-[#424658] text-[#F0DAD5] rounded-xl px-4 py-3 pr-12 border border-[#6C739C]/30 focus:border-[#D9A69F] focus:ring-1 focus:ring-[#D9A69F] outline-none resize-none h-[60px] placeholder:text-[#BABBB1]/30 transition-all"
+                        placeholder={mode === 'chat' ? "Type your message..." : mode === 'image' ? "Describe the image..." : "Describe the video..."}
+                        className="w-full bg-[#1a1a1a] text-white rounded px-4 py-3 pr-12 border border-[#3a3a3a] focus:border-[#4a9eff] focus:outline-none resize-none h-[60px] placeholder:text-[#888888] transition-colors"
                     />
                     <button
                         onClick={handleSend}
                         disabled={isLoading || !input.trim()}
-                        className="absolute right-2 top-1/2 -translate-y-1/2 p-2 rounded-lg bg-[#D9A69F] text-[#424658] hover:bg-[#DEA785] disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                        className="absolute right-2 top-1/2 -translate-y-1/2 p-2 rounded bg-[#4a9eff] text-white hover:bg-[#3a8eef] disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                     >
                         {isLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4" />}
                     </button>
-                </div>
-                <div className="mt-2 text-center text-[10px] text-[#BABBB1]/40 uppercase tracking-widest">
-                    Powered by az.ai unified infrastructure
                 </div>
             </div>
         </div>
