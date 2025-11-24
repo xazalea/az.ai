@@ -22,6 +22,10 @@ az.ai is a comprehensive, unified AI infrastructure platform that provides acces
 12. **GPT-3.5 Turbo (Free)** - Free GPT-3.5 access (`free-gpt3.5-2api`)
 13. **ChatGPT (Free)** - Free ChatGPT API (`ChatGPTAPIFree`)
 14. **Gemini Multimodal** - Multimodal Gemini (`gemini-multimodal-playground`)
+15. **Gemini 2.5 Pro (CLI)** - Via CLIProxyAPI
+16. **Claude Code (CLI)** - Via CLIProxyAPI
+17. **Qwen Code (CLI)** - Via CLIProxyAPI
+18. **Pollinations** - Free text generation (`pollinations`)
 
 ### Image Generation Models
 
@@ -29,43 +33,88 @@ az.ai is a comprehensive, unified AI infrastructure platform that provides acces
 2. **Jimeng** - Artistic generation (`jimeng-free-api`)
 3. **ImageAI (Google)** - Enhanced prompts via ImageAI (`ImageAI`)
 4. **ImageAI (OpenAI)** - DALL-E via ImageAI wrapper (`ImageAI`)
+5. **Pollinations (Flux)** - Free high-quality image generation (`pollinations`)
+6. **Pollinations (Turbo)** - Fast image generation (`pollinations`)
+
+### Video Generation Models
+
+1. **Veo 3** - Google Veo 3 video generation (`ImageAI`)
+2. **Veo 3 Fast** - Faster Veo generation
+3. **Veo 2** - Previous generation model
+4. **Viggle AI** - Meme creation & character animation (`Viggle-AI-WebUI`)
+5. **Tongyi** - Alibaba video generation (`ai-video-api`)
+6. **Vidu** - High quality video generation (`ai-video-api`)
+7. **PixVerse** - Creative video generation (`ai-video-api`)
+8. **Runway** - Professional video generation (`ai-video-api`)
+9. **Stability AI Video** - Via ai-video-api
+10. **Zhipu** - Via ai-video-api
+11. **Luma Labs** - Via ai-video-api
 
 ## API Endpoints
 
-### Unified Text Generation
-```
+### Unified Endpoints (Recommended)
+
+All models are accessible through unified OpenAI-compatible endpoints. Simply specify the `model` parameter in your request:
+
+#### Text Generation
+```bash
 POST /v1/chat/completions
-```
-Routes requests to the appropriate provider based on the `model` field in the request body.
+Content-Type: application/json
 
-### Unified Image Generation
+{
+  "model": "qwen",  # or "deepseek", "gpt-4", "pollinations", etc.
+  "messages": [
+    {"role": "user", "content": "Hello!"}
+  ]
+}
 ```
+
+#### Image Generation
+```bash
 POST /v1/images/generations
+Content-Type: application/json
+
+{
+  "model": "flux",  # or "imagen-3", "pollinations", "jimeng", etc.
+  "prompt": "A beautiful sunset",
+  "n": 1,
+  "size": "1024x1024"
+}
 ```
-Routes to ImageFX or ImageAI based on model selection.
 
-### Provider-Specific Endpoints
+#### Video Generation
+```bash
+POST /v1/videos/generations
+Content-Type: application/json
 
-- `/api/qwen/v1/chat/completions` - Qwen models
-- `/api/groq/v1/chat/completions` - Groq models
-- `/api/deepseek/v1/chat/completions` - DeepSeek models
-- `/api/gpt4free/v1/chat/completions` - GPT-4 free
-- `/api/chatgptfree/v1/chat/completions` - ChatGPT free
-- `/api/freegpt/v1/chat/completions` - GPT-3.5 free
-- `/api/deepseekfree/v1/chat/completions` - DeepSeek free
-- `/api/gemini-multimodal/v1/chat/completions` - Gemini multimodal
-- `/api/imagefx/v1/images/generations` - ImageFX
-- `/api/imageai/v1/images/generations` - ImageAI
+{
+  "model": "veo-3",  # or "viggle", "tongyi", "vidu", etc.
+  "prompt": "A cat dancing",
+  "duration": 8.0,
+  "aspect_ratio": "16:9"
+}
+```
+
+### Model Selection
+
+The unified API automatically routes to the correct provider based on the `model` field. Available models:
+
+**Text Models**: `qwen`, `deepseek`, `glm-4`, `doubao`, `kimi`, `minimax`, `step`, `groq`, `gpt-4`, `gpt-3.5`, `chatgpt`, `gemini-multimodal`, `gemini-2.5-pro`, `claude-code`, `qwen-code`, `pollinations`
+
+**Image Models**: `imagen-3`, `jimeng`, `imageai-google`, `imageai-openai`, `pollinations`, `flux`, `turbo`
+
+**Video Models**: `veo-3`, `veo-3-fast`, `veo-2`, `viggle`, `tongyi`, `vidu`, `pixverse`, `runway`, `stability-video`, `zhipu`, `luma`
 
 ## Features
 
-- **Unified API**: Single endpoint for all text generation models
+- **Unified API**: Single endpoint for all text, image, and video generation models
 - **Zero Setup**: No environment variables required for most models
 - **OpenAI Compatible**: Drop-in replacement for OpenAI API
 - **Modern UI**: Beautiful Lavender Sapphire Mist themed interface
 - **Interactive Playground**: Test models directly in the browser
 - **Vercel Ready**: Fully optimized for serverless deployment
-- **Multi-Provider**: Access to 14+ text models and 4+ image models
+- **Multi-Provider**: Access to 18+ text models, 6+ image models, and 11+ video models
+- **Meme Creation**: Viggle AI integration for character animation and memes
 
 ## Architecture
 
@@ -93,22 +142,4 @@ The UI uses the **Lavender Sapphire Mist** palette:
 - `#424658` - Dark Grey/Navy (Main Background)
 - `#DEA785` - Peach (Accents/Highlights)
 
-## Contributing
-
-This project integrates multiple open-source AI provider projects:
-- LLM-Red-Team repositories
-- Groq2API
-- imageFX-api
-- ImageAI
-- gpt4free-ts
-- ChatGPTAPIFree
-- free-gpt3.5-2api
-- deepseek4free
-- gemini-multimodal-playground
-
-All integrated projects maintain their original licenses and credits.
-
-## License
-
-See individual package licenses. The main platform code follows the same licensing as the integrated projects.
 

@@ -22,6 +22,7 @@ const MODELS = [
   { id: 'gemini-2.5-pro', name: 'Gemini 2.5 Pro (CLI)', type: 'chat', description: 'Via CLIProxyAPI' },
   { id: 'claude-code', name: 'Claude Code (CLI)', type: 'chat', description: 'Via CLIProxyAPI' },
   { id: 'qwen-code', name: 'Qwen Code (CLI)', type: 'chat', description: 'Via CLIProxyAPI' },
+  { id: 'pollinations', name: 'Pollinations', type: 'chat', description: 'Free text generation via Pollinations' },
 ];
 
 const IMAGE_MODELS = [
@@ -29,12 +30,20 @@ const IMAGE_MODELS = [
   { id: 'jimeng', name: 'Jimeng', type: 'image', description: 'Artistic generation' },
   { id: 'imageai-google', name: 'ImageAI (Google)', type: 'image', description: 'Enhanced prompts via ImageAI' },
   { id: 'imageai-openai', name: 'ImageAI (OpenAI)', type: 'image', description: 'DALL-E via ImageAI wrapper' },
+  { id: 'pollinations', name: 'Pollinations (Flux)', type: 'image', description: 'Free image generation via Pollinations' },
+  { id: 'flux', name: 'Flux (Pollinations)', type: 'image', description: 'High quality Flux model' },
+  { id: 'turbo', name: 'Turbo (Pollinations)', type: 'image', description: 'Fast generation model' },
 ];
 
 const VIDEO_MODELS = [
   { id: 'veo-3', name: 'Veo 3', type: 'video', description: 'Google Veo 3 video generation' },
   { id: 'veo-3-fast', name: 'Veo 3 Fast', type: 'video', description: 'Faster generation' },
   { id: 'veo-2', name: 'Veo 2', type: 'video', description: 'Previous generation model' },
+  { id: 'viggle', name: 'Viggle AI', type: 'video', description: 'Meme creation & character animation' },
+  { id: 'tongyi', name: 'Tongyi (AI Video)', type: 'video', description: 'Alibaba video generation' },
+  { id: 'vidu', name: 'Vidu (AI Video)', type: 'video', description: 'High quality video generation' },
+  { id: 'pixverse', name: 'PixVerse (AI Video)', type: 'video', description: 'Creative video generation' },
+  { id: 'runway', name: 'Runway (AI Video)', type: 'video', description: 'Professional video generation' },
 ];
 
 export default function Playground() {
@@ -67,9 +76,9 @@ export default function Playground() {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
-            model: selectedModel,
+            model: selectedModel, // Unified endpoint routes based on model
             messages: newMessages,
-            stream: false // Simple implementation for now
+            stream: false
           })
         });
 
@@ -89,24 +98,15 @@ export default function Playground() {
         setInput('');
         setGeneratedImage(null);
         
-        // Route to ImageAI if selected, otherwise use default ImageFX
-        const endpoint = selectedModel.startsWith('imageai-') 
-          ? '/api/imageai/v1/images/generations'
-          : '/v1/images/generations';
-        
-        const provider = selectedModel === 'imageai-google' ? 'google' : 
-                        selectedModel === 'imageai-openai' ? 'openai' : undefined;
-        
-        const res = await fetch(endpoint, {
+        // Use unified endpoint - routing handled by model parameter
+        const res = await fetch('/v1/images/generations', {
           method: 'POST',
           headers: { 
             'Content-Type': 'application/json',
-            // Note: In a real app, you'd handle auth better. This relies on server-side env vars or free APIs.
           },
           body: JSON.stringify({
             prompt,
-            model: selectedModel,
-            provider,
+            model: selectedModel, // Unified endpoint routes based on model
             n: 1,
             size: "1024x1024"
           })
@@ -131,15 +131,16 @@ export default function Playground() {
         setInput('');
         setGeneratedVideo(null);
         
+        // Use unified endpoint - routing handled by model parameter
         const res = await fetch('/v1/videos/generations', {
           method: 'POST',
           headers: { 
             'Content-Type': 'application/json',
-            'Authorization': `Bearer ${process.env.NEXT_PUBLIC_GOOGLE_API_KEY || ''}`, // User should provide their key
+            'Authorization': `Bearer ${process.env.NEXT_PUBLIC_GOOGLE_API_KEY || ''}`, // For Veo models
           },
           body: JSON.stringify({
             prompt,
-            model: selectedModel,
+            model: selectedModel, // Unified endpoint routes based on model
             duration: 8.0,
             aspect_ratio: '16:9'
           })
@@ -148,9 +149,24 @@ export default function Playground() {
         const data = await res.json();
         if (data.error) throw new Error(data.error);
         
-        const url = data.data?.[0]?.url || data.data?.[0]?.b64_video
-          ? `data:video/mp4;base64,${data.data[0].b64_video || data.data[0].url.split(',')[1]}`
-          : null;
+        // Handle different video response formats
+        const videoData = data.data?.[0];
+        let url = null;
+        
+        if (videoData?.b64_video) {
+          url = `data:video/mp4;base64,${videoData.b64_video}`;
+        } else if (videoData?.url) {
+          url = videoData.url.includes('base64') 
+            ? videoData.url 
+            : `data:video/mp4;base64,${videoData.url.split(',')[1] || videoData.url}`;
+        } else if (data.b64_video) {
+          url = `data:video/mp4;base64,${data.b64_video}`;
+        } else if (data.url) {
+          url = data.url.includes('base64') 
+            ? data.url 
+            : `data:video/mp4;base64,${data.url.split(',')[1] || data.url}`;
+        }
+        
         if (url) setGeneratedVideo(url);
         else throw new Error("No video returned");
 
