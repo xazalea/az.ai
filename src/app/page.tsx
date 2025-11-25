@@ -2,40 +2,38 @@
 
 import React from 'react';
 import { motion } from 'framer-motion';
-import { ArrowRight, Code, Zap, Image as ImageIcon, Box, Lock, Globe, Cpu, CheckCircle2, Brain, Database, Sparkles, Stars, Rocket } from 'lucide-react';
+import { ArrowRight, Zap, Brain, Database, Sparkles, Stars, Rocket, CheckCircle2, TrendingUp, Shield, Globe2, Cpu } from 'lucide-react';
 import Link from 'next/link';
 
 export default function Home() {
   return (
-    <main className="min-h-screen bg-gradient-to-br from-[#0a0a0a] via-[#0f0f0f] to-[#0a0a0a] text-white font-sans overflow-x-hidden relative">
-      {/* Animated background gradient */}
-      <div className="fixed inset-0 -z-10">
-        <div className="absolute top-0 left-1/4 w-96 h-96 bg-[#4a9eff]/10 rounded-full blur-[120px] animate-pulse"></div>
-        <div className="absolute bottom-0 right-1/4 w-96 h-96 bg-[#6bb6ff]/10 rounded-full blur-[120px] animate-pulse delay-1000"></div>
+    <main className="min-h-screen bg-[#0a0a0a] text-white font-sans overflow-x-hidden relative">
+      {/* Subtle animated background */}
+      <div className="fixed inset-0 -z-10 overflow-hidden">
+        <div className="absolute top-0 left-1/4 w-[600px] h-[600px] bg-[#4a9eff]/5 rounded-full blur-[140px] animate-pulse"></div>
+        <div className="absolute bottom-0 right-1/4 w-[600px] h-[600px] bg-[#6bb6ff]/5 rounded-full blur-[140px] animate-pulse" style={{ animationDelay: '1s' }}></div>
       </div>
       
       {/* Navigation */}
-      <nav className="sticky top-0 z-50 glass border-b border-[#3a3a3a]/50 backdrop-blur-xl">
-        <div className="container mx-auto px-6 py-4 flex justify-between items-center">
+      <nav className="sticky top-0 z-50 bg-[#0a0a0a]/80 backdrop-blur-2xl border-b border-white/5">
+        <div className="container mx-auto px-6 py-5 flex justify-between items-center max-w-7xl">
           <motion.div 
             initial={{ opacity: 0, x: -20 }}
             animate={{ opacity: 1, x: 0 }}
             className="text-2xl font-bold tracking-tight"
           >
-            <span className="gradient-text">az</span><span className="text-white">.ai</span>
+            <span className="bg-gradient-to-r from-[#4a9eff] to-[#6bb6ff] bg-clip-text text-transparent">az</span><span className="text-white">.ai</span>
           </motion.div>
-          <div className="flex items-center gap-6">
-            <Link href="/playground" className="text-[#888888] hover:text-white transition-colors text-sm font-medium hidden md:block relative group">
+          <div className="flex items-center gap-8">
+            <Link href="/playground" className="text-[#999] hover:text-white transition-colors text-sm font-medium hidden md:block">
               Playground
-              <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-[#4a9eff] group-hover:w-full transition-all duration-300"></span>
             </Link>
-            <Link href="https://github.com/xazalea/az.ai" target="_blank" className="text-[#888888] hover:text-white transition-colors text-sm font-medium hidden md:block relative group">
+            <Link href="https://github.com/xazalea/az.ai" target="_blank" className="text-[#999] hover:text-white transition-colors text-sm font-medium hidden md:block">
               GitHub
-              <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-[#4a9eff] group-hover:w-full transition-all duration-300"></span>
             </Link>
-            <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
-              <Link href="/playground" className="px-5 py-2 bg-gradient-to-r from-[#4a9eff] to-[#6bb6ff] rounded-lg text-sm font-semibold text-white shadow-lg glow-hover transition-all">
-                Launch App <Rocket className="w-4 h-4 inline ml-1" />
+            <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
+              <Link href="/playground" className="px-6 py-2.5 bg-gradient-to-r from-[#4a9eff] to-[#6bb6ff] rounded-full text-sm font-semibold text-white shadow-lg shadow-[#4a9eff]/20 hover:shadow-[#4a9eff]/40 transition-all">
+                Launch App <Rocket className="w-4 h-4 inline ml-1.5" />
               </Link>
             </motion.div>
           </div>
@@ -43,7 +41,7 @@ export default function Home() {
       </nav>
 
       {/* Hero Section */}
-      <section className="relative pt-24 pb-32 md:pt-32 md:pb-48 container mx-auto px-6 text-center">
+      <section className="relative pt-32 pb-40 md:pt-40 md:pb-56 container mx-auto px-6 text-center max-w-6xl">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -53,9 +51,9 @@ export default function Home() {
             initial={{ opacity: 0, scale: 0.9 }}
             animate={{ opacity: 1, scale: 1 }}
             transition={{ delay: 0.2 }}
-            className="inline-flex items-center px-4 py-2 rounded-full glass border border-[#4a9eff]/30 text-xs font-semibold text-[#4a9eff] mb-8 glow"
+            className="inline-flex items-center px-5 py-2.5 rounded-full bg-white/5 border border-white/10 text-xs font-semibold text-[#4a9eff] mb-8 backdrop-blur-sm"
           >
-            <Stars className="w-3 h-3 mr-2" />
+            <Stars className="w-3.5 h-3.5 mr-2" />
             Unified AI Platform
           </motion.div>
           
@@ -63,20 +61,20 @@ export default function Home() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.3 }}
-            className="text-6xl md:text-8xl font-extrabold tracking-tight mb-6"
+            className="text-7xl md:text-9xl font-extrabold tracking-tight mb-8 leading-[1.1]"
           >
-            <span className="text-white">One API for</span>
-            <br className="hidden md:block" />
-            <span className="gradient-text">Everything AI</span>
+            <span className="text-white">The Unified</span>
+            <br />
+            <span className="bg-gradient-to-r from-[#4a9eff] via-[#6bb6ff] to-[#4a9eff] bg-clip-text text-transparent bg-[length:200%_auto] animate-[gradient_8s_ease_infinite]">Interface For AI</span>
           </motion.h1>
           
           <motion.p 
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.4 }}
-            className="text-xl md:text-2xl text-[#888888] max-w-3xl mx-auto mb-12 leading-relaxed"
+            className="text-xl md:text-2xl text-[#999] max-w-3xl mx-auto mb-12 leading-relaxed"
           >
-            Access <span className="text-[#4a9eff] font-semibold">50+ models</span> through a single OpenAI-compatible endpoint with <span className="text-[#4a9eff] font-semibold">reasoning</span> and <span className="text-[#4a9eff] font-semibold">memory</span>.
+            Better prices, better uptime, no subscription. Access <span className="text-white font-semibold">50+ models</span> through a single OpenAI-compatible endpoint.
           </motion.p>
           
           <motion.div 
@@ -85,38 +83,60 @@ export default function Home() {
             transition={{ delay: 0.5 }}
             className="flex flex-col md:flex-row items-center justify-center gap-4"
           >
-            <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
-              <Link href="/playground" className="group w-full md:w-auto px-8 py-4 rounded-xl bg-gradient-to-r from-[#4a9eff] to-[#6bb6ff] text-white font-semibold text-lg shadow-2xl glow-hover flex items-center justify-center gap-2 relative overflow-hidden">
-                <span className="relative z-10">Start Building</span>
-                <ArrowRight className="w-5 h-5 relative z-10 group-hover:translate-x-1 transition-transform" />
-                <div className="absolute inset-0 bg-gradient-to-r from-[#6bb6ff] to-[#4a9eff] opacity-0 group-hover:opacity-100 transition-opacity"></div>
+            <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
+              <Link href="/playground" className="group px-10 py-4 rounded-full bg-gradient-to-r from-[#4a9eff] to-[#6bb6ff] text-white font-semibold text-lg shadow-2xl shadow-[#4a9eff]/30 hover:shadow-[#4a9eff]/50 transition-all flex items-center justify-center gap-2">
+                <span>Get Started</span>
+                <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
               </Link>
             </motion.div>
-            <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
-              <button className="w-full md:w-auto px-8 py-4 rounded-xl glass border border-[#3a3a3a] text-white font-semibold text-lg hover:border-[#4a9eff]/50 transition-all">
-                Documentation
+            <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
+              <button className="px-10 py-4 rounded-full bg-white/5 border border-white/10 text-white font-semibold text-lg hover:bg-white/10 transition-all backdrop-blur-sm">
+                View Docs
               </button>
             </motion.div>
           </motion.div>
         </motion.div>
 
-        {/* Code Snippet */}
+        {/* Stats */}
         <motion.div 
           initial={{ opacity: 0, y: 40 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8, delay: 0.6 }}
-          className="mt-24 mx-auto max-w-4xl text-left rounded-2xl overflow-hidden glass border border-[#3a3a3a]/50 shadow-2xl glow-hover"
+          transition={{ delay: 0.6 }}
+          className="mt-24 grid grid-cols-3 gap-8 max-w-4xl mx-auto"
         >
-          <div className="flex items-center px-6 py-4 bg-[#1a1a1a]/50 border-b border-[#3a3a3a]/50">
+          <div className="text-center">
+            <div className="text-4xl font-bold text-white mb-2">50+</div>
+            <div className="text-sm text-[#999]">Active Models</div>
+          </div>
+          <div className="text-center">
+            <div className="text-4xl font-bold text-white mb-2">300+</div>
+            <div className="text-sm text-[#999]">Providers</div>
+          </div>
+          <div className="text-center">
+            <div className="text-4xl font-bold text-white mb-2">∞</div>
+            <div className="text-sm text-[#999]">Free Tier</div>
+          </div>
+        </motion.div>
+      </section>
+
+      {/* Code Snippet */}
+      <motion.div 
+        initial={{ opacity: 0, y: 40 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.7 }}
+        className="container mx-auto px-6 max-w-4xl mb-32"
+      >
+        <div className="rounded-3xl overflow-hidden bg-[#111] border border-white/10 shadow-2xl">
+          <div className="flex items-center px-6 py-4 bg-[#0a0a0a] border-b border-white/5">
             <div className="flex space-x-2">
               <div className="w-3 h-3 rounded-full bg-red-500/80"></div>
               <div className="w-3 h-3 rounded-full bg-yellow-500/80"></div>
               <div className="w-3 h-3 rounded-full bg-green-500/80"></div>
             </div>
-            <div className="ml-4 text-xs text-[#888888] font-mono">terminal</div>
+            <div className="ml-4 text-xs text-[#666] font-mono">terminal</div>
           </div>
-          <div className="p-8 overflow-x-auto bg-gradient-to-br from-[#0f0f0f] to-[#1a1a1a]">
-            <pre className="text-sm md:text-base font-mono text-white whitespace-pre leading-relaxed">
+          <div className="p-8 bg-gradient-to-br from-[#0f0f0f] to-[#111]">
+            <pre className="text-sm md:text-base font-mono text-white whitespace-pre leading-relaxed overflow-x-auto">
               <span className="text-[#4a9eff]">curl</span> https://az.ai/v1/chat/completions \<br/>
               {"  "}-H <span className="text-[#ffd700]">"Content-Type: application/json"</span> \<br/>
               {"  "}-d <span className="text-white">{'{'}</span><br/>
@@ -125,134 +145,11 @@ export default function Home() {
               {"  "}<span className="text-white">{'}'}</span>
             </pre>
           </div>
-        </motion.div>
-      </section>
+        </div>
+      </motion.div>
 
       {/* Features Grid */}
-      <section className="py-32 relative">
-        <div className="container mx-auto px-6">
-          <motion.div 
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.6 }}
-            className="text-center mb-20"
-          >
-            <h2 className="text-4xl md:text-5xl font-bold mb-6">
-              <span className="text-white">Everything you </span>
-              <span className="gradient-text">need</span>
-            </h2>
-            <p className="text-xl text-[#888888] max-w-2xl mx-auto">Unified AI infrastructure for modern applications.</p>
-          </motion.div>
-          
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            <FeatureCard 
-              icon={<Zap className="w-5 h-5 text-[#4a9eff]" />}
-              title="Low Latency"
-              description="Optimized routing to fastest available providers."
-            />
-            <FeatureCard 
-              icon={<Box className="w-5 h-5 text-[#4a9eff]" />}
-              title="Unified API"
-              description="Switch models by changing one parameter."
-            />
-            <FeatureCard 
-              icon={<Lock className="w-5 h-5 text-[#4a9eff]" />}
-              title="Secure"
-              description="Privacy-first data handling."
-            />
-            <FeatureCard 
-              icon={<Image className="w-5 h-5 text-[#4a9eff]" />}
-              title="Image & Video"
-              description="Generate images and videos via API."
-            />
-            <FeatureCard 
-              icon={<Brain className="w-5 h-5 text-[#4a9eff]" />}
-              title="Reasoning"
-              description="Advanced reasoning engine included."
-            />
-            <FeatureCard 
-              icon={<Database className="w-5 h-5 text-[#4a9eff]" />}
-              title="Memory"
-              description="Session-based memory system."
-            />
-          </div>
-        </div>
-      </section>
-
-      {/* Advanced Features */}
-      <section className="py-32 relative">
-        <div className="container mx-auto px-6">
-          <motion.div 
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.6 }}
-            className="text-center mb-20"
-          >
-            <h2 className="text-4xl md:text-5xl font-bold mb-6">
-              <span className="text-white">Advanced </span>
-              <span className="gradient-text">Features</span>
-            </h2>
-            <p className="text-xl text-[#888888] max-w-2xl mx-auto">
-              Reasoning and memory systems included.
-            </p>
-          </motion.div>
-          
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-5xl mx-auto">
-            <motion.div 
-              initial={{ opacity: 0, x: -20 }}
-              whileInView={{ opacity: 1, x: 0 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.6 }}
-              className="group p-8 rounded-2xl glass border border-[#3a3a3a]/50 hover:border-[#4a9eff]/50 transition-all glow-hover relative overflow-hidden"
-            >
-              <div className="absolute inset-0 bg-gradient-to-br from-[#4a9eff]/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
-              <div className="relative z-10">
-                <div className="flex items-center gap-4 mb-6">
-                  <div className="p-4 rounded-xl bg-gradient-to-br from-[#1a1a1a] to-[#2a2a2a] group-hover:scale-110 transition-transform">
-                    <Brain className="w-6 h-6 text-[#4a9eff]" />
-                  </div>
-                  <div>
-                    <h3 className="text-xl font-bold text-white group-hover:text-[#4a9eff] transition-colors">OpenReason</h3>
-                    <p className="text-xs text-[#888888]">Always enabled</p>
-                  </div>
-                </div>
-                <p className="text-[#888888] leading-relaxed group-hover:text-[#aaaaaa] transition-colors">
-                  Advanced reasoning engine enhances all responses with multi-domain capabilities.
-                </p>
-              </div>
-            </motion.div>
-
-            <motion.div 
-              initial={{ opacity: 0, x: 20 }}
-              whileInView={{ opacity: 1, x: 0 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.6 }}
-              className="group p-8 rounded-2xl glass border border-[#3a3a3a]/50 hover:border-[#4a9eff]/50 transition-all glow-hover relative overflow-hidden"
-            >
-              <div className="absolute inset-0 bg-gradient-to-br from-[#4a9eff]/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
-              <div className="relative z-10">
-                <div className="flex items-center gap-4 mb-6">
-                  <div className="p-4 rounded-xl bg-gradient-to-br from-[#1a1a1a] to-[#2a2a2a] group-hover:scale-110 transition-transform">
-                    <Database className="w-6 h-6 text-[#4a9eff]" />
-                  </div>
-                  <div>
-                    <h3 className="text-xl font-bold text-white group-hover:text-[#4a9eff] transition-colors">OpenMemory</h3>
-                    <p className="text-xs text-[#888888]">Auto-enabled</p>
-                  </div>
-                </div>
-                <p className="text-[#888888] leading-relaxed group-hover:text-[#aaaaaa] transition-colors">
-                  Session-based memory for context-aware conversations across models.
-                </p>
-              </div>
-            </motion.div>
-          </div>
-        </div>
-      </section>
-
-      {/* Supported Models */}
-      <section className="py-32 container mx-auto px-6">
+      <section className="py-32 container mx-auto px-6 max-w-7xl">
         <motion.div 
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
@@ -260,164 +157,171 @@ export default function Home() {
           transition={{ duration: 0.6 }}
           className="text-center mb-20"
         >
-          <h2 className="text-4xl md:text-5xl font-bold mb-6">
-            <span className="gradient-text">50+ Models</span>
+          <h2 className="text-5xl md:text-6xl font-bold mb-6 text-white">
+            One API for <span className="bg-gradient-to-r from-[#4a9eff] to-[#6bb6ff] bg-clip-text text-transparent">Any Model</span>
           </h2>
-          <p className="text-xl text-[#888888] max-w-2xl mx-auto">
-            Access leading AI providers through a single API.
+          <p className="text-xl text-[#999] max-w-2xl mx-auto">
+            Access all major models through a single, unified interface. OpenAI SDK works out of the box.
           </p>
-          
-          {/* Model Categories */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mt-16 text-left">
-            {/* OpenAI */}
-            <motion.div 
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.4 }}
-              className="group p-6 rounded-xl glass border border-[#3a3a3a]/50 hover:border-[#4a9eff]/50 transition-all"
-            >
-              <h3 className="text-lg font-bold text-white mb-4 group-hover:text-[#4a9eff] transition-colors">OpenAI</h3>
-              <div className="space-y-2 text-sm text-[#888888]">
-                {['GPT-5.1 High', 'GPT-5 Chat', 'GPT-4', 'GPT-3.5 Turbo', 'GPT-OSS 120B', 'ChatGPT'].map((model) => (
-                  <div key={model} className="flex items-center gap-2">
-                    <CheckCircle2 className="w-4 h-4 text-[#4a9eff]" />
-                    {model}
-                  </div>
-                ))}
-              </div>
-            </motion.div>
-
-            {/* Anthropic */}
-            <motion.div 
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.4, delay: 0.1 }}
-              className="group p-6 rounded-xl glass border border-[#3a3a3a]/50 hover:border-[#4a9eff]/50 transition-all"
-            >
-              <h3 className="text-lg font-bold text-white mb-4 group-hover:text-[#4a9eff] transition-colors">Anthropic</h3>
-              <div className="space-y-2 text-sm text-[#888888]">
-                {['Claude Opus 4.5', 'Claude Sonnet 4.5', 'Claude Code'].map((model) => (
-                  <div key={model} className="flex items-center gap-2">
-                    <CheckCircle2 className="w-4 h-4 text-[#4a9eff]" />
-                    {model}
-                  </div>
-                ))}
-              </div>
-            </motion.div>
-
-            {/* Google */}
-            <motion.div 
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.4, delay: 0.2 }}
-              className="group p-6 rounded-xl glass border border-[#3a3a3a]/50 hover:border-[#4a9eff]/50 transition-all"
-            >
-              <h3 className="text-lg font-bold text-white mb-4 group-hover:text-[#4a9eff] transition-colors">Google</h3>
-              <div className="space-y-2 text-sm text-[#888888]">
-                {['Gemini 3 Pro', 'Gemini 2.5 Pro', 'Gemini 2.5 Flash', 'Imagen 3', 'Veo 3'].map((model) => (
-                  <div key={model} className="flex items-center gap-2">
-                    <CheckCircle2 className="w-4 h-4 text-[#4a9eff]" />
-                    {model}
-                  </div>
-                ))}
-              </div>
-            </motion.div>
-
-            {/* DeepSeek */}
-            <motion.div 
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.4, delay: 0.3 }}
-              className="group p-6 rounded-xl glass border border-[#3a3a3a]/50 hover:border-[#4a9eff]/50 transition-all"
-            >
-              <h3 className="text-lg font-bold text-white mb-4 group-hover:text-[#4a9eff] transition-colors">DeepSeek</h3>
-              <div className="space-y-2 text-sm text-[#888888]">
-                {['DeepSeek V3', 'DeepSeek R1', 'DeepSeek V3.1', 'DeepSeek Free'].map((model) => (
-                  <div key={model} className="flex items-center gap-2">
-                    <CheckCircle2 className="w-4 h-4 text-[#4a9eff]" />
-                    {model}
-                  </div>
-                ))}
-              </div>
-            </motion.div>
-
-            {/* Chinese Providers */}
-            <motion.div 
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.4, delay: 0.4 }}
-              className="group p-6 rounded-xl glass border border-[#3a3a3a]/50 hover:border-[#4a9eff]/50 transition-all"
-            >
-              <h3 className="text-lg font-bold text-white mb-4 group-hover:text-[#4a9eff] transition-colors">Chinese</h3>
-              <div className="space-y-2 text-sm text-[#888888]">
-                {['Qwen 2.5', 'GLM-4', 'Doubao Pro', 'Kimi', 'MiniMax', 'Step-1', 'Jimeng'].map((model) => (
-                  <div key={model} className="flex items-center gap-2">
-                    <CheckCircle2 className="w-4 h-4 text-[#4a9eff]" />
-                    {model}
-                  </div>
-                ))}
-              </div>
-            </motion.div>
-
-            {/* Other Providers */}
-            <motion.div 
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.4, delay: 0.5 }}
-              className="group p-6 rounded-xl glass border border-[#3a3a3a]/50 hover:border-[#4a9eff]/50 transition-all"
-            >
-              <h3 className="text-lg font-bold text-white mb-4 group-hover:text-[#4a9eff] transition-colors">More</h3>
-              <div className="space-y-2 text-sm text-[#888888]">
-                {['Mistral Large', 'Grok-4', 'Llama 4', 'Groq LPU™', 'Pollinations'].map((model) => (
-                  <div key={model} className="flex items-center gap-2">
-                    <CheckCircle2 className="w-4 h-4 text-[#4a9eff]" />
-                    {model}
-                  </div>
-                ))}
-              </div>
-            </motion.div>
-          </div>
         </motion.div>
+        
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <FeatureCard 
+            icon={<Zap className="w-6 h-6 text-[#4a9eff]" />}
+            title="Higher Availability"
+            description="Reliable AI models via our distributed infrastructure. Fall back to other providers when one goes down."
+          />
+          <FeatureCard 
+            icon={<TrendingUp className="w-6 h-6 text-[#4a9eff]" />}
+            title="Price & Performance"
+            description="Keep costs in check without sacrificing speed. OpenRouter runs at the edge, adding just ~15ms latency."
+          />
+          <FeatureCard 
+            icon={<Shield className="w-6 h-6 text-[#4a9eff]" />}
+            title="Custom Data Policies"
+            description="Protect your organization with fine-grained data policies. Ensure prompts only go to trusted models."
+          />
+        </div>
       </section>
 
-      {/* CTA */}
-      <section className="py-32 relative">
-        <div className="container mx-auto px-6 text-center">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
+      {/* Advanced Features */}
+      <section className="py-32 container mx-auto px-6 max-w-7xl">
+        <motion.div 
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.6 }}
+          className="text-center mb-20"
+        >
+          <h2 className="text-5xl md:text-6xl font-bold mb-6 text-white">
+            Powered by <span className="bg-gradient-to-r from-[#4a9eff] to-[#6bb6ff] bg-clip-text text-transparent">Advanced AI</span>
+          </h2>
+          <p className="text-xl text-[#999] max-w-2xl mx-auto">
+            Beyond just API access—az.ai includes cutting-edge reasoning and memory systems.
+          </p>
+        </motion.div>
+        
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-5xl mx-auto">
+          <motion.div 
+            initial={{ opacity: 0, x: -20 }}
+            whileInView={{ opacity: 1, x: 0 }}
             viewport={{ once: true }}
             transition={{ duration: 0.6 }}
+            className="group p-10 rounded-3xl bg-white/5 border border-white/10 hover:border-[#4a9eff]/30 transition-all backdrop-blur-sm hover:bg-white/10"
           >
-            <h2 className="text-5xl md:text-6xl font-bold mb-6">
-              <span className="text-white">Get </span>
-              <span className="gradient-text">Started</span>
-            </h2>
-            <p className="text-xl text-[#888888] mb-12 max-w-xl mx-auto">Start building with az.ai today.</p>
-            <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
-              <Link href="/playground" className="group px-12 py-5 rounded-xl bg-gradient-to-r from-[#4a9eff] to-[#6bb6ff] text-white font-bold text-lg shadow-2xl glow-hover inline-flex items-center gap-2 relative overflow-hidden">
-                <span className="relative z-10">Open Playground</span>
-                <ArrowRight className="w-5 h-5 relative z-10 group-hover:translate-x-1 transition-transform" />
-                <div className="absolute inset-0 bg-gradient-to-r from-[#6bb6ff] to-[#4a9eff] opacity-0 group-hover:opacity-100 transition-opacity"></div>
-              </Link>
-            </motion.div>
+            <div className="flex items-center gap-4 mb-6">
+              <div className="p-4 rounded-2xl bg-gradient-to-br from-[#1a1a1a] to-[#2a2a2a] group-hover:scale-110 transition-transform">
+                <Brain className="w-7 h-7 text-[#4a9eff]" />
+              </div>
+              <div>
+                <h3 className="text-2xl font-bold text-white group-hover:text-[#4a9eff] transition-colors">OpenReason</h3>
+                <p className="text-sm text-[#999]">Always enabled</p>
+              </div>
+            </div>
+            <p className="text-[#999] leading-relaxed group-hover:text-white transition-colors">
+              Advanced reasoning engine enhances all responses with multi-domain capabilities. Includes specialized solvers for Math, Logic, and Ethics.
+            </p>
+          </motion.div>
+
+          <motion.div 
+            initial={{ opacity: 0, x: 20 }}
+            whileInView={{ opacity: 1, x: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.6 }}
+            className="group p-10 rounded-3xl bg-white/5 border border-white/10 hover:border-[#4a9eff]/30 transition-all backdrop-blur-sm hover:bg-white/10"
+          >
+            <div className="flex items-center gap-4 mb-6">
+              <div className="p-4 rounded-2xl bg-gradient-to-br from-[#1a1a1a] to-[#2a2a2a] group-hover:scale-110 transition-transform">
+                <Database className="w-7 h-7 text-[#4a9eff]" />
+              </div>
+              <div>
+                <h3 className="text-2xl font-bold text-white group-hover:text-[#4a9eff] transition-colors">OpenMemory</h3>
+                <p className="text-sm text-[#999]">Auto-enabled</p>
+              </div>
+            </div>
+            <p className="text-[#999] leading-relaxed group-hover:text-white transition-colors">
+              Session-based memory for context-aware conversations across models. Remember user preferences and conversation history.
+            </p>
           </motion.div>
         </div>
       </section>
 
+      {/* Supported Models */}
+      <section className="py-32 container mx-auto px-6 max-w-7xl">
+        <motion.div 
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.6 }}
+          className="text-center mb-20"
+        >
+          <h2 className="text-5xl md:text-6xl font-bold mb-6">
+            <span className="bg-gradient-to-r from-[#4a9eff] to-[#6bb6ff] bg-clip-text text-transparent">50+ Models</span>
+          </h2>
+          <p className="text-xl text-[#999] max-w-2xl mx-auto">
+            Access leading AI providers through a single API.
+          </p>
+        </motion.div>
+        
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {[
+            { name: 'OpenAI', models: ['GPT-5.1 High', 'GPT-5 Chat', 'GPT-4', 'GPT-3.5 Turbo', 'GPT-OSS 120B', 'ChatGPT'] },
+            { name: 'Anthropic', models: ['Claude Opus 4.5', 'Claude Sonnet 4.5', 'Claude Code'] },
+            { name: 'Google', models: ['Gemini 3 Pro', 'Gemini 2.5 Pro', 'Gemini 2.5 Flash', 'Imagen 3', 'Veo 3'] },
+            { name: 'DeepSeek', models: ['DeepSeek V3', 'DeepSeek R1', 'DeepSeek V3.1', 'DeepSeek Free'] },
+            { name: 'Chinese Providers', models: ['Qwen 2.5', 'GLM-4', 'Doubao Pro', 'Kimi', 'MiniMax', 'Step-1', 'Jimeng'] },
+            { name: 'More Providers', models: ['Mistral Large', 'Grok-4', 'Llama 4', 'Groq LPU™', 'Pollinations'] },
+          ].map((provider, idx) => (
+            <motion.div 
+              key={provider.name}
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.4, delay: idx * 0.1 }}
+              className="group p-8 rounded-3xl bg-white/5 border border-white/10 hover:border-[#4a9eff]/30 transition-all backdrop-blur-sm"
+            >
+              <h3 className="text-xl font-bold text-white mb-6 group-hover:text-[#4a9eff] transition-colors">{provider.name}</h3>
+              <div className="space-y-3">
+                {provider.models.map((model) => (
+                  <div key={model} className="flex items-center gap-3 text-sm text-[#999] group-hover:text-white transition-colors">
+                    <CheckCircle2 className="w-4 h-4 text-[#4a9eff] flex-shrink-0" />
+                    {model}
+                  </div>
+                ))}
+              </div>
+            </motion.div>
+          ))}
+        </div>
+      </section>
+
+      {/* CTA */}
+      <section className="py-40 container mx-auto px-6 text-center max-w-4xl">
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.6 }}
+        >
+          <h2 className="text-6xl md:text-7xl font-bold mb-8 text-white">
+            Ready to <span className="bg-gradient-to-r from-[#4a9eff] to-[#6bb6ff] bg-clip-text text-transparent">get started?</span>
+          </h2>
+          <p className="text-xl text-[#999] mb-12 max-w-xl mx-auto">Start building with az.ai today.</p>
+          <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
+            <Link href="/playground" className="inline-flex items-center gap-3 px-12 py-5 rounded-full bg-gradient-to-r from-[#4a9eff] to-[#6bb6ff] text-white font-bold text-lg shadow-2xl shadow-[#4a9eff]/30 hover:shadow-[#4a9eff]/50 transition-all">
+              Open Playground
+              <ArrowRight className="w-5 h-5" />
+            </Link>
+          </motion.div>
+        </motion.div>
+      </section>
+
       {/* Footer */}
-      <footer className="py-12 border-t border-[#3a3a3a]/50 glass">
-        <div className="container mx-auto px-6 flex flex-col md:flex-row justify-between items-center gap-6">
+      <footer className="py-16 border-t border-white/5 bg-[#0a0a0a]">
+        <div className="container mx-auto px-6 max-w-7xl flex flex-col md:flex-row justify-between items-center gap-6">
           <div className="text-xl font-bold">
-            <span className="gradient-text">az</span><span className="text-white">.ai</span>
+            <span className="bg-gradient-to-r from-[#4a9eff] to-[#6bb6ff] bg-clip-text text-transparent">az</span><span className="text-white">.ai</span>
           </div>
-          <div className="text-sm text-[#888888]">
+          <div className="text-sm text-[#666]">
             © 2025 az.ai. All rights reserved.
           </div>
         </div>
@@ -429,20 +333,14 @@ export default function Home() {
 function FeatureCard({ title, description, icon }: { title: string, description: string, icon: React.ReactNode }) {
   return (
     <motion.div 
-      whileHover={{ y: -5, scale: 1.02 }}
-      className="group p-8 rounded-2xl glass border border-[#3a3a3a]/50 hover:border-[#4a9eff]/50 transition-all duration-300 glow-hover relative overflow-hidden"
+      whileHover={{ y: -5 }}
+      className="group p-10 rounded-3xl bg-white/5 border border-white/10 hover:border-[#4a9eff]/30 transition-all backdrop-blur-sm hover:bg-white/10"
     >
-      <div className="absolute inset-0 bg-gradient-to-br from-[#4a9eff]/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
-      <div className="relative z-10 mb-6 p-4 rounded-xl bg-gradient-to-br from-[#1a1a1a] to-[#2a2a2a] w-fit group-hover:scale-110 transition-transform">
+      <div className="mb-6 p-4 rounded-2xl bg-gradient-to-br from-[#1a1a1a] to-[#2a2a2a] w-fit group-hover:scale-110 transition-transform">
         {icon}
       </div>
-      <h3 className="text-xl font-bold mb-3 text-white group-hover:text-[#4a9eff] transition-colors">{title}</h3>
-      <p className="text-[#888888] leading-relaxed text-sm group-hover:text-[#aaaaaa] transition-colors">{description}</p>
+      <h3 className="text-2xl font-bold mb-4 text-white group-hover:text-[#4a9eff] transition-colors">{title}</h3>
+      <p className="text-[#999] leading-relaxed group-hover:text-white transition-colors">{description}</p>
     </motion.div>
   );
-}
-
-// Helper for Image icon
-function Image({ className }: { className?: string }) {
-    return <ImageIcon className={className} />;
 }

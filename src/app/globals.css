@@ -29,6 +29,15 @@
     }
   }
   
+  @keyframes gradient {
+    0%, 100% {
+      background-position: 0% 50%;
+    }
+    50% {
+      background-position: 100% 50%;
+    }
+  }
+  
   .glass {
     @apply bg-[#1a1a1a]/80 backdrop-blur-xl border border-[#3a3a3a]/50;
   }

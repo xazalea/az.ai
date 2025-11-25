@@ -35,3 +35,17 @@ pollinations/
 # Build artifacts that will be regenerated
 .next/cache
 
+# Speed up deployment - exclude large directories
+packages/*/node_modules
+packages/*/src
+packages/*/tests
+packages/*/examples
+packages/*/docs
+packages/*/.git
+packages/*/README.md
+packages/*/package-lock.json
+packages/*/tsconfig.json
+packages/*/.eslintrc*
+packages/*/jest.config.*
+packages/*/coverage
+
