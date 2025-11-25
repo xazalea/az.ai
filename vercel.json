@@ -14,21 +14,12 @@
     { "source": "/api/openmemory/:path*", "destination": "/api/openmemory/:path*" },
     
     { "source": "/api/models/:path*", "destination": "/api/models/[...path]" },
+    { "source": "/api/services/:path*", "destination": "/api/services/[...path]" },
+    { "source": "/api/python/:path*", "destination": "/api/python/[...path].py" },
     { "source": "/api/pollinations/:path*", "destination": "/api/pollinations/[...path]" },
     { "source": "/api/jimeng-api/:path*", "destination": "/api/jimeng-api/[...path]" },
-    { "source": "/api/viggle/:path*", "destination": "/api/viggle/:path*" },
-    { "source": "/api/ai-video/:path*", "destination": "/api/ai-video/:path*" },
     { "source": "/api/groq/:path*", "destination": "/packages/Groq2API/api/router.go" },
     { "source": "/api/freegpt/:path*", "destination": "/packages/free-gpt3.5-2api/api/router.go" },
-    { "source": "/api/deepseekfree/:path*", "destination": "/api/deepseekfree/:path*" },
-    { "source": "/api/gemini-multimodal/:path*", "destination": "/api/gemini-multimodal/:path*" },
-    { "source": "/api/cliproxy/:path*", "destination": "/packages/CLIProxyAPI/api/router.go" },
-    { "source": "/api/imagefx/:path*", "destination": "/api/imagefx/:path*" },
-    { "source": "/api/imageai/:path*", "destination": "/api/imageai/:path*" },
-    { "source": "/api/video/:path*", "destination": "/api/video/:path*" },
-    { "source": "/api/webai/:path*", "destination": "/api/webai/:path*" },
-    { "source": "/api/gpt4freejs/:path*", "destination": "/api/gpt4freejs/:path*" },
-    { "source": "/api/dreamina/:path*", "destination": "/api/dreamina/:path*" },
-    { "source": "/api/removerized/:path*", "destination": "/api/removerized/:path*" }
+    { "source": "/api/cliproxy/:path*", "destination": "/packages/CLIProxyAPI/api/router.go" }
   ]
 }

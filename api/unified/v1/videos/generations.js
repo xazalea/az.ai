@@ -34,11 +34,11 @@ export default async function handler(req) {
     if (m.includes('jimeng') || m.includes('jimeng-api')) {
       targetUrl = new URL('/api/jimeng-api/v1/videos/generations', url.origin);
     } else if (m.includes('viggle')) {
-      targetUrl = new URL('/api/viggle/v1/videos/generations', url.origin);
+      targetUrl = new URL('/api/services/viggle/v1/videos/generations', url.origin);
     } else if (m.includes('veo')) {
-      targetUrl = new URL('/api/video/v1/videos/generations.py', url.origin);
+      targetUrl = new URL('/api/python/video/v1/videos/generations', url.origin);
     } else if (m.includes('ai-video') || m.includes('tongyi') || m.includes('vidu') || m.includes('pixverse') || m.includes('runway') || m.includes('luma') || m.includes('zhipu') || m.includes('stability')) {
-      targetUrl = new URL('/api/ai-video/v1/videos/generations.py', url.origin);
+      targetUrl = new URL('/api/python/ai-video/v1/videos/generations', url.origin);
     } else {
       // Default to jimeng-api
       targetUrl = new URL('/api/jimeng-api/v1/videos/generations', url.origin);

@@ -31,18 +31,16 @@ export default async function handler(req) {
     if (m.includes('groq')) {
       targetUrl = new URL('/api/groq/v1/chat/completions', url.origin);
     } else if (m.includes('qwen')) {
-      // Use unified route which handles qwen directly
       targetUrl = new URL('/api/unified/v1/chat/completions', url.origin);
     } else if (m.includes('deepseek')) {
       targetUrl = new URL('/api/unified/v1/chat/completions', url.origin);
     } else if (m.includes('gpt-3.5') || m.includes('gpt3.5') || m.includes('chatgpt')) {
-      targetUrl = new URL('/api/gpt4freejs/v1/chat/completions', url.origin);
+      targetUrl = new URL('/api/services/gpt4freejs/v1/chat/completions', url.origin);
     } else if (m.includes('gemini') && m.includes('flash')) {
-      targetUrl = new URL('/api/webai/v1/chat/completions', url.origin);
+      targetUrl = new URL('/api/python/webai/v1/chat/completions', url.origin);
     } else if (m.includes('pollinations')) {
       targetUrl = new URL('/api/pollinations/v1/chat/completions', url.origin);
     } else {
-      // Default to unified route (handles all models)
       targetUrl = new URL('/api/unified/v1/chat/completions', url.origin);
     }
 

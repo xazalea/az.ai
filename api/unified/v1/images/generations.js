@@ -32,15 +32,15 @@ export default async function handler(req) {
     let targetUrl;
     
     if (m.includes('dreamina')) {
-      targetUrl = new URL('/api/dreamina/v1/images/generations.py', url.origin);
+      targetUrl = new URL('/api/python/dreamina/v1/images/generations', url.origin);
     } else if (m.includes('jimeng') || m.includes('jimeng-api')) {
       targetUrl = new URL('/api/jimeng-api/v1/images/generations', url.origin);
     } else if (m.includes('pollinations') || m.includes('flux') || m.includes('turbo')) {
       targetUrl = new URL('/api/pollinations/v1/images/generations', url.origin);
     } else if (m.includes('imagefx') || m.includes('imagen')) {
-      targetUrl = new URL('/api/imagefx/v1/images/generations', url.origin);
+      targetUrl = new URL('/api/services/imagefx/v1/images/generations', url.origin);
     } else if (m.includes('imageai')) {
-      targetUrl = new URL('/api/imageai/v1/images/generations', url.origin);
+      targetUrl = new URL('/api/python/imageai/v1/images/generations', url.origin);
     } else {
       // Default to pollinations
       targetUrl = new URL('/api/pollinations/v1/images/generations', url.origin);
