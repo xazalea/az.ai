@@ -27,6 +27,8 @@
     { "source": "/api/imageai/:path*", "destination": "/api/imageai/:path*" },
     { "source": "/api/video/:path*", "destination": "/api/video/:path*" },
     { "source": "/api/webai/:path*", "destination": "/api/webai/:path*" },
-    { "source": "/api/gpt4freejs/:path*", "destination": "/api/gpt4freejs/:path*" }
+    { "source": "/api/gpt4freejs/:path*", "destination": "/api/gpt4freejs/:path*" },
+    { "source": "/api/dreamina/:path*", "destination": "/api/dreamina/:path*" },
+    { "source": "/api/removerized/:path*", "destination": "/api/removerized/:path*" }
   ]
 }

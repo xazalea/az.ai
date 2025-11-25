@@ -117,6 +117,9 @@ export const PROVIDER_GROUPS: ProviderGroup[] = [
     id: 'image',
     name: 'Image Generation',
     models: [
+      { id: 'dreamina', name: 'Dreamina AI', description: 'High-quality text-to-image & image-to-image', type: 'image', provider: 'image' },
+      { id: 'dreamina-4.0', name: 'Dreamina 4.0', description: 'Latest Dreamina model', type: 'image', provider: 'image' },
+      { id: 'dreamina-3.0', name: 'Dreamina 3.0', description: 'Previous generation', type: 'image', provider: 'image' },
       { id: 'jimeng-api', name: 'Jimeng API (Enhanced)', description: 'Advanced image generation with composition', type: 'image', provider: 'image' },
       { id: 'imageai-google', name: 'ImageAI (Google)', description: 'Enhanced prompts', type: 'image', provider: 'image' },
       { id: 'imageai-openai', name: 'ImageAI (OpenAI)', description: 'DALL-E wrapper', type: 'image', provider: 'image' },
