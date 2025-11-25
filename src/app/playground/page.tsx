@@ -213,19 +213,28 @@ export default function Playground() {
   };
 
   return (
-    <div className="min-h-screen bg-[#1a1a1a] text-white font-sans flex flex-col">
+    <div className="min-h-screen bg-gradient-to-br from-[#0a0a0a] via-[#0f0f0f] to-[#0a0a0a] text-white font-sans flex flex-col relative">
+      {/* Animated background */}
+      <div className="fixed inset-0 -z-10">
+        <div className="absolute top-0 left-1/4 w-96 h-96 bg-[#4a9eff]/5 rounded-full blur-[120px] animate-pulse"></div>
+        <div className="absolute bottom-0 right-1/4 w-96 h-96 bg-[#6bb6ff]/5 rounded-full blur-[120px] animate-pulse delay-1000"></div>
+      </div>
+      
       {/* Header */}
-      <header className="border-b border-[#3a3a3a] bg-[#1a1a1a] sticky top-0 z-20">
+      <header className="glass border-b border-[#3a3a3a]/50 backdrop-blur-xl sticky top-0 z-20">
         <div className="container mx-auto px-4 h-16 flex items-center justify-between">
           <div className="flex items-center space-x-3">
-            <div className="w-8 h-8 rounded bg-[#2a2a2a] border border-[#3a3a3a] flex items-center justify-center">
+            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-[#1a1a1a] to-[#2a2a2a] border border-[#3a3a3a]/50 flex items-center justify-center glow-hover">
               <Terminal className="w-5 h-5 text-[#4a9eff]" />
             </div>
-            <h1 className="text-xl font-semibold text-white">az.ai <span className="opacity-50 font-normal">Playground</span></h1>
+            <h1 className="text-xl font-bold">
+              <span className="bg-gradient-to-r from-[#4a9eff] to-[#6bb6ff] bg-clip-text text-transparent">az.ai</span>
+              <span className="text-white/70 font-normal ml-2">Playground</span>
+            </h1>
             {selectedModelInfo && (
-              <div className="hidden md:flex items-center gap-2 px-2 py-1 rounded bg-[#2a2a2a] border border-[#3a3a3a] text-xs">
+              <div className="hidden md:flex items-center gap-2 px-3 py-1.5 rounded-lg glass border border-[#3a3a3a]/50 text-xs">
                 <span className="text-[#888888]">Model:</span>
-                <span className="text-[#4a9eff] font-medium">{selectedModelInfo.name}</span>
+                <span className="text-[#4a9eff] font-semibold">{selectedModelInfo.name}</span>
               </div>
             )}
           </div>
@@ -233,17 +242,19 @@ export default function Playground() {
           <div className="flex items-center gap-2">
             <button
               onClick={() => setSidebarOpen(!sidebarOpen)}
-              className="md:hidden p-2 rounded hover:bg-[#2a2a2a] transition-colors"
+              className="md:hidden p-2 rounded-lg hover:bg-[#1a1a1a]/50 transition-colors"
             >
               <Settings className="w-5 h-5 text-[#888888]" />
             </button>
             
-            <nav className="flex items-center space-x-1 bg-[#2a2a2a] p-1 rounded border border-[#3a3a3a]">
+            <nav className="flex items-center space-x-1 glass p-1 rounded-xl border border-[#3a3a3a]/50">
               <button
                 onClick={() => setMode('chat')}
                 className={cn(
-                  "px-4 py-2 rounded text-sm font-medium transition-colors flex items-center gap-2",
-                  mode === 'chat' ? "bg-[#4a9eff] text-white" : "text-[#888888] hover:text-white hover:bg-[#1a1a1a]"
+                  "px-4 py-2 rounded-lg text-sm font-semibold transition-all flex items-center gap-2",
+                  mode === 'chat' 
+                    ? "bg-gradient-to-r from-[#4a9eff] to-[#6bb6ff] text-white shadow-lg glow" 
+                    : "text-[#888888] hover:text-white hover:bg-[#1a1a1a]/50"
                 )}
               >
                 <MessageSquare className="w-4 h-4" />
@@ -252,8 +263,10 @@ export default function Playground() {
               <button
                 onClick={() => setMode('image')}
                 className={cn(
-                  "px-4 py-2 rounded text-sm font-medium transition-colors flex items-center gap-2",
-                  mode === 'image' ? "bg-[#4a9eff] text-white" : "text-[#888888] hover:text-white hover:bg-[#1a1a1a]"
+                  "px-4 py-2 rounded-lg text-sm font-semibold transition-all flex items-center gap-2",
+                  mode === 'image' 
+                    ? "bg-gradient-to-r from-[#4a9eff] to-[#6bb6ff] text-white shadow-lg glow" 
+                    : "text-[#888888] hover:text-white hover:bg-[#1a1a1a]/50"
                 )}
               >
                 <ImageIcon className="w-4 h-4" />
@@ -262,8 +275,10 @@ export default function Playground() {
               <button
                 onClick={() => setMode('video')}
                 className={cn(
-                  "px-4 py-2 rounded text-sm font-medium transition-colors flex items-center gap-2",
-                  mode === 'video' ? "bg-[#4a9eff] text-white" : "text-[#888888] hover:text-white hover:bg-[#1a1a1a]"
+                  "px-4 py-2 rounded-lg text-sm font-semibold transition-all flex items-center gap-2",
+                  mode === 'video' 
+                    ? "bg-gradient-to-r from-[#4a9eff] to-[#6bb6ff] text-white shadow-lg glow" 
+                    : "text-[#888888] hover:text-white hover:bg-[#1a1a1a]/50"
                 )}
               >
                 <Video className="w-4 h-4" />
@@ -308,10 +323,10 @@ export default function Playground() {
                   {providerGroups.map(group => {
                     const isExpanded = expandedProviders.has(group.id);
                     return (
-                      <div key={group.id} className="border border-[#3a3a3a] rounded overflow-hidden bg-[#2a2a2a]">
+                      <div key={group.id} className="border border-[#3a3a3a]/50 rounded-xl overflow-hidden glass">
                         <button
                           onClick={() => toggleProvider(group.id)}
-                          className="w-full text-left px-3 py-2 hover:bg-[#1a1a1a] transition-colors flex items-center justify-between text-sm font-medium text-white"
+                          className="w-full text-left px-4 py-3 hover:bg-[#1a1a1a]/50 transition-all flex items-center justify-between text-sm font-semibold text-white rounded-xl glow-hover"
                         >
                           <span>{group.name}</span>
                           {isExpanded ? <ChevronDown className="w-4 h-4 text-[#888888]" /> : <ChevronRight className="w-4 h-4 text-[#888888]" />}
@@ -334,10 +349,10 @@ export default function Playground() {
                                       setShowModelInfo(true);
                                     }}
                                     className={cn(
-                                      "w-full text-left px-3 py-2 rounded text-sm transition-colors group",
+                                      "w-full text-left px-4 py-3 rounded-lg text-sm transition-all group",
                                       selectedModel === model.id 
-                                        ? "bg-[#4a9eff] text-white" 
-                                        : "text-[#888888] hover:text-white hover:bg-[#1a1a1a]"
+                                        ? "bg-gradient-to-r from-[#4a9eff] to-[#6bb6ff] text-white shadow-lg glow font-semibold" 
+                                        : "text-[#888888] hover:text-white hover:bg-[#1a1a1a]/50"
                                     )}
                                   >
                                     <div className="font-medium flex items-center justify-between">
@@ -363,7 +378,7 @@ export default function Playground() {
               <div className="space-y-3">
                 <button
                   onClick={() => setShowSettings(!showSettings)}
-                  className="w-full px-3 py-2 rounded border border-[#3a3a3a] bg-[#2a2a2a] hover:bg-[#1a1a1a] flex items-center justify-between text-sm font-medium text-white transition-colors"
+                  className="w-full px-4 py-3 rounded-xl glass border border-[#3a3a3a]/50 hover:bg-[#1a1a1a]/50 flex items-center justify-between text-sm font-semibold text-white transition-all glow-hover"
                 >
                   <div className="flex items-center gap-2">
                     <Settings className="w-4 h-4 text-[#4a9eff]" />
@@ -380,7 +395,7 @@ export default function Playground() {
                       exit={{ height: 0, opacity: 0 }}
                       className="overflow-hidden"
                     >
-                      <div className="p-3 rounded border border-[#3a3a3a] bg-[#2a2a2a] space-y-3">
+                      <div className="p-4 rounded-xl glass border border-[#3a3a3a]/50 space-y-4">
                         <div className="flex items-center justify-between">
                           <div className="flex items-center gap-2">
                             <Brain className="w-4 h-4 text-[#4a9eff]" />
@@ -421,7 +436,7 @@ export default function Playground() {
                 </AnimatePresence>
               </div>
               
-              <div className="p-4 rounded border border-[#3a3a3a] bg-[#2a2a2a] text-xs text-[#888888]">
+              <div className="p-4 rounded-xl glass border border-[#3a3a3a]/50 text-xs text-[#888888]">
                 <div className="flex items-center gap-2 mb-2 text-[#4a9eff]">
                   <Sparkles className="w-3 h-3" />
                   <span className="font-medium">Tip</span>
@@ -439,10 +454,10 @@ export default function Playground() {
         </AnimatePresence>
 
         {/* Chat/Interaction Area */}
-        <div className="flex-1 bg-[#2a2a2a] rounded-lg border border-[#3a3a3a] overflow-hidden flex flex-col shadow-lg">
+        <div className="flex-1 glass rounded-2xl border border-[#3a3a3a]/50 overflow-hidden flex flex-col shadow-2xl glow-hover">
           
           {/* Output Stage */}
-          <div className="flex-1 p-6 overflow-y-auto min-h-[400px] bg-[#1a1a1a]" ref={scrollRef}>
+          <div className="flex-1 p-8 overflow-y-auto min-h-[400px] bg-gradient-to-br from-[#0f0f0f] to-[#1a1a1a]" ref={scrollRef}>
             <AnimatePresence mode="wait">
               {mode === 'chat' ? (
                 messages.length === 0 ? (
@@ -450,8 +465,8 @@ export default function Playground() {
                     initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}
                     className="h-full flex flex-col items-center justify-center text-center space-y-4"
                   >
-                    <div className="w-20 h-20 rounded-full bg-[#2a2a2a] border-2 border-[#4a9eff] flex items-center justify-center">
-                      <MessageSquare className="w-10 h-10 text-[#4a9eff]" />
+                    <div className="w-24 h-24 rounded-full glass border-2 border-[#4a9eff]/50 flex items-center justify-center glow pulse-glow">
+                      <MessageSquare className="w-12 h-12 text-[#4a9eff]" />
                     </div>
                     <div>
                       <p className="text-xl font-semibold text-white mb-2">Start a conversation</p>
@@ -460,10 +475,14 @@ export default function Playground() {
                       </p>
                     </div>
                     {selectedModelInfo && (
-                      <div className="mt-4 p-3 rounded bg-[#2a2a2a] border border-[#3a3a3a] text-xs text-left max-w-md">
-                        <div className="text-[#4a9eff] font-medium mb-1">{selectedModelInfo.name}</div>
+                      <motion.div 
+                        initial={{ opacity: 0, y: 10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        className="mt-4 p-4 rounded-xl glass border border-[#3a3a3a]/50 text-xs text-left max-w-md glow-hover"
+                      >
+                        <div className="text-[#4a9eff] font-semibold mb-1">{selectedModelInfo.name}</div>
                         <div className="text-[#888888]">{selectedModelInfo.description}</div>
-                      </div>
+                      </motion.div>
                     )}
                   </motion.div>
                 ) : (
@@ -479,18 +498,18 @@ export default function Playground() {
                         )}
                       >
                         <div className={cn(
-                          "w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0 border-2",
+                          "w-12 h-12 rounded-xl flex items-center justify-center flex-shrink-0 border-2 font-bold text-sm",
                           msg.role === 'user' 
-                            ? "bg-[#2a2a2a] border-[#3a3a3a] text-white" 
-                            : "bg-[#4a9eff] border-[#4a9eff] text-white"
+                            ? "glass border-[#3a3a3a]/50 text-white" 
+                            : "bg-gradient-to-br from-[#4a9eff] to-[#6bb6ff] border-[#4a9eff] text-white shadow-lg glow"
                         )}>
                           {msg.role === 'user' ? 'U' : 'AI'}
                         </div>
                         <div className={cn(
-                          "flex-1 p-4 rounded-lg text-sm leading-relaxed border transition-all",
+                          "flex-1 p-5 rounded-2xl text-sm leading-relaxed border backdrop-blur-sm transition-all",
                           msg.role === 'user' 
-                            ? "bg-[#2a2a2a] text-white border-[#3a3a3a] rounded-tr-none" 
-                            : "bg-[#2a2a2a] text-white border-[#3a3a3a] rounded-tl-none"
+                            ? "glass text-white border-[#3a3a3a]/50 rounded-tr-none" 
+                            : "glass text-white border-[#3a3a3a]/50 rounded-tl-none"
                         )}>
                           <div className="whitespace-pre-wrap break-words">{msg.content}</div>
                           {msg.reasoning && (
@@ -525,9 +544,9 @@ export default function Playground() {
                         <div className="w-10 h-10 rounded-full bg-[#4a9eff] flex items-center justify-center">
                           <Loader2 className="w-5 h-5 animate-spin text-white" />
                         </div>
-                        <div className="flex-1 p-4 rounded-lg bg-[#2a2a2a] border border-[#3a3a3a] text-[#888888] text-sm flex items-center gap-2 rounded-tl-none">
-                          <Loader2 className="w-4 h-4 animate-spin" />
-                          <span>Thinking...</span>
+                        <div className="flex-1 p-5 rounded-2xl glass border border-[#3a3a3a]/50 text-[#888888] text-sm flex items-center gap-2 rounded-tl-none">
+                          <Loader2 className="w-4 h-4 animate-spin text-[#4a9eff]" />
+                          <span className="text-white">Thinking...</span>
                         </div>
                       </motion.div>
                     )}
@@ -544,7 +563,7 @@ export default function Playground() {
                       <img 
                         src={generatedImage} 
                         alt="Generated" 
-                        className="max-w-full max-h-[70vh] rounded-lg border-2 border-[#3a3a3a] shadow-xl"
+                        className="max-w-full max-h-[70vh] rounded-2xl border-2 border-[#3a3a3a]/50 shadow-2xl glow-hover"
                       />
                       <div className="absolute top-2 right-2 flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
                         <button
@@ -579,8 +598,8 @@ export default function Playground() {
                     </div>
                   ) : (
                     <div className="text-center space-y-4">
-                      <div className="w-20 h-20 rounded-full bg-[#2a2a2a] border-2 border-[#4a9eff] flex items-center justify-center mx-auto">
-                        <ImageIcon className="w-10 h-10 text-[#4a9eff]" />
+                      <div className="w-24 h-24 rounded-full glass border-2 border-[#4a9eff]/50 flex items-center justify-center mx-auto glow pulse-glow">
+                        <ImageIcon className="w-12 h-12 text-[#4a9eff]" />
                       </div>
                       <div>
                         <p className="text-xl font-semibold text-white mb-2">Generate an Image</p>
@@ -612,8 +631,8 @@ export default function Playground() {
                     </div>
                   ) : (
                     <div className="text-center space-y-4">
-                      <div className="w-20 h-20 rounded-full bg-[#2a2a2a] border-2 border-[#4a9eff] flex items-center justify-center mx-auto">
-                        <Video className="w-10 h-10 text-[#4a9eff]" />
+                      <div className="w-24 h-24 rounded-full glass border-2 border-[#4a9eff]/50 flex items-center justify-center mx-auto glow pulse-glow">
+                        <Video className="w-12 h-12 text-[#4a9eff]" />
                       </div>
                       <div>
                         <p className="text-xl font-semibold text-white mb-2">Generate a Video</p>
@@ -649,7 +668,7 @@ export default function Playground() {
                       ? "Describe the image you want to generate..."
                       : "Describe the video you want to create..."
                   }
-                  className="w-full bg-[#2a2a2a] text-white rounded-lg px-4 py-3 pr-12 border border-[#3a3a3a] focus:border-[#4a9eff] focus:ring-1 focus:ring-[#4a9eff] outline-none resize-none min-h-[60px] max-h-[200px] placeholder:text-[#888888] transition-all"
+                  className="w-full glass text-white rounded-xl px-5 py-4 pr-14 border border-[#3a3a3a]/50 focus:border-[#4a9eff] focus:ring-2 focus:ring-[#4a9eff]/20 outline-none resize-none min-h-[60px] max-h-[200px] placeholder:text-[#888888] transition-all"
                   rows={1}
                 />
                 <div className="absolute right-2 bottom-2 flex items-center gap-1">
