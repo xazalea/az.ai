@@ -129,12 +129,21 @@ export default function Home() {
       </section>
 
       {/* Features Grid */}
-      <section className="py-24 border-y border-[#3a3a3a]">
+      <section className="py-32 relative">
         <div className="container mx-auto px-6">
-          <div className="text-center mb-16">
-            <h2 className="text-3xl md:text-4xl font-semibold mb-4 text-white">Everything you need</h2>
-            <p className="text-[#888888] max-w-2xl mx-auto">Unified AI infrastructure for modern applications.</p>
-          </div>
+          <motion.div 
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.6 }}
+            className="text-center mb-20"
+          >
+            <h2 className="text-4xl md:text-5xl font-bold mb-6">
+              <span className="text-white">Everything you </span>
+              <span className="gradient-text">need</span>
+            </h2>
+            <p className="text-xl text-[#888888] max-w-2xl mx-auto">Unified AI infrastructure for modern applications.</p>
+          </motion.div>
           
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             <FeatureCard 
@@ -172,45 +181,72 @@ export default function Home() {
       </section>
 
       {/* Advanced Features */}
-      <section className="py-24 border-y border-[#3a3a3a]">
+      <section className="py-32 relative">
         <div className="container mx-auto px-6">
-          <div className="text-center mb-16">
-            <h2 className="text-3xl md:text-4xl font-semibold mb-4 text-white">Advanced Features</h2>
-            <p className="text-[#888888] max-w-2xl mx-auto">
+          <motion.div 
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.6 }}
+            className="text-center mb-20"
+          >
+            <h2 className="text-4xl md:text-5xl font-bold mb-6">
+              <span className="text-white">Advanced </span>
+              <span className="gradient-text">Features</span>
+            </h2>
+            <p className="text-xl text-[#888888] max-w-2xl mx-auto">
               Reasoning and memory systems included.
             </p>
-          </div>
+          </motion.div>
           
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-4xl mx-auto">
-            <div className="p-6 rounded border border-[#3a3a3a] bg-[#2a2a2a]">
-              <div className="flex items-center gap-3 mb-4">
-                <div className="p-2 rounded bg-[#1a1a1a]">
-                  <Brain className="w-5 h-5 text-[#4a9eff]" />
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-5xl mx-auto">
+            <motion.div 
+              initial={{ opacity: 0, x: -20 }}
+              whileInView={{ opacity: 1, x: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.6 }}
+              className="group p-8 rounded-2xl glass border border-[#3a3a3a]/50 hover:border-[#4a9eff]/50 transition-all glow-hover relative overflow-hidden"
+            >
+              <div className="absolute inset-0 bg-gradient-to-br from-[#4a9eff]/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
+              <div className="relative z-10">
+                <div className="flex items-center gap-4 mb-6">
+                  <div className="p-4 rounded-xl bg-gradient-to-br from-[#1a1a1a] to-[#2a2a2a] group-hover:scale-110 transition-transform">
+                    <Brain className="w-6 h-6 text-[#4a9eff]" />
+                  </div>
+                  <div>
+                    <h3 className="text-xl font-bold text-white group-hover:text-[#4a9eff] transition-colors">OpenReason</h3>
+                    <p className="text-xs text-[#888888]">Always enabled</p>
+                  </div>
                 </div>
-                <div>
-                  <h3 className="text-lg font-semibold text-white">Reasoning</h3>
-                  <p className="text-xs text-[#888888]">Always enabled</p>
-                </div>
+                <p className="text-[#888888] leading-relaxed group-hover:text-[#aaaaaa] transition-colors">
+                  Advanced reasoning engine enhances all responses with multi-domain capabilities.
+                </p>
               </div>
-              <p className="text-[#888888] text-sm">
-                Advanced reasoning engine enhances all responses with multi-domain capabilities.
-              </p>
-            </div>
+            </motion.div>
 
-            <div className="p-6 rounded border border-[#3a3a3a] bg-[#2a2a2a]">
-              <div className="flex items-center gap-3 mb-4">
-                <div className="p-2 rounded bg-[#1a1a1a]">
-                  <Database className="w-5 h-5 text-[#4a9eff]" />
+            <motion.div 
+              initial={{ opacity: 0, x: 20 }}
+              whileInView={{ opacity: 1, x: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.6 }}
+              className="group p-8 rounded-2xl glass border border-[#3a3a3a]/50 hover:border-[#4a9eff]/50 transition-all glow-hover relative overflow-hidden"
+            >
+              <div className="absolute inset-0 bg-gradient-to-br from-[#4a9eff]/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
+              <div className="relative z-10">
+                <div className="flex items-center gap-4 mb-6">
+                  <div className="p-4 rounded-xl bg-gradient-to-br from-[#1a1a1a] to-[#2a2a2a] group-hover:scale-110 transition-transform">
+                    <Database className="w-6 h-6 text-[#4a9eff]" />
+                  </div>
+                  <div>
+                    <h3 className="text-xl font-bold text-white group-hover:text-[#4a9eff] transition-colors">OpenMemory</h3>
+                    <p className="text-xs text-[#888888]">Auto-enabled</p>
+                  </div>
                 </div>
-                <div>
-                  <h3 className="text-lg font-semibold text-white">Memory</h3>
-                  <p className="text-xs text-[#888888]">Auto-enabled</p>
-                </div>
+                <p className="text-[#888888] leading-relaxed group-hover:text-[#aaaaaa] transition-colors">
+                  Session-based memory for context-aware conversations across models.
+                </p>
               </div>
-              <p className="text-[#888888] text-sm">
-                Session-based memory for context-aware conversations across models.
-              </p>
-            </div>
+            </motion.div>
           </div>
         </div>
       </section>
@@ -288,11 +324,17 @@ export default function Home() {
                   </div>
                 ))}
               </div>
-            </div>
+            </motion.div>
 
             {/* DeepSeek */}
-            <div className="p-6 rounded border border-[#3a3a3a] bg-[#2a2a2a]">
-              <h3 className="text-lg font-semibold text-white mb-3">DeepSeek</h3>
+            <motion.div 
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.4, delay: 0.3 }}
+              className="group p-6 rounded-xl glass border border-[#3a3a3a]/50 hover:border-[#4a9eff]/50 transition-all"
+            >
+              <h3 className="text-lg font-bold text-white mb-4 group-hover:text-[#4a9eff] transition-colors">DeepSeek</h3>
               <div className="space-y-2 text-sm text-[#888888]">
                 {['DeepSeek V3', 'DeepSeek R1', 'DeepSeek V3.1', 'DeepSeek Free'].map((model) => (
                   <div key={model} className="flex items-center gap-2">
@@ -301,11 +343,17 @@ export default function Home() {
                   </div>
                 ))}
               </div>
-            </div>
+            </motion.div>
 
             {/* Chinese Providers */}
-            <div className="p-6 rounded border border-[#3a3a3a] bg-[#2a2a2a]">
-              <h3 className="text-lg font-semibold text-white mb-3">Chinese</h3>
+            <motion.div 
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.4, delay: 0.4 }}
+              className="group p-6 rounded-xl glass border border-[#3a3a3a]/50 hover:border-[#4a9eff]/50 transition-all"
+            >
+              <h3 className="text-lg font-bold text-white mb-4 group-hover:text-[#4a9eff] transition-colors">Chinese</h3>
               <div className="space-y-2 text-sm text-[#888888]">
                 {['Qwen 2.5', 'GLM-4', 'Doubao Pro', 'Kimi', 'MiniMax', 'Step-1', 'Jimeng'].map((model) => (
                   <div key={model} className="flex items-center gap-2">
@@ -314,11 +362,17 @@ export default function Home() {
                   </div>
                 ))}
               </div>
-            </div>
+            </motion.div>
 
             {/* Other Providers */}
-            <div className="p-6 rounded border border-[#3a3a3a] bg-[#2a2a2a]">
-              <h3 className="text-lg font-semibold text-white mb-3">More</h3>
+            <motion.div 
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.4, delay: 0.5 }}
+              className="group p-6 rounded-xl glass border border-[#3a3a3a]/50 hover:border-[#4a9eff]/50 transition-all"
+            >
+              <h3 className="text-lg font-bold text-white mb-4 group-hover:text-[#4a9eff] transition-colors">More</h3>
               <div className="space-y-2 text-sm text-[#888888]">
                 {['Mistral Large', 'Grok-4', 'Llama 4', 'Groq LPU™', 'Pollinations'].map((model) => (
                   <div key={model} className="flex items-center gap-2">
@@ -327,9 +381,9 @@ export default function Home() {
                   </div>
                 ))}
               </div>
-            </div>
+            </motion.div>
           </div>
-        </div>
+        </motion.div>
       </section>
 
       {/* CTA */}
@@ -368,7 +422,6 @@ export default function Home() {
           </div>
         </div>
       </footer>
-
     </main>
   );
 }
