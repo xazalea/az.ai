@@ -31,7 +31,9 @@ export default async function handler(req) {
     // Route to appropriate handler based on model
     let targetUrl;
     
-    if (m.includes('dreamina')) {
+    if (m.includes('stabilityai') || m.includes('stable-diffusion') || m.includes('deepinfra')) {
+      targetUrl = new URL('/api/deepinfra/v1/images/generations', url.origin);
+    } else if (m.includes('dreamina')) {
       targetUrl = new URL('/api/python/dreamina/v1/images/generations', url.origin);
     } else if (m.includes('jimeng') || m.includes('jimeng-api')) {
       targetUrl = new URL('/api/jimeng-api/v1/images/generations', url.origin);

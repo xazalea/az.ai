@@ -22,6 +22,8 @@ export default function Playground() {
   const [showSettings, setShowSettings] = useState(false);
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [showModelInfo, setShowModelInfo] = useState(false);
+  const [sortBy, setSortBy] = useState<'provider' | 'name' | 'speed'>('provider');
+  const [filterProvider, setFilterProvider] = useState<string>('all');
   const scrollRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
 
@@ -52,7 +54,33 @@ export default function Playground() {
   };
 
   const providerGroups = getProviderGroupsByType(mode);
-  const selectedModelInfo = providerGroups.flatMap(g => g.models).find(m => m.id === selectedModel);
+  
+  // Sort and filter models
+  const sortedProviderGroups = providerGroups.map(group => {
+    let sortedModels = [...group.models];
+    
+    if (sortBy === 'name') {
+      sortedModels.sort((a, b) => a.name.localeCompare(b.name));
+    } else if (sortBy === 'speed') {
+      sortedModels.sort((a, b) => {
+        const aSpeed = a.speed === 'fast' ? 3 : a.speed === 'medium' ? 2 : 1;
+        const bSpeed = b.speed === 'fast' ? 3 : b.speed === 'medium' ? 2 : 1;
+        return bSpeed - aSpeed;
+      });
+    }
+    
+    // Filter by provider if selected
+    if (filterProvider !== 'all') {
+      sortedModels = sortedModels.filter(m => m.provider.toLowerCase() === filterProvider.toLowerCase());
+    }
+    
+    return { ...group, models: sortedModels };
+  }).filter(group => group.models.length > 0);
+  
+  const selectedModelInfo = sortedProviderGroups.flatMap(g => g.models).find(m => m.id === selectedModel);
+  
+  // Get unique providers for filter
+  const uniqueProviders = Array.from(new Set(providerGroups.flatMap(g => g.models.map(m => m.provider))));
 
   const handleSend = async () => {
     if (!input.trim() || isLoading) return;
@@ -233,9 +261,9 @@ export default function Playground() {
                   </h1>
                 </Link>
             {selectedModelInfo && (
-              <div className="hidden md:flex items-center gap-2 px-3 py-1.5 rounded-lg glass border border-[#3a3a3a]/50 text-xs">
-                <span className="text-[#888888]">Model:</span>
-                <span className="text-[#4a9eff] font-semibold">{selectedModelInfo.name}</span>
+              <div className="hidden md:flex items-center gap-2 px-3 py-1.5 rounded-lg bg-[#ffffff] border border-[#e8e5e0]/50 text-xs">
+                <span className="text-[#6b6b6b]">Model:</span>
+                <span className="text-[#d94d7a] font-semibold">{selectedModelInfo.name}</span>
               </div>
             )}
           </div>
@@ -243,9 +271,9 @@ export default function Playground() {
           <div className="flex items-center gap-2">
             <button
               onClick={() => setSidebarOpen(!sidebarOpen)}
-              className="md:hidden p-2 rounded-lg hover:bg-[#1a1a1a]/50 transition-colors"
+              className="md:hidden p-2 rounded-lg hover:bg-[#f5f3f0]/50 transition-colors"
             >
-              <Settings className="w-5 h-5 text-[#888888]" />
+              <Settings className="w-5 h-5 text-[#6b6b6b]" />
             </button>
             
             <nav className="flex items-center space-x-1 bg-[#ffffff] p-1 rounded-full border-2 border-[#e8e5e0]">
@@ -321,16 +349,16 @@ export default function Playground() {
                   </button>
                 </div>
                 <div className="space-y-1">
-                  {providerGroups.map(group => {
+                  {sortedProviderGroups.map(group => {
                     const isExpanded = expandedProviders.has(group.id);
                     return (
-                      <div key={group.id} className="border border-[#3a3a3a]/50 rounded-xl overflow-hidden glass">
+                      <div key={group.id} className="border border-[#e8e5e0]/50 rounded-xl overflow-hidden bg-[#ffffff]">
                         <button
                           onClick={() => toggleProvider(group.id)}
-                          className="w-full text-left px-4 py-3 hover:bg-[#1a1a1a]/50 transition-all flex items-center justify-between text-sm font-semibold text-white rounded-xl glow-hover"
+                          className="w-full text-left px-4 py-3 hover:bg-[#f5f3f0]/50 transition-all flex items-center justify-between text-sm font-semibold text-[#2d2d2d] rounded-xl "
                         >
                           <span>{group.name}</span>
-                          {isExpanded ? <ChevronDown className="w-4 h-4 text-[#888888]" /> : <ChevronRight className="w-4 h-4 text-[#888888]" />}
+                          {isExpanded ? <ChevronDown className="w-4 h-4 text-[#6b6b6b]" /> : <ChevronRight className="w-4 h-4 text-[#6b6b6b]" />}
                         </button>
                         <AnimatePresence>
                           {isExpanded && (
@@ -359,7 +387,7 @@ export default function Playground() {
                                     <div className="font-medium flex items-center justify-between">
                                       <span>{model.name}</span>
                                       {model.speed === 'fast' && (
-                                        <Zap className="w-3 h-3 text-[#4a9eff] opacity-70" />
+                                        <Zap className="w-3 h-3 text-[#d94d7a] opacity-70" />
                                       )}
                                     </div>
                                     <div className="text-xs opacity-70 truncate mt-0.5">{model.description}</div>
@@ -382,10 +410,10 @@ export default function Playground() {
                   className="w-full px-4 py-3 rounded-2xl bg-[#ffffff] border-2 border-[#e8e5e0] hover:bg-[#f5f3f0] flex items-center justify-between text-sm font-semibold text-[#2d2d2d] transition-all"
                 >
                   <div className="flex items-center gap-2">
-                    <Settings className="w-4 h-4 text-[#4a9eff]" />
+                    <Settings className="w-4 h-4 text-[#d94d7a]" />
                     <span>Settings</span>
                   </div>
-                  {showSettings ? <ChevronDown className="w-4 h-4 text-[#888888]" /> : <ChevronRight className="w-4 h-4 text-[#888888]" />}
+                  {showSettings ? <ChevronDown className="w-4 h-4 text-[#6b6b6b]" /> : <ChevronRight className="w-4 h-4 text-[#6b6b6b]" />}
                 </button>
                 
                 <AnimatePresence>
@@ -399,30 +427,30 @@ export default function Playground() {
                       <div className="p-4 rounded-2xl bg-[#ffffff] border-2 border-[#e8e5e0] space-y-4">
                         <div className="flex items-center justify-between">
                           <div className="flex items-center gap-2">
-                            <Brain className="w-4 h-4 text-[#4a9eff]" />
+                            <Brain className="w-4 h-4 text-[#d94d7a]" />
                             <div>
-                              <div className="text-sm font-medium text-white">Reasoning</div>
-                              <div className="text-xs text-[#888888]">Always enabled</div>
+                              <div className="text-sm font-medium text-[#2d2d2d]">Reasoning</div>
+                              <div className="text-xs text-[#6b6b6b]">Always enabled</div>
                             </div>
                           </div>
-                          <div className="px-2 py-1 rounded bg-[#1a1a1a] border border-[#3a3a3a] text-xs text-[#4a9eff] font-medium">
+                          <div className="px-2 py-1 rounded bg-[#f5f3f0] border border-[#e8e5e0] text-xs text-[#d94d7a] font-medium">
                             On
                           </div>
                         </div>
                         
                         <div className="flex items-center justify-between">
                           <div className="flex items-center gap-2">
-                            <Database className="w-4 h-4 text-[#4a9eff]" />
+                            <Database className="w-4 h-4 text-[#d94d7a]" />
                             <div>
-                              <div className="text-sm font-medium text-white">Memory</div>
-                              <div className="text-xs text-[#888888]">Session-based</div>
+                              <div className="text-sm font-medium text-[#2d2d2d]">Memory</div>
+                              <div className="text-xs text-[#6b6b6b]">Session-based</div>
                             </div>
                           </div>
                           <button
                             onClick={() => setOpenMemoryEnabled(!openMemoryEnabled)}
                             className={cn(
                               "relative w-11 h-6 rounded-full transition-colors",
-                              openMemoryEnabled ? "bg-[#4a9eff]" : "bg-[#3a3a3a]"
+                              openMemoryEnabled ? "bg-[#a8d5ba]" : "bg-[#d4c5b8]"
                             )}
                           >
                             <div className={cn(
@@ -438,7 +466,7 @@ export default function Playground() {
               </div>
               
               <div className="p-4 rounded-2xl bg-[#ffffff] border-2 border-[#e8e5e0] text-xs text-[#6b6b6b]">
-                <div className="flex items-center gap-2 mb-2 text-[#4a9eff]">
+                <div className="flex items-center gap-2 mb-2 text-[#d94d7a]">
                   <Sparkles className="w-3 h-3" />
                   <span className="font-medium">Tip</span>
                 </div>
@@ -455,7 +483,7 @@ export default function Playground() {
         </AnimatePresence>
 
         {/* Chat/Interaction Area */}
-        <div className="flex-1 glass rounded-2xl border border-[#3a3a3a]/50 overflow-hidden flex flex-col shadow-2xl glow-hover">
+        <div className="flex-1 bg-[#ffffff] rounded-2xl border border-[#e8e5e0]/50 overflow-hidden flex flex-col shadow-2xl ">
           
                 {/* Output Stage */}
                 <div className="flex-1 p-8 overflow-y-auto min-h-[400px] bg-[#ffffff]" ref={scrollRef}>
@@ -466,12 +494,12 @@ export default function Playground() {
                     initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}
                     className="h-full flex flex-col items-center justify-center text-center space-y-4"
                   >
-                    <div className="w-24 h-24 rounded-full glass border-2 border-[#4a9eff]/50 flex items-center justify-center glow pulse-glow">
-                      <MessageSquare className="w-12 h-12 text-[#4a9eff]" />
+                    <div className="w-24 h-24 rounded-full bg-[#ffffff] border-2 border-[#4a9eff]/50 flex items-center justify-center glow pulse-glow">
+                      <MessageSquare className="w-12 h-12 text-[#d94d7a]" />
                     </div>
                     <div>
-                      <p className="text-xl font-semibold text-white mb-2">Start a conversation</p>
-                      <p className="text-sm text-[#888888]">
+                      <p className="text-xl font-semibold text-[#2d2d2d] mb-2">Start a conversation</p>
+                      <p className="text-sm text-[#6b6b6b]">
                         {selectedModelInfo ? `Using ${selectedModelInfo.name}` : 'Select a model to begin'}
                       </p>
                     </div>
@@ -479,10 +507,10 @@ export default function Playground() {
                       <motion.div 
                         initial={{ opacity: 0, y: 10 }}
                         animate={{ opacity: 1, y: 0 }}
-                        className="mt-4 p-4 rounded-xl glass border border-[#3a3a3a]/50 text-xs text-left max-w-md glow-hover"
+                        className="mt-4 p-4 rounded-xl bg-[#ffffff] border border-[#e8e5e0]/50 text-xs text-left max-w-md "
                       >
-                        <div className="text-[#4a9eff] font-semibold mb-1">{selectedModelInfo.name}</div>
-                        <div className="text-[#888888]">{selectedModelInfo.description}</div>
+                        <div className="text-[#d94d7a] font-semibold mb-1">{selectedModelInfo.name}</div>
+                        <div className="text-[#6b6b6b]">{selectedModelInfo.description}</div>
                       </motion.div>
                     )}
                   </motion.div>
@@ -514,8 +542,8 @@ export default function Playground() {
                         )}>
                           <div className="whitespace-pre-wrap break-words">{msg.content}</div>
                           {msg.reasoning && (
-                            <div className="mt-3 pt-3 border-t border-[#3a3a3a]">
-                              <div className="flex items-center gap-2 text-xs text-[#4a9eff]">
+                            <div className="mt-3 pt-3 border-t border-[#e8e5e0]">
+                              <div className="flex items-center gap-2 text-xs text-[#d94d7a]">
                                 <Brain className="w-3 h-3" />
                                 <span>
                                   Reasoning: {msg.reasoning.mode} 
@@ -527,10 +555,10 @@ export default function Playground() {
                           <div className="mt-2 flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
                             <button
                               onClick={() => copyMessage(msg.content)}
-                              className="p-1.5 rounded hover:bg-[#1a1a1a] transition-colors"
+                              className="p-1.5 rounded hover:bg-[#f5f3f0] transition-colors"
                               title="Copy"
                             >
-                              <Copy className="w-3 h-3 text-[#888888]" />
+                              <Copy className="w-3 h-3 text-[#6b6b6b]" />
                             </button>
                           </div>
                         </div>
@@ -543,7 +571,7 @@ export default function Playground() {
                         className="flex gap-4"
                       >
                         <div className="w-10 h-10 rounded-full bg-[#4a9eff] flex items-center justify-center">
-                          <Loader2 className="w-5 h-5 animate-spin text-white" />
+                          <Loader2 className="w-5 h-5 animate-spin text-[#2d2d2d]" />
                         </div>
                         <div className="flex-1 p-5 rounded-2xl bg-[#ffe0ed] border-2 border-[#ffb3d1] text-[#6b6b6b] text-sm flex items-center gap-2 rounded-tl-none">
                           <Loader2 className="w-4 h-4 animate-spin text-[#d94d7a]" />
@@ -564,7 +592,7 @@ export default function Playground() {
                       <img 
                         src={generatedImage} 
                         alt="Generated" 
-                        className="max-w-full max-h-[70vh] rounded-2xl border-2 border-[#3a3a3a]/50 shadow-2xl glow-hover"
+                        className="max-w-full max-h-[70vh] rounded-2xl border-2 border-[#e8e5e0]/50 shadow-2xl "
                       />
                       <div className="absolute top-2 right-2 flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
                         <button
@@ -574,28 +602,28 @@ export default function Playground() {
                             link.download = `generated-${Date.now()}.png`;
                             link.click();
                           }}
-                          className="p-2 rounded bg-[#2a2a2a] border border-[#3a3a3a] hover:bg-[#1a1a1a] transition-colors"
+                          className="p-2 rounded bg-[#ffffff] border border-[#e8e5e0] hover:bg-[#f5f3f0] transition-colors"
                           title="Download"
                         >
-                          <Download className="w-4 h-4 text-white" />
+                          <Download className="w-4 h-4 text-[#2d2d2d]" />
                         </button>
                         <button
                           onClick={() => copyMessage(generatedImage)}
-                          className="p-2 rounded bg-[#2a2a2a] border border-[#3a3a3a] hover:bg-[#1a1a1a] transition-colors"
+                          className="p-2 rounded bg-[#ffffff] border border-[#e8e5e0] hover:bg-[#f5f3f0] transition-colors"
                           title="Copy URL"
                         >
-                          <Copy className="w-4 h-4 text-white" />
+                          <Copy className="w-4 h-4 text-[#2d2d2d]" />
                         </button>
                       </div>
                     </motion.div>
                   ) : isLoading ? (
                     <div className="text-center space-y-4">
                       <div className="relative w-24 h-24 mx-auto">
-                        <div className="absolute inset-0 rounded-full border-4 border-[#3a3a3a]"></div>
+                        <div className="absolute inset-0 rounded-full border-4 border-[#e8e5e0]"></div>
                         <div className="absolute inset-0 rounded-full border-4 border-[#4a9eff] border-t-transparent animate-spin"></div>
                       </div>
-                      <p className="text-[#4a9eff] font-medium">Generating image...</p>
-                      <p className="text-xs text-[#888888]">This may take a moment</p>
+                      <p className="text-[#d94d7a] font-medium">Generating image...</p>
+                      <p className="text-xs text-[#6b6b6b]">This may take a moment</p>
                     </div>
                   ) : (
                     <div className="text-center space-y-4">
@@ -619,16 +647,26 @@ export default function Playground() {
                       animate={{ opacity: 1, scale: 1 }}
                       src={generatedVideo}
                       controls
-                      className="max-w-full max-h-[70vh] rounded-lg border-2 border-[#3a3a3a] shadow-xl"
+                      className="max-w-full max-h-[70vh] rounded-2xl border-2 border-[#e8e5e0]"
                     />
+                    <div className="mt-4 text-center">
+                      <a
+                        href={generatedVideo}
+                        download={`generated-video-${Date.now()}.mp4`}
+                        className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-[#ffb3d1] text-[#2d2d2d] font-medium hover:bg-[#ffa0c7] transition-colors"
+                      >
+                        <Download className="w-4 h-4" />
+                        Download Video
+                      </a>
+                    </div>
                   ) : isLoading ? (
                     <div className="text-center space-y-4">
                       <div className="relative w-24 h-24 mx-auto">
-                        <div className="absolute inset-0 rounded-full border-4 border-[#3a3a3a]"></div>
-                        <div className="absolute inset-0 rounded-full border-4 border-[#4a9eff] border-t-transparent animate-spin"></div>
+                        <div className="absolute inset-0 rounded-full border-4 border-[#e8e5e0]"></div>
+                        <div className="absolute inset-0 rounded-full border-4 border-[#ffb3d1] border-t-transparent animate-spin"></div>
                       </div>
-                      <p className="text-[#4a9eff] font-medium">Generating video...</p>
-                      <p className="text-xs text-[#888888]">This may take several minutes</p>
+                      <p className="text-[#d94d7a] font-medium">Generating video...</p>
+                      <p className="text-xs text-[#6b6b6b]">This may take several minutes</p>
                     </div>
                   ) : (
                     <div className="text-center space-y-4">
@@ -636,8 +674,8 @@ export default function Playground() {
                         <Video className="w-12 h-12 text-[#d94d7a]" />
                       </div>
                       <div>
-                        <p className="text-xl font-semibold text-white mb-2">Generate a Video</p>
-                        <p className="text-sm text-[#888888]">
+                        <p className="text-xl font-semibold text-[#2d2d2d] mb-2">Generate a Video</p>
+                        <p className="text-sm text-[#6b6b6b]">
                           {selectedModelInfo ? `Using ${selectedModelInfo.name}` : 'Select a model and enter a prompt'}
                         </p>
                       </div>
@@ -649,7 +687,7 @@ export default function Playground() {
           </div>
 
           {/* Input Area */}
-          <div className="p-4 bg-[#1a1a1a] border-t border-[#3a3a3a]">
+          <div className="p-4 bg-[#f5f3f0] border-t border-[#e8e5e0]">
             <div className="flex items-end gap-2">
               <div className="flex-1 relative">
                 <textarea
@@ -669,17 +707,17 @@ export default function Playground() {
                       ? "Describe the image you want to generate..."
                       : "Describe the video you want to create..."
                   }
-                  className="w-full glass text-white rounded-xl px-5 py-4 pr-14 border border-[#3a3a3a]/50 focus:border-[#4a9eff] focus:ring-2 focus:ring-[#4a9eff]/20 outline-none resize-none min-h-[60px] max-h-[200px] placeholder:text-[#888888] transition-all"
+                  className="w-full bg-[#ffffff] text-[#2d2d2d] rounded-xl px-5 py-4 pr-14 border border-[#e8e5e0]/50 focus:border-[#4a9eff] focus:ring-2 focus:ring-[#4a9eff]/20 outline-none resize-none min-h-[60px] max-h-[200px] placeholder:text-[#6b6b6b] transition-all"
                   rows={1}
                 />
                 <div className="absolute right-2 bottom-2 flex items-center gap-1">
                   {messages.length > 0 && mode === 'chat' && (
                     <button
                       onClick={clearChat}
-                      className="p-1.5 rounded hover:bg-[#1a1a1a] transition-colors"
+                      className="p-1.5 rounded hover:bg-[#f5f3f0] transition-colors"
                       title="Clear chat"
                     >
-                      <Trash2 className="w-4 h-4 text-[#888888]" />
+                      <Trash2 className="w-4 h-4 text-[#6b6b6b]" />
                     </button>
                   )}
                 </div>
@@ -690,8 +728,8 @@ export default function Playground() {
                 className={cn(
                   "p-3 rounded-lg transition-all flex items-center justify-center",
                   isLoading || !input.trim()
-                    ? "bg-[#3a3a3a] text-[#888888] cursor-not-allowed"
-                    : "bg-[#4a9eff] text-white hover:bg-[#3a8ee0] shadow-lg hover:shadow-[#4a9eff]/50"
+                    ? "bg-[#3a3a3a] text-[#6b6b6b] cursor-not-allowed"
+                    : "bg-[#4a9eff] text-[#2d2d2d] hover:bg-[#3a8ee0] shadow-lg hover:shadow-[#4a9eff]/50"
                 )}
               >
                 {isLoading ? (
@@ -701,10 +739,10 @@ export default function Playground() {
                 )}
               </button>
             </div>
-            <div className="mt-2 flex items-center justify-between text-xs text-[#888888]/60">
+            <div className="mt-2 flex items-center justify-between text-xs text-[#6b6b6b]/60">
               <div className="flex items-center gap-4">
                 {selectedModelInfo && (
-                  <span>Model: <span className="text-[#4a9eff]">{selectedModelInfo.name}</span></span>
+                  <span>Model: <span className="text-[#d94d7a]">{selectedModelInfo.name}</span></span>
                 )}
                 {openMemoryEnabled && (
                   <span className="flex items-center gap-1">

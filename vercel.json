@@ -18,6 +18,7 @@
     { "source": "/api/python/:path*", "destination": "/api/python/[...path].py" },
     { "source": "/api/pollinations/:path*", "destination": "/api/pollinations/[...path]" },
     { "source": "/api/jimeng-api/:path*", "destination": "/api/jimeng-api/[...path]" },
+    { "source": "/api/deepinfra/:path*", "destination": "/api/deepinfra/[...path]" },
     { "source": "/api/groq/:path*", "destination": "/packages/Groq2API/api/router.go" },
     { "source": "/api/freegpt/:path*", "destination": "/packages/free-gpt3.5-2api/api/router.go" },
     { "source": "/api/cliproxy/:path*", "destination": "/packages/CLIProxyAPI/api/router.go" }

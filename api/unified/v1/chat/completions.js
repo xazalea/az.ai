@@ -117,6 +117,7 @@ export default async function handler(req) {
 
     let responseData;
     let responseStatus = 200;
+    let targetUrl;
     
     // Determine which handler to use based on model
     const requestBody = { ...body, messages: [...memoryContext, ...messages] };
@@ -152,23 +153,28 @@ export default async function handler(req) {
       responseData = await response.json();
       responseStatus = response.status;
     } else {
-      // External API routes (Python/Go or services that need separate routes)
-      const externalRoutes = {
-        'groq': '/api/groq/v1/chat/completions',
-        'gpt-4': '/api/gpt4freejs/v1/chat/completions',
-        'gpt4': '/api/gpt4freejs/v1/chat/completions',
-        'gpt-3.5': '/api/gpt4freejs/v1/chat/completions',
-        'gpt3.5': '/api/gpt4freejs/v1/chat/completions',
-        'chatgpt': '/api/gpt4freejs/v1/chat/completions',
-        'gemini-multimodal': '/api/gemini-multimodal/v1/chat/completions',
-        'pollinations': '/api/pollinations/v1/chat/completions',
-        'webai': '/api/webai/v1/chat/completions',
-        'g4f': '/api/webai/v1/chat/completions',
-        'deepseek-free': '/api/deepseekfree/v1/chat/completions',
-      };
-      
-      const targetRoute = externalRoutes[m] || '/api/gpt4freejs/v1/chat/completions';
-      const targetUrl = new URL(targetRoute, url.origin);
+      // Check if it's a DeepInfra model (contains / in model name)
+      if (m.includes('/') || m.includes('llama') || m.includes('mixtral') || m.includes('qwen/qwen') || m.includes('deepseek-ai') || m.includes('google/gemma') || m.includes('01-ai') || m.includes('microsoft/phi')) {
+        targetUrl = new URL('/api/deepinfra/v1/chat/completions', url.origin);
+      } else {
+        // External API routes (Python/Go or services that need separate routes)
+        const externalRoutes = {
+          'groq': '/api/groq/v1/chat/completions',
+          'gpt-4': '/api/services/gpt4freejs/v1/chat/completions',
+          'gpt4': '/api/services/gpt4freejs/v1/chat/completions',
+          'gpt-3.5': '/api/services/gpt4freejs/v1/chat/completions',
+          'gpt3.5': '/api/services/gpt4freejs/v1/chat/completions',
+          'chatgpt': '/api/services/gpt4freejs/v1/chat/completions',
+          'gemini-multimodal': '/api/python/gemini-multimodal/v1/chat/completions',
+          'pollinations': '/api/pollinations/v1/chat/completions',
+          'webai': '/api/python/webai/v1/chat/completions',
+          'g4f': '/api/python/webai/v1/chat/completions',
+          'deepseek-free': '/api/python/deepseekfree/v1/chat/completions',
+        };
+        
+        const targetRoute = externalRoutes[m] || '/api/services/gpt4freejs/v1/chat/completions';
+        targetUrl = new URL(targetRoute, url.origin);
+      }
       
       const response = await fetch(targetUrl, {
         method: 'POST',

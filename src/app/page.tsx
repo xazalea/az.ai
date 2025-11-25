@@ -176,7 +176,7 @@ export default function Home() {
           <FeatureCard 
             icon={<TrendingUp className="w-6 h-6 text-[#a8d5ba]" />}
             title="Price & Performance"
-            description="Keep costs in check without sacrificing speed. OpenRouter runs at the edge, adding just ~15ms latency."
+            description="Keep costs in check without sacrificing speed. Optimized routing adds just ~15ms latency."
             color="green"
           />
           <FeatureCard 
