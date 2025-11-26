@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
 import { Inter } from 'next/font/google';
+import Script from 'next/script';
 import './globals.css';
 
 const inter = Inter({
@@ -120,7 +121,18 @@ export default function RootLayout({
           }}
         />
       </head>
-      <body className="min-h-screen bg-[#faf9f7] font-sans antialiased">{children}</body>
+      <body className="min-h-screen bg-[#faf9f7] font-sans antialiased">
+        {children}
+        {/* liquidGL dependencies */}
+        <Script
+          src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"
+          strategy="lazyOnload"
+        />
+        <Script
+          src="/liquidGL.js"
+          strategy="lazyOnload"
+        />
+      </body>
     </html>
   );
 }

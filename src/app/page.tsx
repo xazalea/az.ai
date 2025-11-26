@@ -10,8 +10,53 @@ export default function Home() {
   useEffect(() => {
     // Add light mode class to body for homepage
     document.body.classList.add('light-mode');
+    
+    // Initialize liquidGL after scripts are loaded
+    const initLiquidGL = () => {
+      if (typeof window !== 'undefined' && (window as any).liquidGL && typeof (window as any).liquidGL === 'function') {
+        try {
+          (window as any).liquidGL({
+            snapshot: 'body',
+            target: '.liquid-glass',
+            resolution: 2.0,
+            refraction: 0.03,
+            bevelDepth: 0.08,
+            bevelWidth: 0.15,
+            frost: 1,
+            shadow: true,
+            specular: true,
+            reveal: 'fade',
+            tilt: false,
+            magnify: 1,
+            on: {
+              init: () => {
+                console.log('liquidGL initialized');
+              }
+            }
+          });
+        } catch (error) {
+          console.warn('liquidGL initialization failed:', error);
+        }
+      }
+    };
+
+    // Wait for scripts to load
+    const checkScripts = setInterval(() => {
+      if (typeof window !== 'undefined' && 
+          (window as any).html2canvas && 
+          (window as any).liquidGL) {
+        clearInterval(checkScripts);
+        // Wait a bit for DOM to be ready
+        setTimeout(initLiquidGL, 500);
+      }
+    }, 100);
+
+    // Cleanup after 10 seconds if scripts don't load
+    setTimeout(() => clearInterval(checkScripts), 10000);
+
     return () => {
       document.body.classList.remove('light-mode');
+      clearInterval(checkScripts);
     };
   }, []);
 
@@ -142,7 +187,7 @@ export default function Home() {
         transition={{ delay: 0.7 }}
         className="container mx-auto px-6 max-w-4xl mb-32"
       >
-        <div className="rounded-3xl overflow-hidden bg-[#ffffff] border-2 border-[#e8e5e0]">
+        <div className="liquid-glass rounded-3xl overflow-hidden bg-[#ffffff] border-2 border-[#e8e5e0] relative z-10">
           <div className="flex items-center px-6 py-4 bg-[#f5f3f0] border-b border-[#e8e5e0]">
             <div className="flex space-x-2">
               <div className="w-3 h-3 rounded-full bg-[#ff9faa]"></div>
@@ -151,7 +196,7 @@ export default function Home() {
             </div>
             <div className="ml-4 text-xs text-[#6b6b6b] font-mono">terminal</div>
           </div>
-          <div className="p-8 bg-[#ffffff]">
+          <div className="p-8 bg-[#ffffff] relative z-20">
             <pre className="text-sm md:text-base font-mono text-[#2d2d2d] whitespace-pre leading-relaxed overflow-x-auto" role="code" aria-label="Example API request">
               <code>
                 <span className="text-[#d94d7a]">curl</span> https://az.ai/v1/chat/completions \<br/>
@@ -228,9 +273,9 @@ export default function Home() {
             whileInView={{ opacity: 1, x: 0 }}
             viewport={{ once: true }}
             transition={{ duration: 0.6 }}
-            className="group p-10 rounded-3xl bg-[#ffe0ed] border-2 border-[#ffb3d1] hover:border-[#ff9faa] transition-colors"
+            className="liquid-glass group p-10 rounded-3xl bg-[#ffe0ed] border-2 border-[#ffb3d1] hover:border-[#ff9faa] transition-colors relative z-10"
           >
-            <div className="flex items-center gap-4 mb-6">
+            <div className="flex items-center gap-4 mb-6 relative z-20">
               <div className="p-4 rounded-2xl bg-[#ffb3d1]">
                 <Brain className="w-7 h-7 text-[#d94d7a]" />
               </div>
@@ -239,7 +284,7 @@ export default function Home() {
                 <p className="text-sm text-[#6b6b6b]">Always enabled</p>
               </div>
             </div>
-            <p className="text-[#6b6b6b] leading-relaxed">
+            <p className="text-[#6b6b6b] leading-relaxed relative z-20">
               Advanced reasoning engine enhances all responses with multi-domain capabilities. Includes specialized solvers for Math, Logic, and Ethics.
             </p>
           </motion.div>
@@ -249,9 +294,9 @@ export default function Home() {
             whileInView={{ opacity: 1, x: 0 }}
             viewport={{ once: true }}
             transition={{ duration: 0.6 }}
-            className="group p-10 rounded-3xl bg-[#e0f5e8] border-2 border-[#a8d5ba] hover:border-[#95c9a8] transition-colors"
+            className="liquid-glass group p-10 rounded-3xl bg-[#e0f5e8] border-2 border-[#a8d5ba] hover:border-[#95c9a8] transition-colors relative z-10"
           >
-            <div className="flex items-center gap-4 mb-6">
+            <div className="flex items-center gap-4 mb-6 relative z-20">
               <div className="p-4 rounded-2xl bg-[#a8d5ba]">
                 <Database className="w-7 h-7 text-[#5a9d6f]" />
               </div>
@@ -260,7 +305,7 @@ export default function Home() {
                 <p className="text-sm text-[#6b6b6b]">Auto-enabled</p>
               </div>
             </div>
-            <p className="text-[#6b6b6b] leading-relaxed">
+            <p className="text-[#6b6b6b] leading-relaxed relative z-20">
               Session-based memory for context-aware conversations across models. Remember user preferences and conversation history.
             </p>
           </motion.div>
@@ -388,17 +433,17 @@ function FeatureCard({ title, description, icon, color }: { title: string, descr
   return (
     <motion.div 
       whileHover={{ y: -5 }}
-      className={`group p-10 rounded-3xl border-2 transition-colors ${colorClasses[color as keyof typeof colorClasses] || colorClasses.pink}`}
+      className={`liquid-glass group p-10 rounded-3xl border-2 transition-colors relative z-10 ${colorClasses[color as keyof typeof colorClasses] || colorClasses.pink}`}
     >
-      <div className={`mb-6 p-4 rounded-2xl ${
+      <div className={`mb-6 p-4 rounded-2xl relative z-20 ${
         color === 'pink' ? 'bg-[#ffb3d1]' :
         color === 'green' ? 'bg-[#a8d5ba]' :
         'bg-[#b8c5ff]'
       } w-fit`}>
         {icon}
       </div>
-      <h3 className="text-2xl font-bold mb-4 text-[#2d2d2d]">{title}</h3>
-      <p className="text-[#6b6b6b] leading-relaxed">{description}</p>
+      <h3 className="text-2xl font-bold mb-4 text-[#2d2d2d] relative z-20">{title}</h3>
+      <p className="text-[#6b6b6b] leading-relaxed relative z-20">{description}</p>
     </motion.div>
   );
 }

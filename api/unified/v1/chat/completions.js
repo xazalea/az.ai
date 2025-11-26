@@ -50,9 +50,18 @@ async function callModelPackage(packageName, body, req) {
 }
 
 export default async function handler(req) {
-  // Get method from request - handle both Request object and custom handler format
-  const method = req.method || (req instanceof Request ? req.method : null) || 'POST';
-  const normalizedMethod = method.toUpperCase();
+  // Get method from request - properly handle Request object
+  let method = 'POST'; // Default to POST
+  if (req && typeof req === 'object') {
+    // Try to get method from various possible locations
+    if (req.method && typeof req.method === 'string' && req.method.trim()) {
+      method = req.method.trim();
+    } else if (req instanceof Request && req.method) {
+      method = req.method;
+    }
+  }
+  // Normalize method, defaulting to POST if empty or invalid
+  const normalizedMethod = (method && method.trim() ? method.trim() : 'POST').toUpperCase();
 
   // Handle OPTIONS requests
   if (normalizedMethod === 'OPTIONS') {
@@ -82,9 +91,8 @@ export default async function handler(req) {
     );
   }
 
-  // Only reject if method is explicitly set and is not POST
-  // Allow undefined/null methods to proceed (assume POST for nodejs runtime)
-  if (method && normalizedMethod !== 'POST') {
+  // Only reject if method is explicitly set and is not POST, GET, or OPTIONS
+  if (normalizedMethod !== 'POST' && normalizedMethod !== 'GET' && normalizedMethod !== 'OPTIONS') {
     return NextResponse.json(
       { 
         error: 'Method not allowed', 
@@ -102,7 +110,7 @@ export default async function handler(req) {
     );
   }
   
-  // Proceed with POST request (or assumed POST if method is undefined)
+  // Proceed with POST request
 
   try {
     // Safely parse request body
