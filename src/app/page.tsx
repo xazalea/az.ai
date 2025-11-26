@@ -26,13 +26,16 @@ export default function Home() {
             />
             <span className="text-2xl font-bold text-[#2d2d2d]">az.ai</span>
           </motion.div>
-          <div className="flex items-center gap-8">
-            <Link href="/playground" className="text-[#6b6b6b] hover:text-[#2d2d2d] transition-colors text-sm font-medium hidden md:block">
-              Playground
-            </Link>
-            <Link href="https://github.com/xazalea/az.ai" target="_blank" className="text-[#6b6b6b] hover:text-[#2d2d2d] transition-colors text-sm font-medium hidden md:block">
-              GitHub
-            </Link>
+              <div className="flex items-center gap-8">
+                <Link href="/models" className="text-[#6b6b6b] hover:text-[#2d2d2d] transition-colors text-sm font-medium hidden md:block">
+                  Models
+                </Link>
+                <Link href="/playground" className="text-[#6b6b6b] hover:text-[#2d2d2d] transition-colors text-sm font-medium hidden md:block">
+                  Playground
+                </Link>
+                <Link href="https://github.com/xazalea/az.ai" target="_blank" className="text-[#6b6b6b] hover:text-[#2d2d2d] transition-colors text-sm font-medium hidden md:block">
+                  GitHub
+                </Link>
             <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
               <Link href="/playground" className="px-6 py-2.5 bg-[#ffb3d1] text-[#2d2d2d] rounded-full text-sm font-semibold hover:bg-[#ffa0c7] transition-colors">
                 Launch App
@@ -69,14 +72,14 @@ export default function Home() {
             <span className="text-[#d94d7a]">Interface For AI</span>
           </motion.h1>
           
-          <motion.p 
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.4 }}
-            className="text-xl md:text-2xl text-[#6b6b6b] max-w-3xl mx-auto mb-12 leading-relaxed"
-          >
-            Better prices, better uptime, no subscription. Access <span className="text-[#2d2d2d] font-semibold">50+ models</span> through a single OpenAI-compatible endpoint.
-          </motion.p>
+              <motion.p 
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.4 }}
+                className="text-xl md:text-2xl text-[#6b6b6b] max-w-3xl mx-auto mb-12 leading-relaxed"
+              >
+                Better prices, better uptime, no subscription. Access <Link href="/models" className="text-[#2d2d2d] font-semibold hover:text-[#d94d7a] transition-colors underline">100+ models</Link> through a single OpenAI-compatible endpoint.
+              </motion.p>
           
           <motion.div 
             initial={{ opacity: 0, y: 20 }}

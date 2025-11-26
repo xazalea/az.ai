@@ -14,7 +14,7 @@ export default function Playground() {
   const [expandedProviders, setExpandedProviders] = useState<Set<string>>(new Set(['openai', 'google', 'deepseek']));
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
-  const [messages, setMessages] = useState<Array<{ role: 'user' | 'assistant', content: string, reasoning?: any, timestamp?: number, id?: string }>>([]);
+  const [messages, setMessages] = useState<Array<{ role: 'user' | 'assistant', content: string, reasoning?: any, timestamp?: number, id?: string, timing?: { thoughtTime?: number, totalTime?: number } }>>([]);
   const [generatedImage, setGeneratedImage] = useState<string | null>(null);
   const [generatedVideo, setGeneratedVideo] = useState<string | null>(null);
   const [openMemoryEnabled, setOpenMemoryEnabled] = useState(false);
@@ -85,6 +85,8 @@ export default function Playground() {
   const handleSend = async () => {
     if (!input.trim() || isLoading) return;
     setIsLoading(true);
+    const startTime = Date.now();
+    let thoughtStartTime = startTime;
 
     if (mode === 'chat') {
       const userMessage = { role: 'user' as const, content: input, id: `msg-${Date.now()}` };
@@ -118,6 +120,7 @@ export default function Playground() {
           }
         }
 
+        thoughtStartTime = Date.now();
         const res = await fetch('/v1/chat/completions', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -130,11 +133,13 @@ export default function Playground() {
           })
         });
 
+        const thoughtTime = Date.now() - thoughtStartTime;
         const data = await res.json();
         if (data.error) throw new Error(data.error.details || data.error.message || data.error);
 
         const content = data.choices?.[0]?.message?.content || "No response generated.";
         const reasoning = data.reasoning;
+        const totalTime = Date.now() - startTime;
         
         if (openMemoryEnabled && content) {
           try {
@@ -158,6 +163,7 @@ export default function Playground() {
           reasoning,
           timestamp: Date.now(),
           id: `msg-${Date.now()}`,
+          timing: { thoughtTime, totalTime },
         }]);
       } catch (error) {
         console.error(error);
@@ -165,6 +171,7 @@ export default function Playground() {
           role: 'assistant', 
           content: `Error: ${error instanceof Error ? error.message : 'Failed to fetch response'}`,
           id: `msg-${Date.now()}`,
+          timing: { totalTime: Date.now() - startTime },
         }]);
       }
     } else if (mode === 'image') {
@@ -242,28 +249,28 @@ export default function Playground() {
     }
   };
 
-      return (
-        <div className="min-h-screen bg-[#faf9f7] text-[#2d2d2d] font-sans flex flex-col">
-          {/* Header */}
-          <header className="bg-[#faf9f7] border-b border-[#e8e5e0] sticky top-0 z-20">
-            <div className="container mx-auto px-4 h-16 flex items-center justify-between">
-              <div className="flex items-center space-x-3">
-                <Link href="/" className="flex items-center gap-3">
-                  <Image 
-                    src="/az.png" 
-                    alt="az.ai logo" 
-                    width={32} 
-                    height={32}
-                    className="rounded-lg"
-                  />
-                  <h1 className="text-xl font-bold text-[#2d2d2d]">
-                    az.ai <span className="text-[#6b6b6b] font-normal">Playground</span>
-                  </h1>
-                </Link>
+  return (
+    <div className="min-h-screen bg-[#1a1a1a] text-[#e0e0e0] font-sans flex flex-col">
+      {/* Header */}
+      <header className="bg-[#1a1a1a] border-b border-[#3a3a3a] sticky top-0 z-20">
+        <div className="container mx-auto px-4 h-16 flex items-center justify-between">
+          <div className="flex items-center space-x-3">
+            <Link href="/" className="flex items-center gap-3">
+              <Image 
+                src="/az.png" 
+                alt="az.ai logo" 
+                width={32} 
+                height={32}
+                className="rounded-lg"
+              />
+              <h1 className="text-xl font-bold text-[#e0e0e0]">
+                az.ai <span className="text-[#888888] font-normal">Playground</span>
+              </h1>
+            </Link>
             {selectedModelInfo && (
-              <div className="hidden md:flex items-center gap-2 px-3 py-1.5 rounded-lg bg-[#ffffff] border border-[#e8e5e0]/50 text-xs">
-                <span className="text-[#6b6b6b]">Model:</span>
-                <span className="text-[#d94d7a] font-semibold">{selectedModelInfo.name}</span>
+              <div className="hidden md:flex items-center gap-2 px-3 py-1.5 rounded-lg bg-[#2d2d2d] border border-[#3a3a3a] text-xs">
+                <span className="text-[#888888]">Model:</span>
+                <span className="text-[#ffb3d1] font-semibold">{selectedModelInfo.name}</span>
               </div>
             )}
           </div>
@@ -271,19 +278,19 @@ export default function Playground() {
           <div className="flex items-center gap-2">
             <button
               onClick={() => setSidebarOpen(!sidebarOpen)}
-              className="md:hidden p-2 rounded-lg hover:bg-[#f5f3f0]/50 transition-colors"
+              className="md:hidden p-2 rounded-lg hover:bg-[#2d2d2d] transition-colors"
             >
-              <Settings className="w-5 h-5 text-[#6b6b6b]" />
+              <Settings className="w-5 h-5 text-[#888888]" />
             </button>
             
-            <nav className="flex items-center space-x-1 bg-[#ffffff] p-1 rounded-full border-2 border-[#e8e5e0]">
+            <nav className="flex items-center space-x-1 bg-[#2d2d2d] p-1 rounded-full border border-[#3a3a3a]">
               <button
                 onClick={() => setMode('chat')}
                 className={cn(
                   "px-4 py-2 rounded-full text-sm font-semibold transition-all flex items-center gap-2",
                   mode === 'chat' 
                     ? "bg-[#ffb3d1] text-[#2d2d2d]" 
-                    : "text-[#6b6b6b] hover:text-[#2d2d2d] hover:bg-[#f5f3f0]"
+                    : "text-[#888888] hover:text-[#e0e0e0] hover:bg-[#3a3a3a]"
                 )}
               >
                 <MessageSquare className="w-4 h-4" />
@@ -295,7 +302,7 @@ export default function Playground() {
                   "px-4 py-2 rounded-full text-sm font-semibold transition-all flex items-center gap-2",
                   mode === 'image' 
                     ? "bg-[#ffb3d1] text-[#2d2d2d]" 
-                    : "text-[#6b6b6b] hover:text-[#2d2d2d] hover:bg-[#f5f3f0]"
+                    : "text-[#888888] hover:text-[#e0e0e0] hover:bg-[#3a3a3a]"
                 )}
               >
                 <ImageIcon className="w-4 h-4" />
@@ -307,7 +314,7 @@ export default function Playground() {
                   "px-4 py-2 rounded-full text-sm font-semibold transition-all flex items-center gap-2",
                   mode === 'video' 
                     ? "bg-[#ffb3d1] text-[#2d2d2d]" 
-                    : "text-[#6b6b6b] hover:text-[#2d2d2d] hover:bg-[#f5f3f0]"
+                    : "text-[#888888] hover:text-[#e0e0e0] hover:bg-[#3a3a3a]"
                 )}
               >
                 <Video className="w-4 h-4" />
@@ -332,33 +339,58 @@ export default function Playground() {
               className={cn(
                 "w-64 flex-shrink-0 space-y-4 overflow-y-auto max-h-[calc(100vh-8rem)]",
                 "md:block",
-                !sidebarOpen && "hidden"
+                !sidebarOpen && "hidden",
+                "bg-[#2d2d2d] p-4 rounded-2xl border border-[#3a3a3a]"
               )}
             >
               <div className="space-y-2">
                 <div className="flex items-center justify-between">
-                  <label className="text-xs font-semibold text-[#6b6b6b] uppercase tracking-wider flex items-center gap-2">
-                    <Zap className="w-3 h-3 text-[#d94d7a]" />
+                  <label className="text-xs font-semibold text-[#888888] uppercase tracking-wider flex items-center gap-2">
+                    <Zap className="w-3 h-3 text-[#ffb3d1]" />
                     Models
                   </label>
                   <button
                     onClick={() => setSidebarOpen(false)}
-                    className="md:hidden p-1 rounded-lg hover:bg-[#f5f3f0]"
+                    className="md:hidden p-1 rounded-lg hover:bg-[#3a3a3a]"
                   >
-                    <X className="w-4 h-4 text-[#6b6b6b]" />
+                    <X className="w-4 h-4 text-[#888888]" />
                   </button>
                 </div>
+                
+                {/* Sort and Filter */}
+                <div className="flex gap-2 mb-4">
+                  <select
+                    value={sortBy}
+                    onChange={(e) => setSortBy(e.target.value as 'provider' | 'name' | 'speed')}
+                    className="flex-1 p-2 rounded-lg bg-[#3a3a3a] text-[#e0e0e0] text-xs border border-[#4a4a4a] focus:outline-none focus:ring-1 focus:ring-[#ffb3d1]"
+                  >
+                    <option value="provider">Sort by Provider</option>
+                    <option value="name">Sort by Name</option>
+                    <option value="speed">Sort by Speed</option>
+                  </select>
+                  <select
+                    value={filterProvider}
+                    onChange={(e) => setFilterProvider(e.target.value)}
+                    className="flex-1 p-2 rounded-lg bg-[#3a3a3a] text-[#e0e0e0] text-xs border border-[#4a4a4a] focus:outline-none focus:ring-1 focus:ring-[#ffb3d1]"
+                  >
+                    <option value="all">All Providers</option>
+                    {uniqueProviders.map(provider => (
+                      <option key={provider} value={provider.toLowerCase()}>{provider}</option>
+                    ))}
+                  </select>
+                </div>
+                
                 <div className="space-y-1">
                   {sortedProviderGroups.map(group => {
                     const isExpanded = expandedProviders.has(group.id);
                     return (
-                      <div key={group.id} className="border border-[#e8e5e0]/50 rounded-xl overflow-hidden bg-[#ffffff]">
+                      <div key={group.id} className="border border-[#3a3a3a] rounded-xl overflow-hidden bg-[#1a1a1a]">
                         <button
                           onClick={() => toggleProvider(group.id)}
-                          className="w-full text-left px-4 py-3 hover:bg-[#f5f3f0]/50 transition-all flex items-center justify-between text-sm font-semibold text-[#2d2d2d] rounded-xl "
+                          className="w-full text-left px-4 py-3 hover:bg-[#2d2d2d] transition-all flex items-center justify-between text-sm font-semibold text-[#e0e0e0] rounded-xl"
                         >
                           <span>{group.name}</span>
-                          {isExpanded ? <ChevronDown className="w-4 h-4 text-[#6b6b6b]" /> : <ChevronRight className="w-4 h-4 text-[#6b6b6b]" />}
+                          {isExpanded ? <ChevronDown className="w-4 h-4 text-[#888888]" /> : <ChevronRight className="w-4 h-4 text-[#888888]" />}
                         </button>
                         <AnimatePresence>
                           {isExpanded && (
@@ -378,16 +410,16 @@ export default function Playground() {
                                       setShowModelInfo(true);
                                     }}
                                     className={cn(
-                                      "w-full text-left px-4 py-3 rounded-xl text-sm transition-all group",
+                                      "w-full text-left px-4 py-3 rounded-lg text-sm transition-all group",
                                       selectedModel === model.id 
                                         ? "bg-[#ffb3d1] text-[#2d2d2d] font-semibold" 
-                                        : "text-[#6b6b6b] hover:text-[#2d2d2d] hover:bg-[#f5f3f0]"
+                                        : "text-[#888888] hover:text-[#e0e0e0] hover:bg-[#3a3a3a]"
                                     )}
                                   >
                                     <div className="font-medium flex items-center justify-between">
                                       <span>{model.name}</span>
                                       {model.speed === 'fast' && (
-                                        <Zap className="w-3 h-3 text-[#d94d7a] opacity-70" />
+                                        <Zap className="w-3 h-3 text-[#ffb3d1] opacity-70" />
                                       )}
                                     </div>
                                     <div className="text-xs opacity-70 truncate mt-0.5">{model.description}</div>
@@ -407,13 +439,13 @@ export default function Playground() {
               <div className="space-y-3">
                 <button
                   onClick={() => setShowSettings(!showSettings)}
-                  className="w-full px-4 py-3 rounded-2xl bg-[#ffffff] border-2 border-[#e8e5e0] hover:bg-[#f5f3f0] flex items-center justify-between text-sm font-semibold text-[#2d2d2d] transition-all"
+                  className="w-full px-4 py-3 rounded-2xl bg-[#1a1a1a] border border-[#3a3a3a] hover:bg-[#2d2d2d] flex items-center justify-between text-sm font-semibold text-[#e0e0e0] transition-all"
                 >
                   <div className="flex items-center gap-2">
-                    <Settings className="w-4 h-4 text-[#d94d7a]" />
+                    <Settings className="w-4 h-4 text-[#ffb3d1]" />
                     <span>Settings</span>
                   </div>
-                  {showSettings ? <ChevronDown className="w-4 h-4 text-[#6b6b6b]" /> : <ChevronRight className="w-4 h-4 text-[#6b6b6b]" />}
+                  {showSettings ? <ChevronDown className="w-4 h-4 text-[#888888]" /> : <ChevronRight className="w-4 h-4 text-[#888888]" />}
                 </button>
                 
                 <AnimatePresence>
@@ -424,33 +456,33 @@ export default function Playground() {
                       exit={{ height: 0, opacity: 0 }}
                       className="overflow-hidden"
                     >
-                      <div className="p-4 rounded-2xl bg-[#ffffff] border-2 border-[#e8e5e0] space-y-4">
+                      <div className="p-4 rounded-2xl bg-[#1a1a1a] border border-[#3a3a3a] space-y-4">
                         <div className="flex items-center justify-between">
                           <div className="flex items-center gap-2">
-                            <Brain className="w-4 h-4 text-[#d94d7a]" />
+                            <Brain className="w-4 h-4 text-[#ffb3d1]" />
                             <div>
-                              <div className="text-sm font-medium text-[#2d2d2d]">Reasoning</div>
-                              <div className="text-xs text-[#6b6b6b]">Always enabled</div>
+                              <div className="text-sm font-medium text-[#e0e0e0]">Reasoning</div>
+                              <div className="text-xs text-[#888888]">Always enabled</div>
                             </div>
                           </div>
-                          <div className="px-2 py-1 rounded bg-[#f5f3f0] border border-[#e8e5e0] text-xs text-[#d94d7a] font-medium">
+                          <div className="px-2 py-1 rounded bg-[#2d2d2d] border border-[#3a3a3a] text-xs text-[#ffb3d1] font-medium">
                             On
                           </div>
                         </div>
                         
                         <div className="flex items-center justify-between">
                           <div className="flex items-center gap-2">
-                            <Database className="w-4 h-4 text-[#d94d7a]" />
+                            <Database className="w-4 h-4 text-[#ffb3d1]" />
                             <div>
-                              <div className="text-sm font-medium text-[#2d2d2d]">Memory</div>
-                              <div className="text-xs text-[#6b6b6b]">Session-based</div>
+                              <div className="text-sm font-medium text-[#e0e0e0]">Memory</div>
+                              <div className="text-xs text-[#888888]">Session-based</div>
                             </div>
                           </div>
                           <button
                             onClick={() => setOpenMemoryEnabled(!openMemoryEnabled)}
                             className={cn(
                               "relative w-11 h-6 rounded-full transition-colors",
-                              openMemoryEnabled ? "bg-[#a8d5ba]" : "bg-[#d4c5b8]"
+                              openMemoryEnabled ? "bg-[#a8d5ba]" : "bg-[#4a4a4a]"
                             )}
                           >
                             <div className={cn(
@@ -465,8 +497,8 @@ export default function Playground() {
                 </AnimatePresence>
               </div>
               
-              <div className="p-4 rounded-2xl bg-[#ffffff] border-2 border-[#e8e5e0] text-xs text-[#6b6b6b]">
-                <div className="flex items-center gap-2 mb-2 text-[#d94d7a]">
+              <div className="p-4 rounded-2xl bg-[#2d2d2d] border border-[#3a3a3a] text-xs text-[#888888]">
+                <div className="flex items-center gap-2 mb-2 text-[#ffb3d1]">
                   <Sparkles className="w-3 h-3" />
                   <span className="font-medium">Tip</span>
                 </div>
@@ -483,10 +515,10 @@ export default function Playground() {
         </AnimatePresence>
 
         {/* Chat/Interaction Area */}
-        <div className="flex-1 bg-[#ffffff] rounded-2xl border border-[#e8e5e0]/50 overflow-hidden flex flex-col shadow-2xl ">
+        <div className="flex-1 bg-[#1a1a1a] rounded-2xl border border-[#3a3a3a] overflow-hidden flex flex-col">
           
                 {/* Output Stage */}
-                <div className="flex-1 p-8 overflow-y-auto min-h-[400px] bg-[#ffffff]" ref={scrollRef}>
+                <div className="flex-1 p-8 overflow-y-auto min-h-[400px] bg-[#1a1a1a]" ref={scrollRef}>
             <AnimatePresence mode="wait">
               {mode === 'chat' ? (
                 messages.length === 0 ? (
@@ -494,12 +526,12 @@ export default function Playground() {
                     initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}
                     className="h-full flex flex-col items-center justify-center text-center space-y-4"
                   >
-                    <div className="w-24 h-24 rounded-full bg-[#ffffff] border-2 border-[#4a9eff]/50 flex items-center justify-center glow pulse-glow">
-                      <MessageSquare className="w-12 h-12 text-[#d94d7a]" />
+                    <div className="w-24 h-24 rounded-full bg-[#2d2d2d] border-2 border-[#ffb3d1] flex items-center justify-center">
+                      <MessageSquare className="w-12 h-12 text-[#ffb3d1]" />
                     </div>
                     <div>
-                      <p className="text-xl font-semibold text-[#2d2d2d] mb-2">Start a conversation</p>
-                      <p className="text-sm text-[#6b6b6b]">
+                      <p className="text-xl font-semibold text-[#e0e0e0] mb-2">Start a conversation</p>
+                      <p className="text-sm text-[#888888]">
                         {selectedModelInfo ? `Using ${selectedModelInfo.name}` : 'Select a model to begin'}
                       </p>
                     </div>
@@ -507,10 +539,10 @@ export default function Playground() {
                       <motion.div 
                         initial={{ opacity: 0, y: 10 }}
                         animate={{ opacity: 1, y: 0 }}
-                        className="mt-4 p-4 rounded-xl bg-[#ffffff] border border-[#e8e5e0]/50 text-xs text-left max-w-md "
+                        className="mt-4 p-4 rounded-xl bg-[#2d2d2d] border border-[#3a3a3a] text-xs text-left max-w-md"
                       >
-                        <div className="text-[#d94d7a] font-semibold mb-1">{selectedModelInfo.name}</div>
-                        <div className="text-[#6b6b6b]">{selectedModelInfo.description}</div>
+                        <div className="text-[#ffb3d1] font-semibold mb-1">{selectedModelInfo.name}</div>
+                        <div className="text-[#888888]">{selectedModelInfo.description}</div>
                       </motion.div>
                     )}
                   </motion.div>
@@ -529,21 +561,21 @@ export default function Playground() {
                         <div className={cn(
                           "w-12 h-12 rounded-xl flex items-center justify-center flex-shrink-0 border-2 font-bold text-sm",
                           msg.role === 'user' 
-                            ? "bg-[#e0f0ff] border-[#b8c5ff] text-[#2d2d2d]" 
-                            : "bg-[#ffb3d1] border-[#ffb3d1] text-[#2d2d2d]"
+                            ? "bg-[#3a3a3a] border-[#4a4a4a] text-[#e0e0e0]" 
+                            : "bg-[#2d2d2d] border-[#3a3a3a] text-[#e0e0e0]"
                         )}>
                           {msg.role === 'user' ? 'U' : 'AI'}
                         </div>
                         <div className={cn(
                           "flex-1 p-5 rounded-2xl text-sm leading-relaxed border-2 transition-all",
                           msg.role === 'user' 
-                            ? "bg-[#e0f0ff] text-[#2d2d2d] border-[#b8c5ff] rounded-tr-none" 
-                            : "bg-[#ffe0ed] text-[#2d2d2d] border-[#ffb3d1] rounded-tl-none"
+                            ? "bg-[#3a3a3a] text-[#e0e0e0] border-[#4a4a4a] rounded-tr-none" 
+                            : "bg-[#2d2d2d] text-[#e0e0e0] border-[#3a3a3a] rounded-tl-none"
                         )}>
                           <div className="whitespace-pre-wrap break-words">{msg.content}</div>
                           {msg.reasoning && (
-                            <div className="mt-3 pt-3 border-t border-[#e8e5e0]">
-                              <div className="flex items-center gap-2 text-xs text-[#d94d7a]">
+                            <div className="mt-3 pt-3 border-t border-[#4a4a4a]">
+                              <div className="flex items-center gap-2 text-xs text-[#ffb3d1]">
                                 <Brain className="w-3 h-3" />
                                 <span>
                                   Reasoning: {msg.reasoning.mode} 
@@ -552,13 +584,25 @@ export default function Playground() {
                               </div>
                             </div>
                           )}
+                          {msg.timing && (
+                            <div className="mt-2 pt-2 border-t border-[#4a4a4a]">
+                              <div className="flex items-center gap-4 text-xs text-[#888888]">
+                                {msg.timing.thoughtTime !== undefined && (
+                                  <span>Thought: <span className="text-[#a8d5ba]">{msg.timing.thoughtTime}ms</span></span>
+                                )}
+                                {msg.timing.totalTime !== undefined && (
+                                  <span>Total: <span className="text-[#ffb3d1]">{msg.timing.totalTime}ms</span></span>
+                                )}
+                              </div>
+                            </div>
+                          )}
                           <div className="mt-2 flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
                             <button
                               onClick={() => copyMessage(msg.content)}
-                              className="p-1.5 rounded hover:bg-[#f5f3f0] transition-colors"
+                              className="p-1.5 rounded hover:bg-[#3a3a3a] transition-colors"
                               title="Copy"
                             >
-                              <Copy className="w-3 h-3 text-[#6b6b6b]" />
+                              <Copy className="w-3 h-3 text-[#888888]" />
                             </button>
                           </div>
                         </div>
@@ -570,12 +614,12 @@ export default function Playground() {
                         animate={{ opacity: 1 }}
                         className="flex gap-4"
                       >
-                        <div className="w-10 h-10 rounded-full bg-[#4a9eff] flex items-center justify-center">
+                        <div className="w-10 h-10 rounded-full bg-[#ffb3d1] flex items-center justify-center">
                           <Loader2 className="w-5 h-5 animate-spin text-[#2d2d2d]" />
                         </div>
-                        <div className="flex-1 p-5 rounded-2xl bg-[#ffe0ed] border-2 border-[#ffb3d1] text-[#6b6b6b] text-sm flex items-center gap-2 rounded-tl-none">
-                          <Loader2 className="w-4 h-4 animate-spin text-[#d94d7a]" />
-                          <span className="text-[#2d2d2d]">Thinking...</span>
+                        <div className="flex-1 p-5 rounded-2xl bg-[#2d2d2d] border border-[#3a3a3a] text-[#888888] text-sm flex items-center gap-2 rounded-tl-none">
+                          <Loader2 className="w-4 h-4 animate-spin text-[#ffb3d1]" />
+                          <span className="text-[#e0e0e0]">Thinking...</span>
                         </div>
                       </motion.div>
                     )}
@@ -592,7 +636,7 @@ export default function Playground() {
                       <img 
                         src={generatedImage} 
                         alt="Generated" 
-                        className="max-w-full max-h-[70vh] rounded-2xl border-2 border-[#e8e5e0]/50 shadow-2xl "
+                        className="max-w-full max-h-[70vh] rounded-2xl border border-[#3a3a3a]"
                       />
                       <div className="absolute top-2 right-2 flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
                         <button
@@ -602,37 +646,37 @@ export default function Playground() {
                             link.download = `generated-${Date.now()}.png`;
                             link.click();
                           }}
-                          className="p-2 rounded bg-[#ffffff] border border-[#e8e5e0] hover:bg-[#f5f3f0] transition-colors"
+                          className="p-2 rounded bg-[#2d2d2d] border border-[#3a3a3a] hover:bg-[#3a3a3a] transition-colors"
                           title="Download"
                         >
-                          <Download className="w-4 h-4 text-[#2d2d2d]" />
+                          <Download className="w-4 h-4 text-[#888888]" />
                         </button>
                         <button
                           onClick={() => copyMessage(generatedImage)}
-                          className="p-2 rounded bg-[#ffffff] border border-[#e8e5e0] hover:bg-[#f5f3f0] transition-colors"
+                          className="p-2 rounded bg-[#2d2d2d] border border-[#3a3a3a] hover:bg-[#3a3a3a] transition-colors"
                           title="Copy URL"
                         >
-                          <Copy className="w-4 h-4 text-[#2d2d2d]" />
+                          <Copy className="w-4 h-4 text-[#888888]" />
                         </button>
                       </div>
                     </motion.div>
                   ) : isLoading ? (
                     <div className="text-center space-y-4">
                       <div className="relative w-24 h-24 mx-auto">
-                        <div className="absolute inset-0 rounded-full border-4 border-[#e8e5e0]"></div>
-                        <div className="absolute inset-0 rounded-full border-4 border-[#4a9eff] border-t-transparent animate-spin"></div>
+                        <div className="absolute inset-0 rounded-full border-4 border-[#3a3a3a]"></div>
+                        <div className="absolute inset-0 rounded-full border-4 border-[#ffb3d1] border-t-transparent animate-spin"></div>
                       </div>
-                      <p className="text-[#d94d7a] font-medium">Generating image...</p>
-                      <p className="text-xs text-[#6b6b6b]">This may take a moment</p>
+                      <p className="text-[#ffb3d1] font-medium">Generating image...</p>
+                      <p className="text-xs text-[#888888]">This may take a moment</p>
                     </div>
                   ) : (
                     <div className="text-center space-y-4">
-                      <div className="w-24 h-24 rounded-full bg-[#ffe0ed] border-2 border-[#ffb3d1] flex items-center justify-center mx-auto">
-                        <ImageIcon className="w-12 h-12 text-[#d94d7a]" />
+                      <div className="w-24 h-24 rounded-full bg-[#2d2d2d] border-2 border-[#ffb3d1] flex items-center justify-center mx-auto">
+                        <ImageIcon className="w-12 h-12 text-[#ffb3d1]" />
                       </div>
                       <div>
-                        <p className="text-xl font-semibold text-[#2d2d2d] mb-2">Generate an Image</p>
-                        <p className="text-sm text-[#6b6b6b]">
+                        <p className="text-xl font-semibold text-[#e0e0e0] mb-2">Generate an Image</p>
+                        <p className="text-sm text-[#888888]">
                           {selectedModelInfo ? `Using ${selectedModelInfo.name}` : 'Select a model and enter a prompt'}
                         </p>
                       </div>
@@ -642,40 +686,55 @@ export default function Playground() {
               ) : (
                 <div className="h-full flex flex-col items-center justify-center p-6">
                   {generatedVideo ? (
-                    <motion.video
+                    <motion.div
                       initial={{ opacity: 0, scale: 0.9 }} 
                       animate={{ opacity: 1, scale: 1 }}
-                      src={generatedVideo}
-                      controls
-                      className="max-w-full max-h-[70vh] rounded-2xl border-2 border-[#e8e5e0]"
-                    />
-                    <div className="mt-4 text-center">
-                      <a
-                        href={generatedVideo}
-                        download={`generated-video-${Date.now()}.mp4`}
-                        className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-[#ffb3d1] text-[#2d2d2d] font-medium hover:bg-[#ffa0c7] transition-colors"
-                      >
-                        <Download className="w-4 h-4" />
-                        Download Video
-                      </a>
-                    </div>
+                      className="relative group"
+                    >
+                      <video 
+                        src={generatedVideo}
+                        controls
+                        className="max-w-full max-h-[70vh] rounded-2xl border border-[#3a3a3a]"
+                      />
+                      <div className="absolute top-2 right-2 flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                        <button
+                          onClick={() => {
+                            const link = document.createElement('a');
+                            link.href = generatedVideo;
+                            link.download = `generated-video-${Date.now()}.mp4`;
+                            link.click();
+                          }}
+                          className="p-2 rounded bg-[#2d2d2d] border border-[#3a3a3a] hover:bg-[#3a3a3a] transition-colors"
+                          title="Download"
+                        >
+                          <Download className="w-4 h-4 text-[#888888]" />
+                        </button>
+                        <button
+                          onClick={() => copyMessage(generatedVideo)}
+                          className="p-2 rounded bg-[#2d2d2d] border border-[#3a3a3a] hover:bg-[#3a3a3a] transition-colors"
+                          title="Copy URL"
+                        >
+                          <Copy className="w-4 h-4 text-[#888888]" />
+                        </button>
+                      </div>
+                    </motion.div>
                   ) : isLoading ? (
                     <div className="text-center space-y-4">
                       <div className="relative w-24 h-24 mx-auto">
-                        <div className="absolute inset-0 rounded-full border-4 border-[#e8e5e0]"></div>
+                        <div className="absolute inset-0 rounded-full border-4 border-[#3a3a3a]"></div>
                         <div className="absolute inset-0 rounded-full border-4 border-[#ffb3d1] border-t-transparent animate-spin"></div>
                       </div>
-                      <p className="text-[#d94d7a] font-medium">Generating video...</p>
-                      <p className="text-xs text-[#6b6b6b]">This may take several minutes</p>
+                      <p className="text-[#ffb3d1] font-medium">Generating video...</p>
+                      <p className="text-xs text-[#888888]">This may take several minutes</p>
                     </div>
                   ) : (
                     <div className="text-center space-y-4">
-                      <div className="w-24 h-24 rounded-full bg-[#ffe0ed] border-2 border-[#ffb3d1] flex items-center justify-center mx-auto">
-                        <Video className="w-12 h-12 text-[#d94d7a]" />
+                      <div className="w-24 h-24 rounded-full bg-[#2d2d2d] border-2 border-[#ffb3d1] flex items-center justify-center mx-auto">
+                        <Video className="w-12 h-12 text-[#ffb3d1]" />
                       </div>
                       <div>
-                        <p className="text-xl font-semibold text-[#2d2d2d] mb-2">Generate a Video</p>
-                        <p className="text-sm text-[#6b6b6b]">
+                        <p className="text-xl font-semibold text-[#e0e0e0] mb-2">Generate a Video</p>
+                        <p className="text-sm text-[#888888]">
                           {selectedModelInfo ? `Using ${selectedModelInfo.name}` : 'Select a model and enter a prompt'}
                         </p>
                       </div>
@@ -687,7 +746,7 @@ export default function Playground() {
           </div>
 
           {/* Input Area */}
-          <div className="p-4 bg-[#f5f3f0] border-t border-[#e8e5e0]">
+          <div className="p-4 bg-[#2d2d2d] border-t border-[#3a3a3a]">
             <div className="flex items-end gap-2">
               <div className="flex-1 relative">
                 <textarea
@@ -707,17 +766,17 @@ export default function Playground() {
                       ? "Describe the image you want to generate..."
                       : "Describe the video you want to create..."
                   }
-                  className="w-full bg-[#ffffff] text-[#2d2d2d] rounded-xl px-5 py-4 pr-14 border border-[#e8e5e0]/50 focus:border-[#4a9eff] focus:ring-2 focus:ring-[#4a9eff]/20 outline-none resize-none min-h-[60px] max-h-[200px] placeholder:text-[#6b6b6b] transition-all"
+                  className="w-full bg-[#1a1a1a] text-[#e0e0e0] rounded-xl px-5 py-4 pr-14 border border-[#3a3a3a] focus:border-[#ffb3d1] focus:ring-2 focus:ring-[#ffb3d1]/20 outline-none resize-none min-h-[60px] max-h-[200px] placeholder:text-[#888888] transition-all"
                   rows={1}
                 />
                 <div className="absolute right-2 bottom-2 flex items-center gap-1">
                   {messages.length > 0 && mode === 'chat' && (
                     <button
                       onClick={clearChat}
-                      className="p-1.5 rounded hover:bg-[#f5f3f0] transition-colors"
+                      className="p-1.5 rounded hover:bg-[#3a3a3a] transition-colors"
                       title="Clear chat"
                     >
-                      <Trash2 className="w-4 h-4 text-[#6b6b6b]" />
+                      <Trash2 className="w-4 h-4 text-[#888888]" />
                     </button>
                   )}
                 </div>
@@ -728,8 +787,8 @@ export default function Playground() {
                 className={cn(
                   "p-3 rounded-lg transition-all flex items-center justify-center",
                   isLoading || !input.trim()
-                    ? "bg-[#3a3a3a] text-[#6b6b6b] cursor-not-allowed"
-                    : "bg-[#4a9eff] text-[#2d2d2d] hover:bg-[#3a8ee0] shadow-lg hover:shadow-[#4a9eff]/50"
+                    ? "bg-[#3a3a3a] text-[#888888] cursor-not-allowed"
+                    : "bg-[#ffb3d1] text-[#2d2d2d] hover:bg-[#ffa0c7]"
                 )}
               >
                 {isLoading ? (
@@ -739,19 +798,27 @@ export default function Playground() {
                 )}
               </button>
             </div>
-            <div className="mt-2 flex items-center justify-between text-xs text-[#6b6b6b]/60">
+            <div className="mt-2 flex items-center justify-between text-xs text-[#888888]/80">
               <div className="flex items-center gap-4">
                 {selectedModelInfo && (
-                  <span>Model: <span className="text-[#d94d7a]">{selectedModelInfo.name}</span></span>
+                  <span>Model: <span className="text-[#ffb3d1]">{selectedModelInfo.name}</span></span>
                 )}
                 {openMemoryEnabled && (
                   <span className="flex items-center gap-1">
-                    <Database className="w-3 h-3" />
+                    <Database className="w-3 h-3 text-[#ffb3d1]" />
                     Memory enabled
                   </span>
                 )}
+                {reasoningEnabled && (
+                  <span className="flex items-center gap-1">
+                    <Brain className="w-3 h-3 text-[#ffb3d1]" />
+                    Reasoning enabled
+                  </span>
+                )}
               </div>
-              <span>Press Enter to send, Shift+Enter for new line</span>
+              <div className="text-[10px] uppercase tracking-widest text-[#888888]">
+                Powered by az.ai
+              </div>
             </div>
           </div>
         </div>
