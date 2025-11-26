@@ -256,63 +256,98 @@ export default async function handler(req) {
       packageName = 'jimeng-free-api';
     }
     
-    if (packageName) {
-      // Use generic model proxy
-      const proxyUrl = new URL(`/api/models/${packageName}/v1/chat/completions`, url.origin);
-      const response = await fetch(proxyUrl, {
-        method: 'POST',
-        headers: req.headers,
-        body: JSON.stringify(requestBody),
-      });
-      responseData = await response.json();
-      responseStatus = response.status;
-    } else if (isDeepInfraModel(m)) {
-      // DeepInfra models - check before g4f
-      targetUrl = new URL('/api/deepinfra/v1/chat/completions', url.origin);
-      const response = await fetch(targetUrl, {
-        method: 'POST',
-        headers: req.headers,
-        body: JSON.stringify(requestBody),
-      });
-      responseData = await response.json();
-      responseStatus = response.status;
-    } else if (isG4FModel(m)) {
-      // g4f models via webai - route all g4f models here
-      targetUrl = new URL('/api/python/webai/v1/chat/completions', url.origin);
-      const response = await fetch(targetUrl, {
-        method: 'POST',
-        headers: req.headers,
-        body: JSON.stringify(requestBody),
-      });
-      responseData = await response.json();
-      responseStatus = response.status;
-    } else {
-      // External API routes (Python/Go or services that need separate routes)
-      const externalRoutes = {
-        'groq': '/api/groq/v1/chat/completions',
-        'gpt-4': '/api/services/gpt4freejs/v1/chat/completions',
-        'gpt4': '/api/services/gpt4freejs/v1/chat/completions',
-        'gpt-3.5': '/api/services/gpt4freejs/v1/chat/completions',
-        'gpt3.5': '/api/services/gpt4freejs/v1/chat/completions',
-        'chatgpt': '/api/services/gpt4freejs/v1/chat/completions',
-        'gemini-multimodal': '/api/python/gemini-multimodal/v1/chat/completions',
-        'pollinations': '/api/pollinations/v1/chat/completions',
-        'webai': '/api/python/webai/v1/chat/completions',
-        'g4f': '/api/python/webai/v1/chat/completions',
-        'deepseek-free': '/api/python/deepseekfree/v1/chat/completions',
-      };
-      
-      // Default to webai (g4f) for unknown models - this allows all g4f models to work automatically
-      const targetRoute = externalRoutes[m] || '/api/python/webai/v1/chat/completions';
-      targetUrl = new URL(targetRoute, url.origin);
-      
-      const response = await fetch(targetUrl, {
-        method: 'POST',
-        headers: req.headers,
-        body: JSON.stringify(requestBody),
-      });
-      responseData = await response.json();
-      responseStatus = response.status;
+    // Add timeout to prevent hanging requests
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => {
+      controller.abort();
+      console.error(`[API] Request timeout for model: ${m}`);
+    }, 60000); // 60 second timeout
+    
+    try {
+      if (packageName) {
+        // Use generic model proxy
+        const proxyUrl = new URL(`/api/models/${packageName}/v1/chat/completions`, url.origin);
+        const response = await fetch(proxyUrl, {
+          method: 'POST',
+          headers: req.headers,
+          body: JSON.stringify(requestBody),
+          signal: controller.signal,
+        });
+        clearTimeout(timeoutId);
+        responseData = await response.json();
+        responseStatus = response.status;
+      } else if (isDeepInfraModel(m)) {
+        // DeepInfra models - check before g4f
+        targetUrl = new URL('/api/deepinfra/v1/chat/completions', url.origin);
+        const response = await fetch(targetUrl, {
+          method: 'POST',
+          headers: req.headers,
+          body: JSON.stringify(requestBody),
+          signal: controller.signal,
+        });
+        clearTimeout(timeoutId);
+        responseData = await response.json();
+        responseStatus = response.status;
+      } else if (isG4FModel(m)) {
+        // g4f models via webai - route all g4f models here
+        targetUrl = new URL('/api/python/webai/v1/chat/completions', url.origin);
+        const response = await fetch(targetUrl, {
+          method: 'POST',
+          headers: req.headers,
+          body: JSON.stringify(requestBody),
+          signal: controller.signal,
+        });
+        clearTimeout(timeoutId);
+        responseData = await response.json();
+        responseStatus = response.status;
+      } else {
+        // External API routes (Python/Go or services that need separate routes)
+        const externalRoutes = {
+          'groq': '/api/groq/v1/chat/completions',
+          'gpt-4': '/api/services/gpt4freejs/v1/chat/completions',
+          'gpt4': '/api/services/gpt4freejs/v1/chat/completions',
+          'gpt-3.5': '/api/services/gpt4freejs/v1/chat/completions',
+          'gpt3.5': '/api/services/gpt4freejs/v1/chat/completions',
+          'chatgpt': '/api/services/gpt4freejs/v1/chat/completions',
+          'gemini-multimodal': '/api/python/gemini-multimodal/v1/chat/completions',
+          'pollinations': '/api/pollinations/v1/chat/completions',
+          'webai': '/api/python/webai/v1/chat/completions',
+          'g4f': '/api/python/webai/v1/chat/completions',
+          'deepseek-free': '/api/python/deepseekfree/v1/chat/completions',
+        };
+        
+        // Default to webai (g4f) for unknown models - this allows all g4f models to work automatically
+        const targetRoute = externalRoutes[m] || '/api/python/webai/v1/chat/completions';
+        targetUrl = new URL(targetRoute, url.origin);
+        
+        const response = await fetch(targetUrl, {
+          method: 'POST',
+          headers: req.headers,
+          body: JSON.stringify(requestBody),
+          signal: controller.signal,
+        });
+        clearTimeout(timeoutId);
+        responseData = await response.json();
+        responseStatus = response.status;
+      }
+    } catch (fetchError) {
+      clearTimeout(timeoutId);
+      if (fetchError.name === 'AbortError') {
+        console.error(`[API] Request timeout for model: ${m}`);
+        return NextResponse.json(
+          { 
+            error: 'Request timeout', 
+            details: 'The request took too long to complete. Please try again.',
+            model: m
+          },
+          { 
+            status: 504,
+            headers: { 'Access-Control-Allow-Origin': '*' }
+          }
+        );
+      }
+      console.error(`[API] Fetch error for model ${m}:`, fetchError);
+      throw fetchError;
     }
 
     // Store in session memory

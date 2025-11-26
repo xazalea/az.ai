@@ -162,58 +162,75 @@ function PlaygroundContent() {
         }
 
         thoughtStartTime = Date.now();
-        const res = await fetch('/api/unified/v1/chat/completions', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            model: selectedModel,
-            messages: [...memoryContext, ...newMessages],
-            stream: false,
-            use_reasoning: reasoningEnabled,
-            use_memory: openMemoryEnabled,
-          })
-        });
-
-        if (!res.ok) {
-          const errorData = await res.json().catch(() => ({ error: { message: `HTTP ${res.status}: ${res.statusText}` } }));
-          throw new Error(errorData.error?.details || errorData.error?.message || errorData.error || `Request failed with status ${res.status}`);
-        }
-
-        const thoughtTime = Date.now() - thoughtStartTime;
-        const data = await res.json();
-        if (data.error) throw new Error(data.error.details || data.error.message || data.error);
-
-        const content = data.choices?.[0]?.message?.content || "No response generated.";
-        const reasoning = data.reasoning;
-        const totalTime = Date.now() - startTime;
         
-        if (openMemoryEnabled && content) {
-          try {
-            await fetch('/api/openmemory/memory/add', {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({
-                content: `User: ${input}\nAssistant: ${content}`,
-                tags: ['playground', 'chat'],
-                metadata: { model: selectedModel, mode: 'chat' },
-              }),
-            });
-          } catch (memError) {
-            console.warn('OpenMemory storage failed:', memError);
-          }
-        }
+        // Add timeout to prevent infinite loading
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 120000); // 2 minute timeout
+        
+        try {
+          const res = await fetch('/api/unified/v1/chat/completions', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              model: selectedModel,
+              messages: [...memoryContext, ...newMessages],
+              stream: false,
+              use_reasoning: reasoningEnabled,
+              use_memory: openMemoryEnabled,
+            }),
+            signal: controller.signal,
+          });
 
-        setMessages(prev => [...prev, { 
-          role: 'assistant', 
-          content,
-          reasoning,
-          timestamp: Date.now(),
-          id: `msg-${Date.now()}`,
-          timing: { thoughtTime, totalTime },
-        }]);
+          clearTimeout(timeoutId);
+
+          if (!res.ok) {
+            const errorData = await res.json().catch(() => ({ error: { message: `HTTP ${res.status}: ${res.statusText}` } }));
+            throw new Error(errorData.error?.details || errorData.error?.message || errorData.error || `Request failed with status ${res.status}`);
+          }
+
+          const thoughtTime = Date.now() - thoughtStartTime;
+          const data = await res.json();
+          if (data.error) throw new Error(data.error.details || data.error.message || data.error);
+
+          const content = data.choices?.[0]?.message?.content || "No response generated.";
+          const reasoning = data.reasoning;
+          const totalTime = Date.now() - startTime;
+          
+          if (openMemoryEnabled && content) {
+            try {
+              await fetch('/api/openmemory/memory/add', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                  content: `User: ${input}\nAssistant: ${content}`,
+                  tags: ['playground', 'chat'],
+                  metadata: { model: selectedModel, mode: 'chat' },
+                }),
+              });
+            } catch (memError) {
+              console.warn('OpenMemory storage failed:', memError);
+            }
+          }
+
+          setMessages(prev => [...prev, { 
+            role: 'assistant', 
+            content,
+            reasoning,
+            timestamp: Date.now(),
+            id: `msg-${Date.now()}`,
+            timing: { thoughtTime, totalTime },
+          }]);
+        } catch (fetchError) {
+          clearTimeout(timeoutId);
+          throw fetchError;
+        }
       } catch (error) {
         console.error('Chat error:', error);
-        const errorMessage = error instanceof Error ? error.message : 'Failed to fetch response';
+        const errorMessage = error instanceof Error 
+          ? (error.name === 'AbortError' 
+              ? 'Request timed out. Please try again.' 
+              : error.message)
+          : 'Failed to fetch response';
         setMessages(prev => [...prev, { 
           role: 'assistant', 
           content: `Error: ${errorMessage}`,

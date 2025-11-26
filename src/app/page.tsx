@@ -11,28 +11,27 @@ export default function Home() {
     // Add light mode class to body for homepage
     document.body.classList.add('light-mode');
     
-    // Initialize liquidGL after scripts are loaded - iOS 26 style with prominent glass effect
+    // Initialize liquidGL after scripts are loaded - optimized for performance
     const initLiquidGL = () => {
       if (typeof window !== 'undefined' && (window as any).liquidGL && typeof (window as any).liquidGL === 'function') {
         try {
-          // iOS 26 style - more prominent glassmorphism
+          // Optimized settings for performance - only on key elements
           (window as any).liquidGL({
             snapshot: 'body',
-            target: '.liquid-glass',
-            resolution: 2.5, // Higher resolution for crisp effect
-            refraction: 0.08, // Increased refraction for more visible effect
-            bevelDepth: 0.12, // Deeper bevel for iOS 26 look
-            bevelWidth: 0.2, // Wider bevel
-            frost: 2, // More frost for that iOS blur
-            shadow: true,
-            specular: true, // Animated highlights
+            target: '.liquid-glass-key', // Only apply to key elements, not all buttons
+            resolution: 1.5, // Lower resolution for better performance
+            refraction: 0.04, // Reduced for performance
+            bevelDepth: 0.06, // Reduced for performance
+            bevelWidth: 0.12, // Reduced for performance
+            frost: 1, // Reduced blur for performance
+            shadow: false, // Disable shadow for performance
+            specular: false, // Disable animated highlights for performance
             reveal: 'fade',
-            tilt: true, // Enable tilt for interactivity
-            tiltFactor: 8, // More pronounced tilt
-            magnify: 1.05, // Slight magnification
+            tilt: false, // Disable tilt for performance
+            magnify: 1, // No magnification for performance
             on: {
               init: () => {
-                console.log('liquidGL initialized with iOS 26 style');
+                console.log('liquidGL initialized (optimized)');
               }
             }
           });
@@ -94,8 +93,8 @@ export default function Home() {
                   GitHub
                 </Link>
             <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
-              <Link href="/playground" className="liquid-glass px-6 py-2.5 bg-[#ffb3d1]/80 backdrop-blur-sm text-[#2d2d2d] rounded-full text-sm font-semibold hover:bg-[#ffa0c7]/90 transition-all relative z-10 shadow-lg border border-[#ffb3d1]/60 focus-visible:outline-2 focus-visible:outline-[#ffb3d1] focus-visible:outline-offset-2">
-                <span className="relative z-20">Launch App</span>
+              <Link href="/playground" className="px-6 py-2.5 bg-[#ffb3d1] text-[#2d2d2d] rounded-full text-sm font-semibold hover:bg-[#ffa0c7] transition-colors focus-visible:outline-2 focus-visible:outline-[#ffb3d1] focus-visible:outline-offset-2">
+                Launch App
               </Link>
             </motion.div>
           </div>
@@ -109,12 +108,12 @@ export default function Home() {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8 }}
         >
-          {/* Hero Badge with liquidGL - iOS 26 style */}
+          {/* Hero Badge with liquidGL - optimized */}
           <motion.div 
             initial={{ opacity: 0, scale: 0.9 }}
             animate={{ opacity: 1, scale: 1 }}
             transition={{ delay: 0.2 }}
-            className="liquid-glass inline-flex items-center px-5 py-2.5 rounded-full bg-[#ffe0ed]/80 backdrop-blur-sm border border-[#ffb3d1]/60 text-xs font-semibold text-[#d94d7a] mb-8 relative z-10 shadow-lg"
+            className="liquid-glass-key inline-flex items-center px-5 py-2.5 rounded-full bg-[#ffe0ed]/80 backdrop-blur-sm border border-[#ffb3d1]/60 text-xs font-semibold text-[#d94d7a] mb-8 relative z-10"
           >
             <span className="relative z-20">Unified AI Platform</span>
           </motion.div>
@@ -146,14 +145,14 @@ export default function Home() {
             className="flex flex-col md:flex-row items-center justify-center gap-4"
           >
             <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
-              <Link href="/playground" className="liquid-glass group px-10 py-4 rounded-full bg-[#ffb3d1]/80 backdrop-blur-sm text-[#2d2d2d] font-semibold text-lg hover:bg-[#ffa0c7]/90 transition-all flex items-center justify-center gap-2 relative z-10 shadow-lg border border-[#ffb3d1]/60 focus-visible:outline-2 focus-visible:outline-[#ffb3d1] focus-visible:outline-offset-2">
-                <span className="relative z-20">Get Started</span>
-                <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform relative z-20" aria-hidden="true" />
+              <Link href="/playground" className="group px-10 py-4 rounded-full bg-[#ffb3d1] text-[#2d2d2d] font-semibold text-lg hover:bg-[#ffa0c7] transition-colors flex items-center justify-center gap-2 focus-visible:outline-2 focus-visible:outline-[#ffb3d1] focus-visible:outline-offset-2">
+                <span>Get Started</span>
+                <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" aria-hidden="true" />
               </Link>
             </motion.div>
             <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
-              <Link href="/models" className="liquid-glass px-10 py-4 rounded-full bg-[#e8e5e0]/80 backdrop-blur-sm border border-[#d4c5b8]/60 text-[#2d2d2d] font-semibold text-lg hover:bg-[#ddd8d0]/90 transition-all inline-block relative z-10 shadow-lg focus-visible:outline-2 focus-visible:outline-[#ffb3d1] focus-visible:outline-offset-2">
-                <span className="relative z-20">Browse Models</span>
+              <Link href="/models" className="px-10 py-4 rounded-full bg-[#e8e5e0] border border-[#d4c5b8] text-[#2d2d2d] font-semibold text-lg hover:bg-[#ddd8d0] transition-colors inline-block focus-visible:outline-2 focus-visible:outline-[#ffb3d1] focus-visible:outline-offset-2">
+                Browse Models
               </Link>
             </motion.div>
           </motion.div>
@@ -190,7 +189,7 @@ export default function Home() {
         transition={{ delay: 0.7 }}
         className="container mx-auto px-6 max-w-4xl mb-32"
       >
-        <div className="liquid-glass rounded-3xl overflow-hidden bg-[#ffffff]/90 backdrop-blur-sm border-2 border-[#e8e5e0]/50 relative z-10 shadow-2xl">
+        <div className="liquid-glass-key rounded-3xl overflow-hidden bg-[#ffffff]/90 backdrop-blur-sm border-2 border-[#e8e5e0]/50 relative z-10">
           <div className="flex items-center px-6 py-4 bg-[#f5f3f0] border-b border-[#e8e5e0]">
             <div className="flex space-x-2">
               <div className="w-3 h-3 rounded-full bg-[#ff9faa]"></div>
@@ -276,7 +275,7 @@ export default function Home() {
             whileInView={{ opacity: 1, x: 0 }}
             viewport={{ once: true }}
             transition={{ duration: 0.6 }}
-            className="liquid-glass group p-10 rounded-3xl bg-[#ffe0ed]/80 backdrop-blur-sm border-2 border-[#ffb3d1]/60 hover:border-[#ff9faa] transition-all relative z-10 shadow-xl"
+            className="liquid-glass-key group p-10 rounded-3xl bg-[#ffe0ed]/80 backdrop-blur-sm border-2 border-[#ffb3d1]/60 hover:border-[#ff9faa] transition-all relative z-10"
           >
             <div className="flex items-center gap-4 mb-6 relative z-20">
               <div className="p-4 rounded-2xl bg-[#ffb3d1]">
@@ -297,7 +296,7 @@ export default function Home() {
             whileInView={{ opacity: 1, x: 0 }}
             viewport={{ once: true }}
             transition={{ duration: 0.6 }}
-            className="liquid-glass group p-10 rounded-3xl bg-[#e0f5e8]/80 backdrop-blur-sm border-2 border-[#a8d5ba]/60 hover:border-[#95c9a8] transition-all relative z-10 shadow-xl"
+            className="liquid-glass-key group p-10 rounded-3xl bg-[#e0f5e8]/80 backdrop-blur-sm border-2 border-[#a8d5ba]/60 hover:border-[#95c9a8] transition-all relative z-10"
           >
             <div className="flex items-center gap-4 mb-6 relative z-20">
               <div className="p-4 rounded-2xl bg-[#a8d5ba]">
@@ -376,9 +375,9 @@ export default function Home() {
           className="text-center mt-12"
         >
           <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
-            <Link href="/models" className="liquid-glass inline-flex items-center gap-2 px-8 py-4 rounded-full bg-[#ffb3d1]/80 backdrop-blur-sm text-[#2d2d2d] font-semibold text-lg hover:bg-[#ffa0c7]/90 transition-all relative z-10 shadow-lg border border-[#ffb3d1]/60">
-              <span className="relative z-20">View All 1300+ Models</span>
-              <ArrowRight className="w-5 h-5 relative z-20" />
+            <Link href="/models" className="inline-flex items-center gap-2 px-8 py-4 rounded-full bg-[#ffb3d1] text-[#2d2d2d] font-semibold text-lg hover:bg-[#ffa0c7] transition-colors">
+              View All 1300+ Models
+              <ArrowRight className="w-5 h-5" />
             </Link>
           </motion.div>
         </motion.div>
@@ -397,9 +396,9 @@ export default function Home() {
           </h2>
           <p className="text-xl text-[#6b6b6b] mb-12 max-w-xl mx-auto text-balance">Start building with az.ai today.</p>
           <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
-            <Link href="/playground" className="liquid-glass inline-flex items-center gap-3 px-12 py-5 rounded-full bg-[#ffb3d1]/80 backdrop-blur-sm text-[#2d2d2d] font-bold text-lg hover:bg-[#ffa0c7]/90 transition-all relative z-10 shadow-lg border border-[#ffb3d1]/60 focus-visible:outline-2 focus-visible:outline-[#ffb3d1] focus-visible:outline-offset-2">
-              <span className="relative z-20">Open Playground</span>
-              <ArrowRight className="w-5 h-5 relative z-20" aria-hidden="true" />
+            <Link href="/playground" className="inline-flex items-center gap-3 px-12 py-5 rounded-full bg-[#ffb3d1] text-[#2d2d2d] font-bold text-lg hover:bg-[#ffa0c7] transition-colors focus-visible:outline-2 focus-visible:outline-[#ffb3d1] focus-visible:outline-offset-2">
+              Open Playground
+              <ArrowRight className="w-5 h-5" aria-hidden="true" />
             </Link>
           </motion.div>
         </motion.div>
@@ -438,7 +437,7 @@ function FeatureCard({ title, description, icon, color }: { title: string, descr
   return (
     <motion.div 
       whileHover={{ y: -5 }}
-      className={`liquid-glass group p-10 rounded-3xl border-2 transition-colors relative z-10 ${colorClasses[color as keyof typeof colorClasses] || colorClasses.pink}`}
+      className={`liquid-glass-key group p-10 rounded-3xl border-2 transition-colors relative z-10 ${colorClasses[color as keyof typeof colorClasses] || colorClasses.pink}`}
     >
       <div className={`mb-6 p-4 rounded-2xl relative z-20 ${
         color === 'pink' ? 'bg-[#ffb3d1]' :
