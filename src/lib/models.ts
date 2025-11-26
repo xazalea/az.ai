@@ -233,9 +233,65 @@ export const getModelsByType = (type: 'chat' | 'image' | 'video'): Model[] => {
 // Get fast models for v2 API
 export const FAST_MODELS: Model[] = ALL_MODELS.filter(model => model.speed === 'fast');
 
-// Get provider groups by type
+// Helper to merge models by provider (removes g4f and deepinfra labels)
+function mergeModelsByProvider(): ProviderGroup[] {
+  const providerMap = new Map<string, Model[]>();
+  
+  // Process all provider groups
+  PROVIDER_GROUPS.forEach(group => {
+    group.models.forEach(model => {
+      const provider = model.provider || group.name;
+      const providerKey = provider.toLowerCase().replace(/\s+/g, '-');
+      
+      if (!providerMap.has(providerKey)) {
+        providerMap.set(providerKey, []);
+      }
+      
+      // Avoid duplicates
+      const existing = providerMap.get(providerKey)!;
+      if (!existing.find(m => m.id === model.id)) {
+        existing.push(model);
+      }
+    });
+  });
+  
+  // Create merged groups
+  const mergedGroups: ProviderGroup[] = [];
+  const providerOrder = [
+    'openai', 'anthropic', 'google', 'meta', 'mistral-ai', 'deepseek', 'qwen',
+    'xai', 'groq', 'glm', 'doubao', 'kimi', 'minimax', 'step', 'jimeng',
+    'dreamina', 'viggle', 'pollinations', 'stability-ai', 'black-forest-labs',
+    'bria', 'nvidia', 'microsoft', '01-ai'
+  ];
+  
+  providerOrder.forEach(key => {
+    const models = providerMap.get(key);
+    if (models && models.length > 0) {
+      mergedGroups.push({
+        id: key,
+        name: models[0].provider || key,
+        models: models.sort((a, b) => a.name.localeCompare(b.name)),
+      });
+      providerMap.delete(key);
+    }
+  });
+  
+  // Add remaining providers
+  providerMap.forEach((models, key) => {
+    mergedGroups.push({
+      id: key,
+      name: models[0].provider || key,
+      models: models.sort((a, b) => a.name.localeCompare(b.name)),
+    });
+  });
+  
+  return mergedGroups;
+}
+
+// Get provider groups by type (with merged providers)
 export const getProviderGroupsByType = (type: 'chat' | 'image' | 'video'): ProviderGroup[] => {
-  return PROVIDER_GROUPS.map(group => ({
+  const merged = mergeModelsByProvider();
+  return merged.map(group => ({
     ...group,
     models: group.models.filter(model => model.type === type),
   })).filter(group => group.models.length > 0);

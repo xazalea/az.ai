@@ -121,7 +121,7 @@ export default function Playground() {
         }
 
         thoughtStartTime = Date.now();
-        const res = await fetch('/v1/chat/completions', {
+        const res = await fetch('/api/unified/v1/chat/completions', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
@@ -132,6 +132,11 @@ export default function Playground() {
             use_memory: openMemoryEnabled,
           })
         });
+
+        if (!res.ok) {
+          const errorData = await res.json().catch(() => ({ error: { message: `HTTP ${res.status}: ${res.statusText}` } }));
+          throw new Error(errorData.error?.details || errorData.error?.message || errorData.error || `Request failed with status ${res.status}`);
+        }
 
         const thoughtTime = Date.now() - thoughtStartTime;
         const data = await res.json();
@@ -166,13 +171,17 @@ export default function Playground() {
           timing: { thoughtTime, totalTime },
         }]);
       } catch (error) {
-        console.error(error);
+        console.error('Chat error:', error);
+        const errorMessage = error instanceof Error ? error.message : 'Failed to fetch response';
         setMessages(prev => [...prev, { 
           role: 'assistant', 
-          content: `Error: ${error instanceof Error ? error.message : 'Failed to fetch response'}`,
+          content: `Error: ${errorMessage}`,
           id: `msg-${Date.now()}`,
-          timing: { totalTime: Date.now() - startTime },
+          timestamp: Date.now(),
+          timing: { totalTime: (Date.now() - startTime) / 1000 },
         }]);
+      } finally {
+        setIsLoading(false);
       }
     } else if (mode === 'image') {
       try {
@@ -180,7 +189,7 @@ export default function Playground() {
         setInput('');
         setGeneratedImage(null);
         
-        const res = await fetch('/v1/images/generations', {
+        const res = await fetch('/api/unified/v1/images/generations', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
@@ -201,7 +210,10 @@ export default function Playground() {
         else throw new Error("No image returned");
 
       } catch (error) {
+        console.error('Image generation error:', error);
         alert(`Failed to generate image: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      } finally {
+        setIsLoading(false);
       }
     } else if (mode === 'video') {
       try {
@@ -209,7 +221,7 @@ export default function Playground() {
         setInput('');
         setGeneratedVideo(null);
         
-        const res = await fetch('/v1/videos/generations', {
+        const res = await fetch('/api/unified/v1/videos/generations', {
           method: 'POST',
           headers: { 
             'Content-Type': 'application/json',
@@ -230,11 +242,12 @@ export default function Playground() {
         else throw new Error("No video returned");
 
       } catch (error) {
+        console.error('Video generation error:', error);
         alert(`Failed to generate video: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      } finally {
+        setIsLoading(false);
       }
     }
-
-    setIsLoading(false);
   };
 
   const copyMessage = (content: string) => {
@@ -330,7 +343,7 @@ export default function Playground() {
         
         {/* Sidebar / Model Selection */}
         <AnimatePresence>
-          {(sidebarOpen || window.innerWidth >= 768) && (
+          {(sidebarOpen || (typeof window !== 'undefined' && window.innerWidth >= 768)) && (
             <motion.div
               initial={{ x: -300, opacity: 0 }}
               animate={{ x: 0, opacity: 1 }}
@@ -339,7 +352,7 @@ export default function Playground() {
               className={cn(
                 "w-64 flex-shrink-0 space-y-4 overflow-y-auto max-h-[calc(100vh-8rem)]",
                 "md:block",
-                !sidebarOpen && "hidden",
+                !sidebarOpen && "hidden md:block",
                 "bg-[#2d2d2d] p-4 rounded-2xl border border-[#3a3a3a]"
               )}
             >
@@ -408,6 +421,10 @@ export default function Playground() {
                                     onClick={() => {
                                       setSelectedModel(model.id);
                                       setShowModelInfo(true);
+                                      // Close sidebar on mobile after selection
+                                      if (typeof window !== 'undefined' && window.innerWidth < 768) {
+                                        setSidebarOpen(false);
+                                      }
                                     }}
                                     className={cn(
                                       "w-full text-left px-4 py-3 rounded-lg text-sm transition-all group",
