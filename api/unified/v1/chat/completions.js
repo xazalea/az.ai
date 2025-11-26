@@ -50,7 +50,23 @@ async function callModelPackage(packageName, body, req) {
 }
 
 export default async function handler(req) {
-  if (req.method === 'OPTIONS') {
+  // Get method from request - handle both Next.js Request and standard Request objects
+  // Try multiple ways to get the method
+  let method = req.method;
+  if (!method && req instanceof Request) {
+    method = req.method;
+  }
+  if (!method && req.headers) {
+    // Some serverless environments put method in headers
+    method = req.headers.get?.('x-http-method') || req.headers['x-http-method'];
+  }
+  
+  // Log for debugging
+  if (process.env.NODE_ENV === 'development') {
+    console.log('[chat/completions] Request method:', method, 'URL:', req.url, 'Headers:', Object.fromEntries(req.headers?.entries() || []));
+  }
+  
+  if (method === 'OPTIONS') {
     return new NextResponse(null, {
       status: 200,
       headers: {
@@ -61,10 +77,21 @@ export default async function handler(req) {
     });
   }
 
-  if (req.method !== 'POST') {
+  if (method !== 'POST') {
     return NextResponse.json(
-      { error: 'Method not allowed', details: `Method ${req.method} is not supported. Use POST.` },
-      { status: 405, headers: { 'Access-Control-Allow-Origin': '*' } }
+      { 
+        error: 'Method not allowed', 
+        details: `Method ${method || 'unknown'} is not supported. Use POST.`,
+        receivedMethod: method,
+        requestType: typeof req
+      },
+      { 
+        status: 405, 
+        headers: { 
+          'Access-Control-Allow-Origin': '*',
+          'Allow': 'POST, OPTIONS'
+        } 
+      }
     );
   }
 
