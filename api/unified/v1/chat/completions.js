@@ -1,5 +1,42 @@
 import { NextResponse } from 'next/server';
-import { isG4FModel, isDeepInfraModel } from '@/lib/g4f-models';
+
+// Helper functions to check model types (inline to avoid import issues in API routes)
+function isG4FModel(modelId) {
+  if (!modelId || typeof modelId !== 'string') return false;
+  const m = modelId.toLowerCase();
+  
+  // Check if it's a DeepInfra model first (those should route to DeepInfra)
+  if (isDeepInfraModel(modelId)) return false;
+  
+  // G4F models - comprehensive list
+  const g4fPatterns = [
+    'claude', 'gemini', 'gpt', 'llama', 'mistral', 'qwen', 'deepseek', 
+    'glm', 'kimi', 'grok', 'imagen', 'dall-e', 'flux', 'sdxl', 'openchat',
+    'nano-banana', 'sonar', 'pixtral', 'seed', 'meowgpt', 'recraft',
+    'anondrop', 'azure', 'tts', 'audio'
+  ];
+  
+  return g4fPatterns.some(pattern => m.includes(pattern));
+}
+
+function isDeepInfraModel(modelId) {
+  if (!modelId || typeof modelId !== 'string') return false;
+  const m = modelId.toLowerCase();
+  
+  // DeepInfra models typically have provider/model format like "meta-llama/..."
+  // or are explicitly DeepInfra models
+  const deepInfraPatterns = [
+    'meta-llama/', 'mistralai/', 'qwen/', 'deepseek-ai/', 'anthropic/',
+    'google/', 'openai/', 'microsoft/', 'nvidia/', 'stabilityai/',
+    'black-forest-labs/', 'runway/', 'pika/', 'kling/', 'luma/',
+    'bria/', 'seedream/', 'sentence-transformers/', 'thenlper/',
+    'paddlepaddle/', 'nousresearch/'
+  ];
+  
+  return deepInfraPatterns.some(pattern => m.includes(pattern)) || 
+         m.startsWith('deepinfra/') ||
+         m.includes('/') && m.split('/').length === 2; // provider/model format
+}
 
 export const config = {
   runtime: 'nodejs', // Using nodejs to support package imports and dynamic imports
