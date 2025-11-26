@@ -18,21 +18,38 @@ export default async function handler(req) {
   }
 
   try {
-    // DeepInfra models endpoint
+    // DeepInfra models endpoint - try with API key first, then without
     const deepinfraUrl = `https://api.deepinfra.com/v1/openai/models`;
     
-    const response = await fetch(deepinfraUrl, {
-      method: 'GET',
-      headers: {
-        'Authorization': `Bearer ${process.env.DEEPINFRA_API_KEY || ''}`,
-      },
-    });
+    let response;
+    const apiKey = process.env.DEEPINFRA_API_KEY;
+    
+    // Try with API key if available
+    if (apiKey) {
+      response = await fetch(deepinfraUrl, {
+        method: 'GET',
+        headers: {
+          'Authorization': `Bearer ${apiKey}`,
+        },
+      });
+    }
+    
+    // If no API key or request failed, try without auth (some endpoints work without auth)
+    if (!response || !response.ok) {
+      response = await fetch(deepinfraUrl, {
+        method: 'GET',
+        headers: {
+          'User-Agent': 'Mozilla/5.0 (compatible; az.ai/1.0)',
+        },
+      });
+    }
 
-    if (!response.ok) {
-      // Return a default list of common DeepInfra models if API fails
+    if (!response || !response.ok) {
+      // Return an expanded default list including video models if API fails
       return NextResponse.json({
         object: 'list',
         data: [
+          // Text models
           { id: 'meta-llama/Llama-2-70b-chat-hf', object: 'model', created: 1677610602, owned_by: 'meta' },
           { id: 'mistralai/Mixtral-8x7B-Instruct-v0.1', object: 'model', created: 1677610602, owned_by: 'mistral' },
           { id: 'meta-llama/Llama-3-70b-instruct', object: 'model', created: 1677610602, owned_by: 'meta' },
@@ -41,6 +58,12 @@ export default async function handler(req) {
           { id: 'deepseek-ai/DeepSeek-V2.5', object: 'model', created: 1677610602, owned_by: 'deepseek' },
           { id: 'google/gemma-7b-it', object: 'model', created: 1677610602, owned_by: 'google' },
           { id: '01-ai/Yi-34B-Chat', object: 'model', created: 1677610602, owned_by: '01-ai' },
+          // Image models
+          { id: 'stabilityai/stable-diffusion-xl-base-1.0', object: 'model', created: 1677610602, owned_by: 'stability-ai' },
+          { id: 'black-forest-labs/FLUX-1-dev', object: 'model', created: 1677610602, owned_by: 'black-forest-labs' },
+          // Video models
+          { id: 'google/veo-3', object: 'model', created: 1677610602, owned_by: 'google' },
+          { id: 'google/veo-3.0-generate-001', object: 'model', created: 1677610602, owned_by: 'google' },
         ],
       }, {
         headers: { 'Access-Control-Allow-Origin': '*' },
@@ -49,6 +72,18 @@ export default async function handler(req) {
 
     const data = await response.json();
     
+    // Ensure we return the data in the correct format
+    if (Array.isArray(data)) {
+      return NextResponse.json({
+        object: 'list',
+        data: data,
+      }, {
+        headers: {
+          'Access-Control-Allow-Origin': '*',
+        },
+      });
+    }
+    
     return NextResponse.json(data, {
       headers: {
         'Access-Control-Allow-Origin': '*',
@@ -56,12 +91,13 @@ export default async function handler(req) {
     });
   } catch (error) {
     console.error('DeepInfra Models Error:', error);
-    // Return default list on error
+    // Return expanded default list on error
     return NextResponse.json({
       object: 'list',
       data: [
         { id: 'meta-llama/Llama-2-70b-chat-hf', object: 'model', created: 1677610602, owned_by: 'meta' },
         { id: 'mistralai/Mixtral-8x7B-Instruct-v0.1', object: 'model', created: 1677610602, owned_by: 'mistral' },
+        { id: 'google/veo-3', object: 'model', created: 1677610602, owned_by: 'google' },
       ],
     }, {
       headers: { 'Access-Control-Allow-Origin': '*' },

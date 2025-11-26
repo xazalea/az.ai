@@ -36,34 +36,87 @@ export default function ModelsPage() {
               const parts = modelId.split('/');
               const provider = parts[0] || 'DeepInfra';
               const modelName = parts[1] || modelId;
+              const lowerId = modelId.toLowerCase();
               
+              // Determine model type - check for video models first
               let type: 'chat' | 'image' | 'video' = 'chat';
-              if (modelId.toLowerCase().includes('stable-diffusion') || 
-                  modelId.toLowerCase().includes('flux') || 
-                  modelId.toLowerCase().includes('sdxl') || 
-                  modelId.toLowerCase().includes('imagen')) {
+              if (lowerId.includes('veo') || 
+                  lowerId.includes('video') ||
+                  lowerId.includes('cogvideo') ||
+                  lowerId.includes('runway') ||
+                  lowerId.includes('pika') ||
+                  lowerId.includes('kling') ||
+                  lowerId.includes('luma')) {
+                type = 'video';
+              } else if (lowerId.includes('stable-diffusion') || 
+                         lowerId.includes('flux') || 
+                         lowerId.includes('sdxl') || 
+                         lowerId.includes('imagen') ||
+                         lowerId.includes('dalle') ||
+                         lowerId.includes('midjourney') ||
+                         lowerId.includes('black-forest-labs')) {
                 type = 'image';
+              } else if (lowerId.includes('whisper') ||
+                         lowerId.includes('audio') ||
+                         lowerId.includes('tts') ||
+                         lowerId.includes('speech')) {
+                // Audio models are treated as chat for now (they use chat completions endpoint)
+                type = 'chat';
+              } else if (lowerId.includes('embedding') ||
+                         lowerId.includes('bge') ||
+                         lowerId.includes('gte') ||
+                         lowerId.includes('e5') ||
+                         lowerId.includes('sentence-transformers')) {
+                // Embedding models are treated as chat
+                type = 'chat';
               }
               
+              // Determine speed
               let speed: 'fast' | 'medium' | 'slow' | undefined = undefined;
-              if (modelId.toLowerCase().includes('turbo') || 
-                  modelId.toLowerCase().includes('flash') || 
-                  modelId.toLowerCase().includes('8b') || 
-                  modelId.toLowerCase().includes('7b')) {
+              if (lowerId.includes('turbo') || 
+                  lowerId.includes('flash') || 
+                  lowerId.includes('8b') || 
+                  lowerId.includes('7b') ||
+                  lowerId.includes('fast') ||
+                  lowerId.includes('small')) {
                 speed = 'fast';
-              } else if (modelId.toLowerCase().includes('70b') || 
-                         modelId.toLowerCase().includes('72b')) {
+              } else if (lowerId.includes('70b') || 
+                         lowerId.includes('72b') ||
+                         lowerId.includes('large')) {
                 speed = 'medium';
+              } else if (lowerId.includes('405b') ||
+                         lowerId.includes('235b') ||
+                         lowerId.includes('480b')) {
+                speed = 'slow';
               }
+              
+              // Determine route based on type
+              let route: string;
+              if (type === 'video') {
+                route = '/api/deepinfra/v1/videos/generations';
+              } else if (type === 'image') {
+                route = '/api/deepinfra/v1/images/generations';
+              } else {
+                route = '/api/deepinfra/v1/chat/completions';
+              }
+              
+              // Format model name nicely
+              const formattedName = modelName
+                .replace(/-/g, ' ')
+                .replace(/_/g, ' ')
+                .replace(/\b\w/g, l => l.toUpperCase())
+                .replace(/Hf\b/g, 'HF')
+                .replace(/Instruct\b/g, 'Instruct')
+                .replace(/Chat\b/g, 'Chat');
               
               return {
                 id: modelId,
-                name: modelName.replace(/-/g, ' ').replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase()),
-                description: `${provider} ${modelName}`,
+                name: formattedName,
+                description: model.description || `${provider} ${formattedName}`,
                 type,
                 provider: provider.charAt(0).toUpperCase() + provider.slice(1),
                 speed,
-                route: type === 'image' ? '/api/deepinfra/v1/images/generations' : '/api/deepinfra/v1/chat/completions',
+                route,
               };
             });
           }
@@ -71,25 +124,107 @@ export default function ModelsPage() {
           console.error('Failed to fetch DeepInfra models:', error);
         }
 
-        // Combine all models - use all models from PROVIDER_GROUPS, G4F_MODEL_LIST, and fetched DeepInfra models
+        // Helper to check if two models are duplicates
+        // Only considers them duplicates if they're clearly the same model
+        const areModelsDuplicate = (model1: Model, model2: Model): boolean => {
+          // Exact ID match
+          if (model1.id === model2.id) return true;
+          
+          // Same provider and very similar names (after normalization)
+          const normalize = (str: string) => str.toLowerCase().replace(/[^a-z0-9]/g, '').replace(/\./g, '');
+          const name1 = normalize(model1.name);
+          const name2 = normalize(model2.name);
+          
+          // If names are identical after normalization and same provider, likely duplicate
+          if (name1 === name2 && model1.provider === model2.provider) {
+            return true;
+          }
+          
+          // Check for common variations (e.g., "gpt-4" vs "gpt4" vs "gpt 4")
+          const variants = [
+            ['gpt35', 'gpt3.5', 'gpt-3.5', 'gpt 3.5'],
+            ['gpt4', 'gpt-4', 'gpt 4'],
+            ['gpt4turbo', 'gpt-4-turbo', 'gpt 4 turbo'],
+            ['gpt5', 'gpt-5', 'gpt 5'],
+            ['claudeopus', 'claude-opus', 'claude opus'],
+            ['claudesonnet', 'claude-sonnet', 'claude sonnet'],
+            ['gemini3pro', 'gemini-3-pro', 'gemini 3 pro'],
+            ['gemini25pro', 'gemini-2.5-pro', 'gemini 2.5 pro'],
+            ['gemini25flash', 'gemini-2.5-flash', 'gemini 2.5 flash'],
+            ['llama3', 'llama-3', 'llama 3'],
+            ['llama4', 'llama-4', 'llama 4'],
+            ['qwen25', 'qwen-2.5', 'qwen 2.5', 'qwen2.5'],
+            ['qwen3', 'qwen-3', 'qwen 3'],
+            ['deepseekv3', 'deepseek-v3', 'deepseek v3'],
+            ['deepseekr1', 'deepseek-r1', 'deepseek r1'],
+          ];
+          
+          for (const variantGroup of variants) {
+            if (variantGroup.some(v => name1.includes(v)) && 
+                variantGroup.some(v => name2.includes(v)) &&
+                model1.provider === model2.provider) {
+              return true;
+            }
+          }
+          
+          return false;
+        };
+
+        // Helper to get model quality score (higher is better)
+        const getModelScore = (model: Model): number => {
+          let score = 0;
+          // Prefer models with speed indicators
+          if (model.speed === 'fast') score += 3;
+          else if (model.speed === 'medium') score += 2;
+          else if (model.speed === 'slow') score += 1;
+          // Prefer models with routes (more complete)
+          if (model.route) score += 2;
+          // Prefer models with better descriptions
+          if (model.description && model.description.length > 20) score += 1;
+          // Prefer models from PROVIDER_GROUPS (more curated)
+          return score;
+        };
+
+        // Combine all models with proper deduplication
         const allModels: Model[] = [];
-        const modelIdSet = new Set<string>();
+        const modelIdSet = new Set<string>(); // Track exact IDs to avoid exact duplicates
         
-        // Add all models from PROVIDER_GROUPS (without deduplication)
+        // Helper to find duplicate in existing models
+        const findDuplicate = (model: Model): Model | undefined => {
+          return allModels.find(existing => areModelsDuplicate(model, existing));
+        };
+        
+        // Add all models from PROVIDER_GROUPS (highest priority - most curated)
         PROVIDER_GROUPS.forEach(group => {
           group.models.forEach(model => {
             if (!modelIdSet.has(model.id)) {
-              allModels.push(model);
-              modelIdSet.add(model.id);
+              const duplicate = findDuplicate(model);
+              if (!duplicate) {
+                allModels.push(model);
+                modelIdSet.add(model.id);
+              } else if (getModelScore(model) > getModelScore(duplicate)) {
+                // Replace duplicate with better version
+                const index = allModels.indexOf(duplicate);
+                allModels[index] = model;
+                modelIdSet.add(model.id);
+              }
             }
           });
         });
         
-        // Add all G4F models (these are already in Model format)
+        // Add all G4F models (lower priority - only if not duplicate)
         (G4F_MODEL_LIST as Model[]).forEach(model => {
           if (!modelIdSet.has(model.id)) {
-            allModels.push(model);
-            modelIdSet.add(model.id);
+            const duplicate = findDuplicate(model);
+            if (!duplicate) {
+              allModels.push(model);
+              modelIdSet.add(model.id);
+            } else if (getModelScore(model) > getModelScore(duplicate)) {
+              // Replace duplicate with better version
+              const index = allModels.indexOf(duplicate);
+              allModels[index] = model;
+              modelIdSet.add(model.id);
+            }
           }
         });
         
@@ -99,44 +234,102 @@ export default function ModelsPage() {
             const parts = modelId.split('/');
             const provider = parts[0] || 'DeepInfra';
             const modelName = parts[1] || modelId;
+            const lowerId = modelId.toLowerCase();
             
+            // Determine model type - check for video models first
             let type: 'chat' | 'image' | 'video' = 'chat';
-            if (modelId.toLowerCase().includes('stable-diffusion') || 
-                modelId.toLowerCase().includes('flux') || 
-                modelId.toLowerCase().includes('sdxl') || 
-                modelId.toLowerCase().includes('imagen')) {
+            if (lowerId.includes('veo') || 
+                lowerId.includes('video') ||
+                lowerId.includes('cogvideo')) {
+              type = 'video';
+            } else if (lowerId.includes('stable-diffusion') || 
+                       lowerId.includes('flux') || 
+                       lowerId.includes('sdxl') || 
+                       lowerId.includes('imagen') ||
+                       lowerId.includes('black-forest-labs')) {
               type = 'image';
+            } else if (lowerId.includes('embedding') ||
+                       lowerId.includes('bge') ||
+                       lowerId.includes('gte') ||
+                       lowerId.includes('e5') ||
+                       lowerId.includes('sentence-transformers')) {
+              type = 'chat'; // Embedding models use chat endpoint
             }
             
+            // Determine speed
             let speed: 'fast' | 'medium' | 'slow' | undefined = undefined;
-            if (modelId.toLowerCase().includes('turbo') || 
-                modelId.toLowerCase().includes('flash') || 
-                modelId.toLowerCase().includes('8b') || 
-                modelId.toLowerCase().includes('7b')) {
+            if (lowerId.includes('turbo') || 
+                lowerId.includes('flash') || 
+                lowerId.includes('8b') || 
+                lowerId.includes('7b') ||
+                lowerId.includes('fast') ||
+                lowerId.includes('small')) {
               speed = 'fast';
-            } else if (modelId.toLowerCase().includes('70b') || 
-                       modelId.toLowerCase().includes('72b')) {
+            } else if (lowerId.includes('70b') || 
+                       lowerId.includes('72b') ||
+                       lowerId.includes('large')) {
               speed = 'medium';
+            } else if (lowerId.includes('405b') ||
+                       lowerId.includes('235b') ||
+                       lowerId.includes('480b')) {
+              speed = 'slow';
             }
             
-            allModels.push({
+            // Determine route based on type
+            let route: string;
+            if (type === 'video') {
+              route = '/api/deepinfra/v1/videos/generations';
+            } else if (type === 'image') {
+              route = '/api/deepinfra/v1/images/generations';
+            } else {
+              route = '/api/deepinfra/v1/chat/completions';
+            }
+            
+            // Format model name nicely
+            const formattedName = modelName
+              .replace(/-/g, ' ')
+              .replace(/_/g, ' ')
+              .replace(/\b\w/g, l => l.toUpperCase())
+              .replace(/Hf\b/g, 'HF')
+              .replace(/Instruct\b/g, 'Instruct')
+              .replace(/Chat\b/g, 'Chat');
+            
+            const model: Model = {
               id: modelId,
-              name: modelName.replace(/-/g, ' ').replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase()),
-              description: `${provider} ${modelName}`,
+              name: formattedName,
+              description: `${provider} ${formattedName}`,
               type,
               provider: provider.charAt(0).toUpperCase() + provider.slice(1),
               speed,
-              route: type === 'image' ? '/api/deepinfra/v1/images/generations' : '/api/deepinfra/v1/chat/completions',
-            });
-            modelIdSet.add(modelId);
+              route,
+            };
+            
+            const duplicate = findDuplicate(model);
+            if (!duplicate) {
+              allModels.push(model);
+              modelIdSet.add(model.id);
+            } else if (getModelScore(model) > getModelScore(duplicate)) {
+              // Replace duplicate with better version
+              const index = allModels.indexOf(duplicate);
+              allModels[index] = model;
+              modelIdSet.add(model.id);
+            }
           }
         });
         
-        // Add fetched DeepInfra models (only if not already in static list)
+        // Add fetched DeepInfra models (only if not duplicate)
         deepInfraModels.forEach(model => {
           if (!modelIdSet.has(model.id)) {
-            allModels.push(model);
-            modelIdSet.add(model.id);
+            const duplicate = findDuplicate(model);
+            if (!duplicate) {
+              allModels.push(model);
+              modelIdSet.add(model.id);
+            } else if (getModelScore(model) > getModelScore(duplicate)) {
+              // Replace duplicate with better version
+              const index = allModels.indexOf(duplicate);
+              allModels[index] = model;
+              modelIdSet.add(model.id);
+            }
           }
         });
 
