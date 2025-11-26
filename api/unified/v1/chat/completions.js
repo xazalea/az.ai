@@ -189,6 +189,17 @@ export default async function handler(req) {
     
     const m = model?.toLowerCase() || '';
     
+    if (!m) {
+      console.error('[API] Missing model in request body');
+      console.error('[API] Request body keys:', Object.keys(body || {}));
+      return NextResponse.json(
+        { error: 'Model is required', details: 'Please specify a model in the request body' },
+        { status: 400, headers: { 'Access-Control-Allow-Origin': '*' } }
+      );
+    }
+    
+    console.log(`[API] Processing request for model: ${m}`);
+    
     // Session-based memory
     let memoryContext = [];
     if (use_memory !== false) {
@@ -207,12 +218,17 @@ export default async function handler(req) {
             }),
           });
           if (memoryRes.ok) {
-            const memoryData = await memoryRes.json();
-            if (memoryData.matches && memoryData.matches.length > 0) {
-              memoryContext = memoryData.matches.map((m) => ({
-                role: 'system',
-                content: `[Previous Context] ${m.content}`,
-              }));
+            try {
+              const memoryData = await memoryRes.json();
+              if (memoryData.matches && memoryData.matches.length > 0) {
+                memoryContext = memoryData.matches.map((m) => ({
+                  role: 'system',
+                  content: `[Previous Context] ${m.content}`,
+                }));
+              }
+            } catch (memoryError) {
+              console.error('[API] Error parsing memory response:', memoryError);
+              // Continue without memory context if parsing fails
             }
           }
         }
@@ -274,8 +290,28 @@ export default async function handler(req) {
           signal: controller.signal,
         });
         clearTimeout(timeoutId);
-        responseData = await response.json();
-        responseStatus = response.status;
+        try {
+          const responseText = await response.text();
+          if (!response.ok) {
+            try {
+              responseData = JSON.parse(responseText);
+            } catch {
+              responseData = { error: { message: `HTTP ${response.status}: ${response.statusText}`, details: responseText } };
+            }
+            responseStatus = response.status;
+          } else {
+            try {
+              responseData = JSON.parse(responseText);
+              responseStatus = response.status;
+            } catch (parseError) {
+              console.error(`[API] JSON parse error for package ${packageName}:`, parseError);
+              throw new Error(`Invalid JSON response from ${packageName}: ${responseText.substring(0, 200)}`);
+            }
+          }
+        } catch (responseError) {
+          console.error(`[API] Response processing error for package ${packageName}:`, responseError);
+          throw responseError;
+        }
       } else if (isDeepInfraModel(m)) {
         // DeepInfra models - check before g4f
         targetUrl = new URL('/api/deepinfra/v1/chat/completions', url.origin);
@@ -286,8 +322,28 @@ export default async function handler(req) {
           signal: controller.signal,
         });
         clearTimeout(timeoutId);
-        responseData = await response.json();
-        responseStatus = response.status;
+        try {
+          const responseText = await response.text();
+          if (!response.ok) {
+            try {
+              responseData = JSON.parse(responseText);
+            } catch {
+              responseData = { error: { message: `HTTP ${response.status}: ${response.statusText}`, details: responseText } };
+            }
+            responseStatus = response.status;
+          } else {
+            try {
+              responseData = JSON.parse(responseText);
+              responseStatus = response.status;
+            } catch (parseError) {
+              console.error(`[API] JSON parse error for DeepInfra:`, parseError);
+              throw new Error(`Invalid JSON response from DeepInfra: ${responseText.substring(0, 200)}`);
+            }
+          }
+        } catch (responseError) {
+          console.error(`[API] Response processing error for DeepInfra:`, responseError);
+          throw responseError;
+        }
       } else if (isG4FModel(m)) {
         // g4f models via webai - route all g4f models here
         targetUrl = new URL('/api/python/webai/v1/chat/completions', url.origin);
@@ -298,8 +354,28 @@ export default async function handler(req) {
           signal: controller.signal,
         });
         clearTimeout(timeoutId);
-        responseData = await response.json();
-        responseStatus = response.status;
+        try {
+          const responseText = await response.text();
+          if (!response.ok) {
+            try {
+              responseData = JSON.parse(responseText);
+            } catch {
+              responseData = { error: { message: `HTTP ${response.status}: ${response.statusText}`, details: responseText } };
+            }
+            responseStatus = response.status;
+          } else {
+            try {
+              responseData = JSON.parse(responseText);
+              responseStatus = response.status;
+            } catch (parseError) {
+              console.error(`[API] JSON parse error for G4F:`, parseError);
+              throw new Error(`Invalid JSON response from G4F: ${responseText.substring(0, 200)}`);
+            }
+          }
+        } catch (responseError) {
+          console.error(`[API] Response processing error for G4F:`, responseError);
+          throw responseError;
+        }
       } else {
         // External API routes (Python/Go or services that need separate routes)
         const externalRoutes = {
@@ -327,8 +403,28 @@ export default async function handler(req) {
           signal: controller.signal,
         });
         clearTimeout(timeoutId);
-        responseData = await response.json();
-        responseStatus = response.status;
+        try {
+          const responseText = await response.text();
+          if (!response.ok) {
+            try {
+              responseData = JSON.parse(responseText);
+            } catch {
+              responseData = { error: { message: `HTTP ${response.status}: ${response.statusText}`, details: responseText } };
+            }
+            responseStatus = response.status;
+          } else {
+            try {
+              responseData = JSON.parse(responseText);
+              responseStatus = response.status;
+            } catch (parseError) {
+              console.error(`[API] JSON parse error for external route ${targetRoute}:`, parseError);
+              throw new Error(`Invalid JSON response from ${targetRoute}: ${responseText.substring(0, 200)}`);
+            }
+          }
+        } catch (responseError) {
+          console.error(`[API] Response processing error for external route ${targetRoute}:`, responseError);
+          throw responseError;
+        }
       }
     } catch (fetchError) {
       clearTimeout(timeoutId);
@@ -422,6 +518,22 @@ export default async function handler(req) {
       },
     });
   } catch (error) {
-    return NextResponse.json({ error: 'Internal Server Error', details: error.message }, { status: 500 });
+    console.error('[API] Unified chat completions error:', error);
+    console.error('[API] Error stack:', error.stack);
+    console.error('[API] Model:', body?.model);
+    console.error('[API] Request body keys:', Object.keys(body || {}));
+    
+    return NextResponse.json(
+      { 
+        error: 'Internal Server Error', 
+        details: error.message || 'An unexpected error occurred',
+        model: body?.model,
+        type: error.name || 'UnknownError'
+      }, 
+      { 
+        status: 500,
+        headers: { 'Access-Control-Allow-Origin': '*' }
+      }
+    );
   }
 }
