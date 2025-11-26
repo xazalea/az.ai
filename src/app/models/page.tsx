@@ -1,10 +1,12 @@
 "use client";
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { Search, Zap, Brain, Image as ImageIcon, Video, ChevronDown, ChevronRight, CheckCircle2 } from 'lucide-react';
+import { Search, Zap, Brain, Image as ImageIcon, Video, ChevronDown, ChevronRight, CheckCircle2, Maximize2, Minimize2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { PROVIDER_GROUPS, ALL_MODELS, type Model } from '@/lib/models';
+import { PROVIDER_GROUPS, type Model, type ProviderGroup } from '@/lib/models';
+import { G4F_MODEL_LIST } from '@/lib/g4f-model-list';
+import { DEEPINFRA_MODELS } from '@/lib/deepinfra-models';
 import Image from 'next/image';
 import Link from 'next/link';
 
@@ -12,6 +14,165 @@ export default function ModelsPage() {
   const [searchQuery, setSearchQuery] = useState('');
   const [expandedProviders, setExpandedProviders] = useState<Set<string>>(new Set());
   const [filterType, setFilterType] = useState<'all' | 'chat' | 'image' | 'video'>('all');
+  const [allProviderGroups, setAllProviderGroups] = useState<ProviderGroup[]>(PROVIDER_GROUPS);
+  const [loading, setLoading] = useState(true);
+
+  // Fetch all models dynamically on mount
+  useEffect(() => {
+    const fetchAllModels = async () => {
+      try {
+        setLoading(true);
+        
+        // Fetch DeepInfra models from API
+        let deepInfraModels: Model[] = [];
+        try {
+          const deepInfraResponse = await fetch('/api/deepinfra/v1/models');
+          if (deepInfraResponse.ok) {
+            const deepInfraData = await deepInfraResponse.json();
+            const modelsArray = Array.isArray(deepInfraData) ? deepInfraData : (deepInfraData.data || []);
+            
+            deepInfraModels = modelsArray.map((model: any) => {
+              const modelId = model.id || model.name || '';
+              const parts = modelId.split('/');
+              const provider = parts[0] || 'DeepInfra';
+              const modelName = parts[1] || modelId;
+              
+              let type: 'chat' | 'image' | 'video' = 'chat';
+              if (modelId.toLowerCase().includes('stable-diffusion') || 
+                  modelId.toLowerCase().includes('flux') || 
+                  modelId.toLowerCase().includes('sdxl') || 
+                  modelId.toLowerCase().includes('imagen')) {
+                type = 'image';
+              }
+              
+              let speed: 'fast' | 'medium' | 'slow' | undefined = undefined;
+              if (modelId.toLowerCase().includes('turbo') || 
+                  modelId.toLowerCase().includes('flash') || 
+                  modelId.toLowerCase().includes('8b') || 
+                  modelId.toLowerCase().includes('7b')) {
+                speed = 'fast';
+              } else if (modelId.toLowerCase().includes('70b') || 
+                         modelId.toLowerCase().includes('72b')) {
+                speed = 'medium';
+              }
+              
+              return {
+                id: modelId,
+                name: modelName.replace(/-/g, ' ').replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase()),
+                description: `${provider} ${modelName}`,
+                type,
+                provider: provider.charAt(0).toUpperCase() + provider.slice(1),
+                speed,
+                route: type === 'image' ? '/api/deepinfra/v1/images/generations' : '/api/deepinfra/v1/chat/completions',
+              };
+            });
+          }
+        } catch (error) {
+          console.error('Failed to fetch DeepInfra models:', error);
+        }
+
+        // Combine all models - use all models from PROVIDER_GROUPS, G4F_MODEL_LIST, and fetched DeepInfra models
+        const allModels: Model[] = [];
+        const modelIdSet = new Set<string>();
+        
+        // Add all models from PROVIDER_GROUPS (without deduplication)
+        PROVIDER_GROUPS.forEach(group => {
+          group.models.forEach(model => {
+            if (!modelIdSet.has(model.id)) {
+              allModels.push(model);
+              modelIdSet.add(model.id);
+            }
+          });
+        });
+        
+        // Add all G4F models (these are already in Model format)
+        (G4F_MODEL_LIST as Model[]).forEach(model => {
+          if (!modelIdSet.has(model.id)) {
+            allModels.push(model);
+            modelIdSet.add(model.id);
+          }
+        });
+        
+        // Add static DeepInfra models (convert from string IDs to Model objects)
+        DEEPINFRA_MODELS.forEach(modelId => {
+          if (!modelIdSet.has(modelId)) {
+            const parts = modelId.split('/');
+            const provider = parts[0] || 'DeepInfra';
+            const modelName = parts[1] || modelId;
+            
+            let type: 'chat' | 'image' | 'video' = 'chat';
+            if (modelId.toLowerCase().includes('stable-diffusion') || 
+                modelId.toLowerCase().includes('flux') || 
+                modelId.toLowerCase().includes('sdxl') || 
+                modelId.toLowerCase().includes('imagen')) {
+              type = 'image';
+            }
+            
+            let speed: 'fast' | 'medium' | 'slow' | undefined = undefined;
+            if (modelId.toLowerCase().includes('turbo') || 
+                modelId.toLowerCase().includes('flash') || 
+                modelId.toLowerCase().includes('8b') || 
+                modelId.toLowerCase().includes('7b')) {
+              speed = 'fast';
+            } else if (modelId.toLowerCase().includes('70b') || 
+                       modelId.toLowerCase().includes('72b')) {
+              speed = 'medium';
+            }
+            
+            allModels.push({
+              id: modelId,
+              name: modelName.replace(/-/g, ' ').replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase()),
+              description: `${provider} ${modelName}`,
+              type,
+              provider: provider.charAt(0).toUpperCase() + provider.slice(1),
+              speed,
+              route: type === 'image' ? '/api/deepinfra/v1/images/generations' : '/api/deepinfra/v1/chat/completions',
+            });
+            modelIdSet.add(modelId);
+          }
+        });
+        
+        // Add fetched DeepInfra models (only if not already in static list)
+        deepInfraModels.forEach(model => {
+          if (!modelIdSet.has(model.id)) {
+            allModels.push(model);
+            modelIdSet.add(model.id);
+          }
+        });
+
+        // Group all models by provider
+        const providerMap = new Map<string, Model[]>();
+        
+        allModels.forEach(model => {
+          const provider = model.provider || 'Other';
+          if (!providerMap.has(provider)) {
+            providerMap.set(provider, []);
+          }
+          providerMap.get(provider)!.push(model);
+        });
+
+        // Create provider groups
+        const groups: ProviderGroup[] = Array.from(providerMap.entries()).map(([provider, models]) => ({
+          id: provider.toLowerCase().replace(/\s+/g, '-'),
+          name: provider,
+          models: models.sort((a, b) => a.name.localeCompare(b.name)),
+        }));
+
+        // Sort groups by name
+        groups.sort((a, b) => a.name.localeCompare(b.name));
+
+        setAllProviderGroups(groups);
+      } catch (error) {
+        console.error('Error fetching models:', error);
+        // Fallback to static models
+        setAllProviderGroups(PROVIDER_GROUPS);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchAllModels();
+  }, []);
 
   const toggleProvider = (providerId: string) => {
     setExpandedProviders(prev => {
@@ -25,8 +186,17 @@ export default function ModelsPage() {
     });
   };
 
+  const expandAll = () => {
+    const allIds = new Set(allProviderGroups.map(g => g.id));
+    setExpandedProviders(allIds);
+  };
+
+  const collapseAll = () => {
+    setExpandedProviders(new Set());
+  };
+
   // Filter models based on search and type
-  const filteredGroups = PROVIDER_GROUPS.map(group => {
+  const filteredGroups = allProviderGroups.map(group => {
     let filteredModels = group.models.filter(model => {
       const matchesSearch = !searchQuery || 
         model.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -41,7 +211,7 @@ export default function ModelsPage() {
     return { ...group, models: filteredModels };
   }).filter(group => group.models.length > 0);
 
-  const totalModels = ALL_MODELS.length;
+  const totalModels = allProviderGroups.reduce((sum, group) => sum + group.models.length, 0);
   const filteredCount = filteredGroups.reduce((sum, group) => sum + group.models.length, 0);
 
   return (
@@ -98,35 +268,58 @@ export default function ModelsPage() {
             />
           </div>
           
-          <div className="flex items-center gap-4">
-            <div className="flex items-center gap-2">
-              <span className="text-sm text-[#888888]">Filter by type:</span>
-              <div className="flex gap-2">
-                {(['all', 'chat', 'image', 'video'] as const).map(type => (
-                  <button
-                    key={type}
-                    onClick={() => setFilterType(type)}
-                    className={cn(
-                      "px-4 py-2 rounded-lg text-sm font-medium transition-all",
-                      filterType === type
-                        ? "bg-[#ffb3d1] text-[#2d2d2d]"
-                        : "bg-[#2d2d2d] text-[#888888] hover:bg-[#3a3a3a] hover:text-[#e0e0e0] border border-[#3a3a3a]"
-                    )}
-                  >
-                    {type === 'all' ? 'All' : type.charAt(0).toUpperCase() + type.slice(1)}
-                  </button>
-                ))}
+          <div className="flex items-center justify-between flex-wrap gap-4">
+            <div className="flex items-center gap-4">
+              <div className="flex items-center gap-2">
+                <span className="text-sm text-[#888888]">Filter by type:</span>
+                <div className="flex gap-2">
+                  {(['all', 'chat', 'image', 'video'] as const).map(type => (
+                    <button
+                      key={type}
+                      onClick={() => setFilterType(type)}
+                      className={cn(
+                        "px-4 py-2 rounded-lg text-sm font-medium transition-all",
+                        filterType === type
+                          ? "bg-[#ffb3d1] text-[#2d2d2d]"
+                          : "bg-[#2d2d2d] text-[#888888] hover:bg-[#3a3a3a] hover:text-[#e0e0e0] border border-[#3a3a3a]"
+                      )}
+                    >
+                      {type === 'all' ? 'All' : type.charAt(0).toUpperCase() + type.slice(1)}
+                    </button>
+                  ))}
+                </div>
+              </div>
+              <div className="text-sm text-[#888888]">
+                Showing {filteredCount} of {totalModels} models
               </div>
             </div>
-            <div className="text-sm text-[#888888]">
-              Showing {filteredCount} of {totalModels} models
+            <div className="flex items-center gap-2">
+              <button
+                onClick={expandAll}
+                className="px-4 py-2 rounded-lg text-sm font-medium bg-[#2d2d2d] text-[#888888] hover:bg-[#3a3a3a] hover:text-[#e0e0e0] border border-[#3a3a3a] transition-all flex items-center gap-2"
+              >
+                <Maximize2 className="w-4 h-4" />
+                Expand All
+              </button>
+              <button
+                onClick={collapseAll}
+                className="px-4 py-2 rounded-lg text-sm font-medium bg-[#2d2d2d] text-[#888888] hover:bg-[#3a3a3a] hover:text-[#e0e0e0] border border-[#3a3a3a] transition-all flex items-center gap-2"
+              >
+                <Minimize2 className="w-4 h-4" />
+                Collapse All
+              </button>
             </div>
           </div>
         </div>
 
         {/* Models Grid */}
-        <div className="space-y-6">
-          {filteredGroups.map(group => {
+        {loading ? (
+          <div className="text-center py-16">
+            <p className="text-[#888888] text-lg">Loading models...</p>
+          </div>
+        ) : (
+          <div className="space-y-6">
+            {filteredGroups.map(group => {
             const isExpanded = expandedProviders.has(group.id);
             return (
               <motion.div
@@ -191,9 +384,10 @@ export default function ModelsPage() {
               </motion.div>
             );
           })}
-        </div>
+          </div>
+        )}
 
-        {filteredGroups.length === 0 && (
+        {!loading && filteredGroups.length === 0 && (
           <div className="text-center py-16">
             <p className="text-[#888888] text-lg">No models found matching your search.</p>
           </div>
