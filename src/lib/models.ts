@@ -1,5 +1,8 @@
 // Comprehensive model list organized by provider
 // Models are deduplicated - fastest version is kept when duplicates exist
+import { G4F_MODEL_LIST } from './g4f-model-list';
+import { DEEPINFRA_MODELS } from './deepinfra-models';
+
 export interface Model {
   id: string;
   name: string;
@@ -120,19 +123,38 @@ export const PROVIDER_GROUPS: ProviderGroup[] = [
   {
     id: 'deepinfra',
     name: 'DeepInfra',
-    models: [
-      // Popular DeepInfra models
-      { id: 'meta-llama/llama-3-70b-instruct', name: 'Llama 3 70B', description: 'Llama 3 70B Instruct', type: 'chat', provider: 'Meta', speed: 'fast', route: '/api/deepinfra/v1/chat/completions' },
-      { id: 'meta-llama/llama-3-8b-instruct', name: 'Llama 3 8B', description: 'Llama 3 8B Instruct', type: 'chat', provider: 'Meta', speed: 'fast', route: '/api/deepinfra/v1/chat/completions' },
-      { id: 'meta-llama/llama-2-70b-chat-hf', name: 'Llama 2 70B', description: 'Llama 2 70B Chat', type: 'chat', provider: 'Meta', route: '/api/deepinfra/v1/chat/completions' },
-      { id: 'mistralai/mixtral-8x7b-instruct-v0.1', name: 'Mixtral 8x7B', description: 'Mixtral 8x7B Instruct', type: 'chat', provider: 'Mistral AI', speed: 'fast', route: '/api/deepinfra/v1/chat/completions' },
-      { id: 'qwen/qwen2.5-72b-instruct', name: 'Qwen 2.5 72B', description: 'Qwen 2.5 72B Instruct', type: 'chat', provider: 'Qwen', route: '/api/deepinfra/v1/chat/completions' },
-      { id: 'deepseek-ai/deepseek-v2.5', name: 'DeepSeek V2.5', description: 'DeepSeek V2.5 model', type: 'chat', provider: 'DeepSeek', speed: 'fast', route: '/api/deepinfra/v1/chat/completions' },
-      { id: 'google/gemma-7b-it', name: 'Gemma 7B', description: 'Google Gemma 7B IT', type: 'chat', provider: 'Google', route: '/api/deepinfra/v1/chat/completions' },
-      { id: '01-ai/yi-34b-chat', name: 'Yi 34B', description: '01.AI Yi 34B Chat', type: 'chat', provider: '01.AI', route: '/api/deepinfra/v1/chat/completions' },
-      { id: 'microsoft/phi-3-medium-4k-instruct', name: 'Phi-3 Medium', description: 'Microsoft Phi-3 Medium', type: 'chat', provider: 'Microsoft', route: '/api/deepinfra/v1/chat/completions' },
-      { id: 'stabilityai/stable-diffusion-xl-base-1.0', name: 'Stable Diffusion XL', description: 'Stable Diffusion XL for images', type: 'image', provider: 'Stability AI', route: '/api/deepinfra/v1/images/generations' },
-    ],
+    models: DEEPINFRA_MODELS.map(modelId => {
+      // Extract provider and model name from model ID
+      const parts = modelId.split('/');
+      const provider = parts[0] || 'DeepInfra';
+      const modelName = parts[1] || modelId;
+      
+      // Determine type based on model name
+      let type: 'chat' | 'image' | 'video' = 'chat';
+      if (modelId.toLowerCase().includes('stable-diffusion') || modelId.toLowerCase().includes('flux') || modelId.toLowerCase().includes('sdxl') || modelId.toLowerCase().includes('imagen')) {
+        type = 'image';
+      } else if (modelId.toLowerCase().includes('embedding') || modelId.toLowerCase().includes('bge') || modelId.toLowerCase().includes('gte') || modelId.toLowerCase().includes('e5')) {
+        type = 'chat'; // Embeddings are still chat models
+      }
+      
+      // Determine speed
+      let speed: 'fast' | 'medium' | 'slow' | undefined = undefined;
+      if (modelId.toLowerCase().includes('turbo') || modelId.toLowerCase().includes('flash') || modelId.toLowerCase().includes('8b') || modelId.toLowerCase().includes('7b')) {
+        speed = 'fast';
+      } else if (modelId.toLowerCase().includes('70b') || modelId.toLowerCase().includes('72b')) {
+        speed = 'medium';
+      }
+      
+      return {
+        id: modelId,
+        name: modelName.replace(/-/g, ' ').replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase()),
+        description: `${provider} ${modelName}`,
+        type,
+        provider: provider.charAt(0).toUpperCase() + provider.slice(1),
+        speed,
+        route: type === 'image' ? '/api/deepinfra/v1/images/generations' : '/api/deepinfra/v1/chat/completions',
+      };
+    }) as Model[],
   },
   {
     id: 'xai',
@@ -155,52 +177,7 @@ export const PROVIDER_GROUPS: ProviderGroup[] = [
   {
     id: 'g4f',
     name: 'g4f Providers',
-    models: [
-      // OpenAI models via g4f
-      { id: 'gpt-4o', name: 'GPT-4o', description: 'GPT-4 Optimized via g4f', type: 'chat', provider: 'OpenAI', route: '/api/python/webai/v1/chat/completions' },
-      { id: 'gpt-4-turbo', name: 'GPT-4 Turbo', description: 'GPT-4 Turbo via g4f', type: 'chat', provider: 'OpenAI', route: '/api/python/webai/v1/chat/completions' },
-      { id: 'gpt-4o-mini', name: 'GPT-4o Mini', description: 'GPT-4o Mini via g4f', type: 'chat', provider: 'OpenAI', speed: 'fast', route: '/api/python/webai/v1/chat/completions' },
-      { id: 'o1-preview', name: 'O1 Preview', description: 'OpenAI O1 Preview via g4f', type: 'chat', provider: 'OpenAI', route: '/api/python/webai/v1/chat/completions' },
-      { id: 'o1-mini', name: 'O1 Mini', description: 'OpenAI O1 Mini via g4f', type: 'chat', provider: 'OpenAI', speed: 'fast', route: '/api/python/webai/v1/chat/completions' },
-      // Anthropic models via g4f
-      { id: 'claude-3-opus', name: 'Claude 3 Opus', description: 'Claude 3 Opus via g4f', type: 'chat', provider: 'Anthropic', route: '/api/python/webai/v1/chat/completions' },
-      { id: 'claude-3-sonnet', name: 'Claude 3 Sonnet', description: 'Claude 3 Sonnet via g4f', type: 'chat', provider: 'Anthropic', speed: 'fast', route: '/api/python/webai/v1/chat/completions' },
-      { id: 'claude-3-haiku', name: 'Claude 3 Haiku', description: 'Claude 3 Haiku via g4f', type: 'chat', provider: 'Anthropic', speed: 'fast', route: '/api/python/webai/v1/chat/completions' },
-      { id: 'claude-3-5-sonnet', name: 'Claude 3.5 Sonnet', description: 'Claude 3.5 Sonnet via g4f', type: 'chat', provider: 'Anthropic', speed: 'fast', route: '/api/python/webai/v1/chat/completions' },
-      // Google models via g4f
-      { id: 'gemini-pro-1.5', name: 'Gemini Pro 1.5', description: 'Gemini Pro 1.5 via g4f', type: 'chat', provider: 'Google', route: '/api/python/webai/v1/chat/completions' },
-      { id: 'gemini-pro-vision', name: 'Gemini Pro Vision', description: 'Gemini Pro Vision via g4f', type: 'chat', provider: 'Google', route: '/api/python/webai/v1/chat/completions' },
-      { id: 'gemini-flash-1.5', name: 'Gemini Flash 1.5', description: 'Gemini Flash 1.5 via g4f', type: 'chat', provider: 'Google', speed: 'fast', route: '/api/python/webai/v1/chat/completions' },
-      // Meta models via g4f
-      { id: 'llama-3-70b-instruct', name: 'Llama 3 70B Instruct', description: 'Llama 3 70B via g4f', type: 'chat', provider: 'Meta', route: '/api/python/webai/v1/chat/completions' },
-      { id: 'llama-3-8b-instruct', name: 'Llama 3 8B Instruct', description: 'Llama 3 8B via g4f', type: 'chat', provider: 'Meta', speed: 'fast', route: '/api/python/webai/v1/chat/completions' },
-      { id: 'llama-3.1-70b-instruct', name: 'Llama 3.1 70B Instruct', description: 'Llama 3.1 70B via g4f', type: 'chat', provider: 'Meta', route: '/api/python/webai/v1/chat/completions' },
-      { id: 'llama-3.1-8b-instruct', name: 'Llama 3.1 8B Instruct', description: 'Llama 3.1 8B via g4f', type: 'chat', provider: 'Meta', speed: 'fast', route: '/api/python/webai/v1/chat/completions' },
-      // Mistral models via g4f
-      { id: 'mistral-large-latest', name: 'Mistral Large Latest', description: 'Mistral Large via g4f', type: 'chat', provider: 'Mistral AI', speed: 'fast', route: '/api/python/webai/v1/chat/completions' },
-      { id: 'mistral-medium-latest', name: 'Mistral Medium Latest', description: 'Mistral Medium via g4f', type: 'chat', provider: 'Mistral AI', route: '/api/python/webai/v1/chat/completions' },
-      { id: 'mistral-small-latest', name: 'Mistral Small Latest', description: 'Mistral Small via g4f', type: 'chat', provider: 'Mistral AI', speed: 'fast', route: '/api/python/webai/v1/chat/completions' },
-      { id: 'mixtral-8x7b-instruct', name: 'Mixtral 8x7B Instruct', description: 'Mixtral 8x7B via g4f', type: 'chat', provider: 'Mistral AI', speed: 'fast', route: '/api/python/webai/v1/chat/completions' },
-      { id: 'pixtral-12b', name: 'Pixtral 12B', description: 'Mistral Pixtral 12B via g4f', type: 'chat', provider: 'Mistral AI', route: '/api/python/webai/v1/chat/completions' },
-      // xAI models via g4f
-      { id: 'grok-beta', name: 'Grok Beta', description: 'Grok Beta via g4f', type: 'chat', provider: 'xAI', route: '/api/python/webai/v1/chat/completions' },
-      { id: 'grok-2', name: 'Grok-2', description: 'Grok-2 via g4f', type: 'chat', provider: 'xAI', route: '/api/python/webai/v1/chat/completions' },
-      // Cohere models via g4f
-      { id: 'command-r-plus', name: 'Command R+', description: 'Cohere Command R+ via g4f', type: 'chat', provider: 'Cohere', route: '/api/python/webai/v1/chat/completions' },
-      { id: 'command-r', name: 'Command R', description: 'Cohere Command R via g4f', type: 'chat', provider: 'Cohere', route: '/api/python/webai/v1/chat/completions' },
-      { id: 'command', name: 'Command', description: 'Cohere Command via g4f', type: 'chat', provider: 'Cohere', route: '/api/python/webai/v1/chat/completions' },
-      { id: 'command-light', name: 'Command Light', description: 'Cohere Command Light via g4f', type: 'chat', provider: 'Cohere', speed: 'fast', route: '/api/python/webai/v1/chat/completions' },
-      // Additional models via g4f
-      { id: 'qwen-plus', name: 'Qwen Plus', description: 'Qwen Plus via g4f', type: 'chat', provider: 'Qwen', route: '/api/python/webai/v1/chat/completions' },
-      { id: 'qwen-turbo', name: 'Qwen Turbo', description: 'Qwen Turbo via g4f', type: 'chat', provider: 'Qwen', speed: 'fast', route: '/api/python/webai/v1/chat/completions' },
-      { id: 'qwen-max', name: 'Qwen Max', description: 'Qwen Max via g4f', type: 'chat', provider: 'Qwen', route: '/api/python/webai/v1/chat/completions' },
-      { id: 'deepseek-chat', name: 'DeepSeek Chat', description: 'DeepSeek Chat via g4f', type: 'chat', provider: 'DeepSeek', speed: 'fast', route: '/api/python/webai/v1/chat/completions' },
-      { id: 'deepseek-coder', name: 'DeepSeek Coder', description: 'DeepSeek Coder via g4f', type: 'chat', provider: 'DeepSeek', route: '/api/python/webai/v1/chat/completions' },
-      { id: 'yi-large', name: 'Yi Large', description: '01.AI Yi Large via g4f', type: 'chat', provider: '01.AI', route: '/api/python/webai/v1/chat/completions' },
-      { id: 'yi-medium', name: 'Yi Medium', description: '01.AI Yi Medium via g4f', type: 'chat', provider: '01.AI', speed: 'fast', route: '/api/python/webai/v1/chat/completions' },
-      { id: 'phi-3-medium', name: 'Phi-3 Medium', description: 'Microsoft Phi-3 Medium via g4f', type: 'chat', provider: 'Microsoft', route: '/api/python/webai/v1/chat/completions' },
-      { id: 'phi-3-mini', name: 'Phi-3 Mini', description: 'Microsoft Phi-3 Mini via g4f', type: 'chat', provider: 'Microsoft', speed: 'fast', route: '/api/python/webai/v1/chat/completions' },
-    ],
+    models: G4F_MODEL_LIST as Model[],
   },
   {
     id: 'other',

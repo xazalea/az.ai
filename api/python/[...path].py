@@ -5,6 +5,7 @@ Routes: /api/python/{service}/{version}/{endpoint}
 
 import json
 import sys
+import time
 from pathlib import Path
 
 def handler(request):
@@ -165,7 +166,7 @@ def handler(request):
                 messages = body.get('messages', [])
                 model = body.get('model', 'deepseek-chat')
                 
-                result = await create_completion(messages, model)
+                result = create_completion(messages, model)
                 
                 return {
                     'statusCode': 200,
@@ -435,27 +436,121 @@ def handler(request):
                 }
         
         elif service == 'webai' and endpoint == 'chat/completions':
-            # WebAI (g4f)
-            webai_path = Path(__file__).parent.parent.parent / "packages" / "webai-to-api"
-            sys.path.insert(0, str(webai_path))
-            
+            # WebAI (g4f) - Use g4f library directly
             try:
+                import g4f
+                from g4f.Provider import ProviderUtils
+                
                 messages = body.get('messages', [])
                 model = body.get('model', 'gpt-3.5-turbo')
+                stream = body.get('stream', False)
                 
-                # Placeholder - implement WebAI call
+                if not messages:
+                    return {
+                        'statusCode': 400,
+                        'headers': {'Content-Type': 'application/json'},
+                        'body': json.dumps({'error': 'Missing messages'})
+                    }
+                
+                # Convert messages to g4f format
+                conversation = []
+                for msg in messages:
+                    role = msg.get('role', 'user')
+                    content = msg.get('content', '')
+                    if role == 'user':
+                        conversation.append({'role': 'user', 'content': content})
+                    elif role == 'assistant':
+                        conversation.append({'role': 'assistant', 'content': content})
+                    elif role == 'system':
+                        # g4f doesn't support system messages directly, prepend to first user message
+                        if conversation and conversation[0]['role'] == 'user':
+                            conversation[0]['content'] = f"{content}\n\n{conversation[0]['content']}"
+                        else:
+                            conversation.insert(0, {'role': 'user', 'content': content})
+                
+                # Get provider for model
+                provider = ProviderUtils.convert.get(model)
+                if not provider:
+                    # Try to find a provider that supports this model
+                    provider = g4f.Provider.default
+                
+                # Generate response
+                response_text = ""
+                try:
+                    response = g4f.ChatCompletion.create(
+                        model=model,
+                        messages=conversation,
+                        provider=provider,
+                        stream=stream
+                    )
+                    
+                    if stream:
+                        # Handle streaming
+                        response_text = ""
+                        for chunk in response:
+                            if hasattr(chunk, 'choices') and chunk.choices:
+                                delta = chunk.choices[0].get('delta', {})
+                                if 'content' in delta:
+                                    response_text += delta['content']
+                    else:
+                        response_text = response if isinstance(response, str) else response.choices[0].message.content
+                except Exception as g4f_error:
+                    # Fallback: try with default provider
+                    try:
+                        response_text = g4f.ChatCompletion.create(
+                            model=model,
+                            messages=conversation,
+                            stream=False
+                        )
+                        if not isinstance(response_text, str):
+                            response_text = response_text.choices[0].message.content
+                    except:
+                        raise g4f_error
+                
+                # Format as OpenAI-compatible response
                 return {
                     'statusCode': 200,
                     'headers': {'Content-Type': 'application/json'},
                     'body': json.dumps({
-                        'choices': [{'message': {'content': 'WebAI response'}}]
+                        'id': f'chatcmpl-{int(time.time())}',
+                        'object': 'chat.completion',
+                        'created': int(time.time()),
+                        'model': model,
+                        'choices': [{
+                            'index': 0,
+                            'message': {
+                                'role': 'assistant',
+                                'content': response_text
+                            },
+                            'finish_reason': 'stop'
+                        }],
+                        'usage': {
+                            'prompt_tokens': sum(len(m.get('content', '')) for m in messages) // 4,
+                            'completion_tokens': len(response_text) // 4,
+                            'total_tokens': (sum(len(m.get('content', '')) for m in messages) + len(response_text)) // 4
+                        }
+                    })
+                }
+            except ImportError:
+                # g4f not available - return error with instructions
+                return {
+                    'statusCode': 503,
+                    'headers': {'Content-Type': 'application/json'},
+                    'body': json.dumps({
+                        'error': 'g4f library not available',
+                        'details': 'g4f needs to be installed in the Python environment',
+                        'note': 'This endpoint requires g4f to be installed. Please ensure g4f is available.'
                     })
                 }
             except Exception as e:
                 return {
                     'statusCode': 500,
                     'headers': {'Content-Type': 'application/json'},
-                    'body': json.dumps({'error': 'WebAI error', 'details': str(e)})
+                    'body': json.dumps({
+                        'error': 'WebAI (g4f) error',
+                        'details': str(e),
+                        'model': body.get('model', 'unknown')
+                    })
                 }
         
         elif service == 'removerized' and endpoint == 'images/edit':

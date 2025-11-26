@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+import { isG4FModel, isDeepInfraModel } from '@/lib/g4f-models';
 
 export const config = {
   runtime: 'nodejs', // Changed to nodejs to support package imports
@@ -122,17 +123,17 @@ export default async function handler(req) {
     // Determine which handler to use based on model
     const requestBody = { ...body, messages: [...memoryContext, ...messages] };
     
-    // Package-based models (use generic proxy)
+    // Package-based models (use generic proxy) - check these first before g4f/deepinfra
     let packageName = null;
-    if (m.includes('qwen')) {
+    if (m.includes('qwen') && !isDeepInfraModel(m)) { // Exclude DeepInfra Qwen
       packageName = 'qwen-free-api';
-    } else if (m.includes('deepseek') && !m.includes('free')) {
+    } else if (m.includes('deepseek') && !m.includes('free') && !isDeepInfraModel(m)) { // Exclude DeepInfra DeepSeek
       packageName = 'deepseek-free-api';
     } else if (m.includes('glm')) {
       packageName = 'glm-free-api';
     } else if (m.includes('doubao')) {
       packageName = 'doubao-free-api';
-    } else if (m.includes('kimi')) {
+    } else if (m.includes('kimi') && !isDeepInfraModel(m)) { // Exclude DeepInfra Kimi
       packageName = 'kimi-free-api';
     } else if (m.includes('minimax') || m.includes('hailuo')) {
       packageName = 'minimax-free-api';
@@ -152,29 +153,45 @@ export default async function handler(req) {
       });
       responseData = await response.json();
       responseStatus = response.status;
+    } else if (isDeepInfraModel(m)) {
+      // DeepInfra models - check before g4f
+      targetUrl = new URL('/api/deepinfra/v1/chat/completions', url.origin);
+      const response = await fetch(targetUrl, {
+        method: 'POST',
+        headers: req.headers,
+        body: JSON.stringify(requestBody),
+      });
+      responseData = await response.json();
+      responseStatus = response.status;
+    } else if (isG4FModel(m)) {
+      // g4f models via webai - route all g4f models here
+      targetUrl = new URL('/api/python/webai/v1/chat/completions', url.origin);
+      const response = await fetch(targetUrl, {
+        method: 'POST',
+        headers: req.headers,
+        body: JSON.stringify(requestBody),
+      });
+      responseData = await response.json();
+      responseStatus = response.status;
     } else {
-      // Check if it's a DeepInfra model (contains / in model name)
-      if (m.includes('/') || m.includes('llama') || m.includes('mixtral') || m.includes('qwen/qwen') || m.includes('deepseek-ai') || m.includes('google/gemma') || m.includes('01-ai') || m.includes('microsoft/phi')) {
-        targetUrl = new URL('/api/deepinfra/v1/chat/completions', url.origin);
-      } else {
-        // External API routes (Python/Go or services that need separate routes)
-        const externalRoutes = {
-          'groq': '/api/groq/v1/chat/completions',
-          'gpt-4': '/api/services/gpt4freejs/v1/chat/completions',
-          'gpt4': '/api/services/gpt4freejs/v1/chat/completions',
-          'gpt-3.5': '/api/services/gpt4freejs/v1/chat/completions',
-          'gpt3.5': '/api/services/gpt4freejs/v1/chat/completions',
-          'chatgpt': '/api/services/gpt4freejs/v1/chat/completions',
-          'gemini-multimodal': '/api/python/gemini-multimodal/v1/chat/completions',
-          'pollinations': '/api/pollinations/v1/chat/completions',
-          'webai': '/api/python/webai/v1/chat/completions',
-          'g4f': '/api/python/webai/v1/chat/completions',
-          'deepseek-free': '/api/python/deepseekfree/v1/chat/completions',
-        };
-        
-        const targetRoute = externalRoutes[m] || '/api/services/gpt4freejs/v1/chat/completions';
-        targetUrl = new URL(targetRoute, url.origin);
-      }
+      // External API routes (Python/Go or services that need separate routes)
+      const externalRoutes = {
+        'groq': '/api/groq/v1/chat/completions',
+        'gpt-4': '/api/services/gpt4freejs/v1/chat/completions',
+        'gpt4': '/api/services/gpt4freejs/v1/chat/completions',
+        'gpt-3.5': '/api/services/gpt4freejs/v1/chat/completions',
+        'gpt3.5': '/api/services/gpt4freejs/v1/chat/completions',
+        'chatgpt': '/api/services/gpt4freejs/v1/chat/completions',
+        'gemini-multimodal': '/api/python/gemini-multimodal/v1/chat/completions',
+        'pollinations': '/api/pollinations/v1/chat/completions',
+        'webai': '/api/python/webai/v1/chat/completions',
+        'g4f': '/api/python/webai/v1/chat/completions',
+        'deepseek-free': '/api/python/deepseekfree/v1/chat/completions',
+      };
+      
+      // Default to webai (g4f) for unknown models - this allows all g4f models to work automatically
+      const targetRoute = externalRoutes[m] || '/api/python/webai/v1/chat/completions';
+      targetUrl = new URL(targetRoute, url.origin);
       
       const response = await fetch(targetUrl, {
         method: 'POST',
