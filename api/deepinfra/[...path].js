@@ -19,6 +19,9 @@ export default async function handler(req) {
   } else if (pathSegments.includes('images') && pathSegments.includes('generations')) {
     const imageHandler = await import('./v1/images/generations.js');
     return imageHandler.default(req);
+  } else if (pathSegments.includes('videos') && pathSegments.includes('generations')) {
+    const videoHandler = await import('./v1/videos/generations.js');
+    return videoHandler.default(req);
   }
   
   return NextResponse.json({ error: 'Not found' }, { status: 404 });

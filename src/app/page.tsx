@@ -1,14 +1,22 @@
 "use client";
 
-import React from 'react';
+import React, { useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { ArrowRight, Zap, Brain, Database, CheckCircle2, TrendingUp, Shield } from 'lucide-react';
 import Link from 'next/link';
 import Image from 'next/image';
 
 export default function Home() {
+  useEffect(() => {
+    // Add light mode class to body for homepage
+    document.body.classList.add('light-mode');
+    return () => {
+      document.body.classList.remove('light-mode');
+    };
+  }, []);
+
   return (
-    <main className="min-h-screen bg-[#faf9f7] text-[#2d2d2d] font-sans overflow-x-hidden">
+    <main className="min-h-screen bg-[#faf9f7] text-[#2d2d2d] font-sans overflow-x-hidden scroll-smooth">
       {/* Navigation */}
       <nav className="sticky top-0 z-50 bg-[#faf9f7] border-b border-[#e8e5e0]">
         <div className="container mx-auto px-6 py-5 flex justify-between items-center max-w-7xl">
@@ -23,21 +31,23 @@ export default function Home() {
               width={40} 
               height={40}
               className="rounded-lg"
+              priority
+              loading="eager"
             />
             <span className="text-2xl font-bold text-[#2d2d2d]">az.ai</span>
           </motion.div>
               <div className="flex items-center gap-8">
-                <Link href="/models" className="text-[#6b6b6b] hover:text-[#2d2d2d] transition-colors text-sm font-medium hidden md:block">
+                <Link href="/models" className="text-[#6b6b6b] hover:text-[#2d2d2d] transition-colors text-sm font-medium hidden md:block focus-visible:outline-2 focus-visible:outline-[#ffb3d1] focus-visible:outline-offset-2 rounded">
                   Models
                 </Link>
-                <Link href="/playground" className="text-[#6b6b6b] hover:text-[#2d2d2d] transition-colors text-sm font-medium hidden md:block">
+                <Link href="/playground" className="text-[#6b6b6b] hover:text-[#2d2d2d] transition-colors text-sm font-medium hidden md:block focus-visible:outline-2 focus-visible:outline-[#ffb3d1] focus-visible:outline-offset-2 rounded">
                   Playground
                 </Link>
-                <Link href="https://github.com/xazalea/az.ai" target="_blank" className="text-[#6b6b6b] hover:text-[#2d2d2d] transition-colors text-sm font-medium hidden md:block">
+                <Link href="https://github.com/xazalea/az.ai" target="_blank" rel="noopener noreferrer" className="text-[#6b6b6b] hover:text-[#2d2d2d] transition-colors text-sm font-medium hidden md:block focus-visible:outline-2 focus-visible:outline-[#ffb3d1] focus-visible:outline-offset-2 rounded">
                   GitHub
                 </Link>
             <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
-              <Link href="/playground" className="px-6 py-2.5 bg-[#ffb3d1] text-[#2d2d2d] rounded-full text-sm font-semibold hover:bg-[#ffa0c7] transition-colors">
+              <Link href="/playground" className="px-6 py-2.5 bg-[#ffb3d1] text-[#2d2d2d] rounded-full text-sm font-semibold hover:bg-[#ffa0c7] transition-colors focus-visible:outline-2 focus-visible:outline-[#ffb3d1] focus-visible:outline-offset-2">
                 Launch App
               </Link>
             </motion.div>
@@ -76,9 +86,9 @@ export default function Home() {
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.4 }}
-                className="text-xl md:text-2xl text-[#6b6b6b] max-w-3xl mx-auto mb-12 leading-relaxed"
+                className="text-xl md:text-2xl text-[#6b6b6b] max-w-3xl mx-auto mb-12 leading-relaxed text-balance"
               >
-                Better prices, better uptime, no subscription. Access <Link href="/models" className="text-[#2d2d2d] font-semibold hover:text-[#d94d7a] transition-colors underline">1300+ models</Link> through a single OpenAI-compatible endpoint.
+                Better prices, better uptime, no subscription. Access <Link href="/models" className="text-[#2d2d2d] font-semibold hover:text-[#d94d7a] transition-colors underline focus-visible:outline-2 focus-visible:outline-[#ffb3d1] focus-visible:outline-offset-2 rounded">1300+ models</Link> through a single OpenAI-compatible endpoint.
               </motion.p>
           
           <motion.div 
@@ -88,13 +98,13 @@ export default function Home() {
             className="flex flex-col md:flex-row items-center justify-center gap-4"
           >
             <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
-              <Link href="/playground" className="group px-10 py-4 rounded-full bg-[#ffb3d1] text-[#2d2d2d] font-semibold text-lg hover:bg-[#ffa0c7] transition-colors flex items-center justify-center gap-2">
+              <Link href="/playground" className="group px-10 py-4 rounded-full bg-[#ffb3d1] text-[#2d2d2d] font-semibold text-lg hover:bg-[#ffa0c7] transition-colors flex items-center justify-center gap-2 focus-visible:outline-2 focus-visible:outline-[#ffb3d1] focus-visible:outline-offset-2">
                 <span>Get Started</span>
-                <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
+                <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" aria-hidden="true" />
               </Link>
             </motion.div>
             <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
-              <Link href="/models" className="px-10 py-4 rounded-full bg-[#e8e5e0] border border-[#d4c5b8] text-[#2d2d2d] font-semibold text-lg hover:bg-[#ddd8d0] transition-colors inline-block">
+              <Link href="/models" className="px-10 py-4 rounded-full bg-[#e8e5e0] border border-[#d4c5b8] text-[#2d2d2d] font-semibold text-lg hover:bg-[#ddd8d0] transition-colors inline-block focus-visible:outline-2 focus-visible:outline-[#ffb3d1] focus-visible:outline-offset-2">
                 Browse Models
               </Link>
             </motion.div>
@@ -107,17 +117,19 @@ export default function Home() {
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.6 }}
           className="mt-24 grid grid-cols-3 gap-8 max-w-4xl mx-auto"
+          role="region"
+          aria-label="Platform statistics"
         >
           <div className="text-center">
-            <div className="text-4xl font-bold text-[#d94d7a] mb-2">1300+</div>
+            <div className="text-4xl font-bold text-[#d94d7a] mb-2" aria-label="1300 plus">1300+</div>
             <div className="text-sm text-[#6b6b6b]">Active Models</div>
           </div>
           <div className="text-center">
-            <div className="text-4xl font-bold text-[#d94d7a] mb-2">50+</div>
+            <div className="text-4xl font-bold text-[#d94d7a] mb-2" aria-label="50 plus">50+</div>
             <div className="text-sm text-[#6b6b6b]">Providers</div>
           </div>
           <div className="text-center">
-            <div className="text-4xl font-bold text-[#d94d7a] mb-2">∞</div>
+            <div className="text-4xl font-bold text-[#d94d7a] mb-2" aria-label="Unlimited">∞</div>
             <div className="text-sm text-[#6b6b6b]">Free Tier</div>
           </div>
         </motion.div>
@@ -140,13 +152,15 @@ export default function Home() {
             <div className="ml-4 text-xs text-[#6b6b6b] font-mono">terminal</div>
           </div>
           <div className="p-8 bg-[#ffffff]">
-            <pre className="text-sm md:text-base font-mono text-[#2d2d2d] whitespace-pre leading-relaxed overflow-x-auto">
-              <span className="text-[#d94d7a]">curl</span> https://az.ai/v1/chat/completions \<br/>
-              {"  "}-H <span className="text-[#8b7d6b]">"Content-Type: application/json"</span> \<br/>
-              {"  "}-d <span className="text-[#2d2d2d]">{'{'}</span><br/>
-              {"    "}<span className="text-[#8b7d6b]">"model"</span>: <span className="text-[#d94d7a]">"qwen"</span>,<br/>
-              {"    "}<span className="text-[#8b7d6b]">"messages"</span>: [<span className="text-[#2d2d2d]">{'{'}</span><span className="text-[#8b7d6b]">"role"</span>: <span className="text-[#d94d7a]">"user"</span>, <span className="text-[#8b7d6b]">"content"</span>: <span className="text-[#ff9faa]">"Hello!"</span><span className="text-[#2d2d2d]">{'}'}</span>]<br/>
-              {"  "}<span className="text-[#2d2d2d]">{'}'}</span>
+            <pre className="text-sm md:text-base font-mono text-[#2d2d2d] whitespace-pre leading-relaxed overflow-x-auto" role="code" aria-label="Example API request">
+              <code>
+                <span className="text-[#d94d7a]">curl</span> https://az.ai/v1/chat/completions \<br/>
+                {"  "}-H <span className="text-[#8b7d6b]">"Content-Type: application/json"</span> \<br/>
+                {"  "}-d <span className="text-[#2d2d2d]">{'{'}</span><br/>
+                {"    "}<span className="text-[#8b7d6b]">"model"</span>: <span className="text-[#d94d7a]">"qwen"</span>,<br/>
+                {"    "}<span className="text-[#8b7d6b]">"messages"</span>: [<span className="text-[#2d2d2d]">{'{'}</span><span className="text-[#8b7d6b]">"role"</span>: <span className="text-[#d94d7a]">"user"</span>, <span className="text-[#8b7d6b]">"content"</span>: <span className="text-[#ff9faa]">"Hello!"</span><span className="text-[#2d2d2d]">{'}'}</span>]<br/>
+                {"  "}<span className="text-[#2d2d2d]">{'}'}</span>
+              </code>
             </pre>
           </div>
         </div>
@@ -154,17 +168,17 @@ export default function Home() {
 
       {/* Features Grid */}
       <section className="py-32 container mx-auto px-6 max-w-7xl">
-        <motion.div 
+        <motion.div
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ duration: 0.6 }}
           className="text-center mb-20"
         >
-          <h2 className="text-5xl md:text-6xl font-bold mb-6 text-[#2d2d2d]">
+          <h2 className="text-5xl md:text-6xl font-bold mb-6 text-[#2d2d2d] text-balance">
             One API for <span className="text-[#d94d7a]">Any Model</span>
           </h2>
-          <p className="text-xl text-[#6b6b6b] max-w-2xl mx-auto">
+          <p className="text-xl text-[#6b6b6b] max-w-2xl mx-auto text-balance">
             Access all major models through a single, unified interface. OpenAI SDK works out of the box.
           </p>
         </motion.div>
@@ -200,10 +214,10 @@ export default function Home() {
           transition={{ duration: 0.6 }}
           className="text-center mb-20"
         >
-          <h2 className="text-5xl md:text-6xl font-bold mb-6 text-[#2d2d2d]">
+          <h2 className="text-5xl md:text-6xl font-bold mb-6 text-[#2d2d2d] text-balance">
             Powered by <span className="text-[#d94d7a]">Advanced AI</span>
           </h2>
-          <p className="text-xl text-[#6b6b6b] max-w-2xl mx-auto">
+          <p className="text-xl text-[#6b6b6b] max-w-2xl mx-auto text-balance">
             Beyond just API access—az.ai includes cutting-edge reasoning and memory systems.
           </p>
         </motion.div>
@@ -262,10 +276,10 @@ export default function Home() {
           transition={{ duration: 0.6 }}
           className="text-center mb-20"
         >
-          <h2 className="text-5xl md:text-6xl font-bold mb-6">
+          <h2 className="text-5xl md:text-6xl font-bold mb-6 text-balance">
             <span className="text-[#d94d7a]">1300+ Models</span>
           </h2>
-          <p className="text-xl text-[#6b6b6b] max-w-2xl mx-auto">
+          <p className="text-xl text-[#6b6b6b] max-w-2xl mx-auto text-balance">
             Access leading AI providers through a single API. From GPT-5 to Claude Opus, Gemini to DeepSeek, and everything in between.
           </p>
         </motion.div>
@@ -328,14 +342,14 @@ export default function Home() {
           viewport={{ once: true }}
           transition={{ duration: 0.6 }}
         >
-          <h2 className="text-6xl md:text-7xl font-bold mb-8 text-[#2d2d2d]">
+          <h2 className="text-6xl md:text-7xl font-bold mb-8 text-[#2d2d2d] text-balance">
             Ready to <span className="text-[#d94d7a]">get started?</span>
           </h2>
-          <p className="text-xl text-[#6b6b6b] mb-12 max-w-xl mx-auto">Start building with az.ai today.</p>
+          <p className="text-xl text-[#6b6b6b] mb-12 max-w-xl mx-auto text-balance">Start building with az.ai today.</p>
           <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
-            <Link href="/playground" className="inline-flex items-center gap-3 px-12 py-5 rounded-full bg-[#ffb3d1] text-[#2d2d2d] font-bold text-lg hover:bg-[#ffa0c7] transition-colors">
+            <Link href="/playground" className="inline-flex items-center gap-3 px-12 py-5 rounded-full bg-[#ffb3d1] text-[#2d2d2d] font-bold text-lg hover:bg-[#ffa0c7] transition-colors focus-visible:outline-2 focus-visible:outline-[#ffb3d1] focus-visible:outline-offset-2">
               Open Playground
-              <ArrowRight className="w-5 h-5" />
+              <ArrowRight className="w-5 h-5" aria-hidden="true" />
             </Link>
           </motion.div>
         </motion.div>
@@ -351,6 +365,7 @@ export default function Home() {
               width={32} 
               height={32}
               className="rounded-lg"
+              loading="lazy"
             />
             <span className="text-xl font-bold text-[#2d2d2d]">az.ai</span>
           </div>

@@ -8,6 +8,7 @@ import { cn } from '@/lib/utils';
 import { PROVIDER_GROUPS, getProviderGroupsByType, type Model } from '@/lib/models';
 import Image from 'next/image';
 import Link from 'next/link';
+import { KeyboardShortcuts } from '@/components/KeyboardShortcuts';
 
 function PlaygroundContent() {
   const searchParams = useSearchParams();
@@ -57,6 +58,29 @@ function PlaygroundContent() {
       inputRef.current.style.height = `${Math.min(inputRef.current.scrollHeight, 200)}px`;
     }
   }, [input]);
+
+  // Keyboard shortcuts
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      // Cmd/Ctrl + K to focus input
+      if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
+        e.preventDefault();
+        inputRef.current?.focus();
+      }
+      // Cmd/Ctrl + / to toggle sidebar
+      if ((e.metaKey || e.ctrlKey) && e.key === '/') {
+        e.preventDefault();
+        setSidebarOpen(prev => !prev);
+      }
+      // Escape to clear input
+      if (e.key === 'Escape' && document.activeElement === inputRef.current) {
+        setInput('');
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, []);
 
   const toggleProvider = (providerId: string) => {
     setExpandedProviders(prev => {
@@ -267,8 +291,17 @@ function PlaygroundContent() {
     }
   };
 
-  const copyMessage = (content: string) => {
-    navigator.clipboard.writeText(content);
+  const copyMessage = async (content: string) => {
+    try {
+      await navigator.clipboard.writeText(content);
+      // Visual feedback could be added here
+    } catch (err) {
+      console.error('Failed to copy:', err);
+    }
+  };
+
+  const copyCodeBlock = async (text: string) => {
+    await copyMessage(text);
   };
 
   const clearChat = () => {
@@ -281,6 +314,7 @@ function PlaygroundContent() {
 
   return (
     <div className="min-h-screen bg-[#1a1a1a] text-[#F0DAD5] font-sans flex flex-col w-full">
+      <KeyboardShortcuts />
       {/* Header */}
       <header className="bg-[#424658] border-b border-[#6C739C]/30 sticky top-0 z-20 w-full">
         <div className="w-full px-4 h-16 flex items-center justify-between">
@@ -633,10 +667,11 @@ function PlaygroundContent() {
                           <div className="mt-2 flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
                             <button
                               onClick={() => copyMessage(msg.content)}
-                              className="p-1.5 rounded hover:bg-[#424658]/80 transition-colors"
-                              title="Copy"
+                              className="p-1.5 rounded hover:bg-[#424658]/80 transition-colors focus-visible:outline-2 focus-visible:outline-[#6C739C] focus-visible:outline-offset-1"
+                              title="Copy message"
+                              aria-label="Copy message to clipboard"
                             >
-                              <Copy className="w-3 h-3 text-[#BABBB1]" />
+                              <Copy className="w-3 h-3 text-[#BABBB1]" aria-hidden="true" />
                             </button>
                           </div>
                         </div>
@@ -795,11 +830,12 @@ function PlaygroundContent() {
                   }}
                   placeholder={
                     mode === 'chat' 
-                      ? "Type your message... (Shift+Enter for new line)" 
+                      ? "Type your message... (Shift+Enter for new line, Cmd+K to focus)" 
                       : mode === 'image'
-                      ? "Describe the image you want to generate..."
-                      : "Describe the video you want to create..."
+                      ? "Describe the image you want to generate... (Cmd+K to focus)"
+                      : "Describe the video you want to create... (Cmd+K to focus)"
                   }
+                  aria-label="Message input"
                   className="w-full bg-[#1a1a1a] text-[#F0DAD5] rounded-xl px-5 py-4 pr-14 border border-[#6C739C]/30 focus:border-[#6C739C] focus:ring-2 focus:ring-[#6C739C]/20 outline-none resize-none min-h-[60px] max-h-[200px] placeholder:text-[#BABBB1] transition-all"
                   rows={1}
                 />
@@ -818,8 +854,9 @@ function PlaygroundContent() {
               <button
                 onClick={handleSend}
                 disabled={isLoading || !input.trim()}
+                aria-label="Send message"
                 className={cn(
-                  "p-3 rounded-lg transition-all flex items-center justify-center",
+                  "p-3 rounded-lg transition-all flex items-center justify-center focus-visible:outline-2 focus-visible:outline-[#6C739C] focus-visible:outline-offset-2",
                   isLoading || !input.trim()
                     ? "bg-[#424658] border border-[#6C739C]/30 text-[#BABBB1] cursor-not-allowed"
                     : "bg-[#6C739C] text-[#F0DAD5] hover:bg-[#6C739C]/80"
@@ -864,8 +901,9 @@ function PlaygroundContent() {
 export default function Playground() {
   return (
     <Suspense fallback={
-      <div className="min-h-screen bg-[#1a1a1a] flex items-center justify-center">
-        <Loader2 className="w-8 h-8 text-[#ffb3d1] animate-spin" />
+      <div className="min-h-screen bg-[#1a1a1a] flex items-center justify-center" role="status" aria-label="Loading playground">
+        <Loader2 className="w-8 h-8 text-[#ffb3d1] animate-spin" aria-hidden="true" />
+        <span className="sr-only">Loading playground...</span>
       </div>
     }>
       <PlaygroundContent />

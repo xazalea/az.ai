@@ -1,5 +1,6 @@
 // Comprehensive list of DeepInfra models
-// These models route through /api/deepinfra/v1/chat/completions
+// These models route through /api/deepinfra/v1/chat/completions, /api/deepinfra/v1/images/generations, or /api/deepinfra/v1/videos/generations
+// Source: https://deepinfra.com/models
 
 export const DEEPINFRA_MODELS: string[] = [
   // Meta/Llama models
@@ -22,6 +23,8 @@ export const DEEPINFRA_MODELS: string[] = [
   'mistralai/Mistral-Small-24B-Instruct-2501',
   'mistralai/Mistral-Small-3.2-24B-Instruct-2506',
   'mistralai/Mistral-Nemo-Instruct-2407',
+  'mistralai/Voxtral-Small-24B-2507', // Speech recognition
+  'mistralai/Voxtral-Mini-3B-2507', // Speech recognition
   
   // Qwen models
   'Qwen/Qwen2.5-72B-Instruct',
@@ -71,6 +74,7 @@ export const DEEPINFRA_MODELS: string[] = [
   'google/gemma-3-12b-it',
   'google/gemma-3-27b-it',
   'google/embeddinggemma-300m',
+  // Note: Google video models like veo-3 are typically accessed via Google's API, not DeepInfra
   
   // Anthropic models
   'anthropic/claude-4-sonnet',
@@ -96,11 +100,13 @@ export const DEEPINFRA_MODELS: string[] = [
   // 01.AI models
   '01-ai/Yi-34B-Chat',
   
-  // Stability AI models
+  // Stability AI models (Image)
   'stabilityai/sdxl-turbo',
   'stabilityai/stable-diffusion-xl-base-1.0',
+  'stabilityai/stable-diffusion-2-1',
+  'stabilityai/stable-diffusion-2-1-base',
   
-  // Black Forest Labs models
+  // Black Forest Labs models (Image)
   'black-forest-labs/FLUX-1-dev',
   'black-forest-labs/FLUX-1-schnell',
   'black-forest-labs/FLUX-1-Redux-dev',
@@ -108,7 +114,7 @@ export const DEEPINFRA_MODELS: string[] = [
   'black-forest-labs/FLUX.1-Kontext-dev',
   'black-forest-labs/FLUX-pro',
   
-  // Bria models
+  // Bria models (Image editing)
   'Bria/replace_background',
   'Bria/erase_foreground',
   'Bria/erase',
@@ -121,7 +127,7 @@ export const DEEPINFRA_MODELS: string[] = [
   'Bria/Bria-3.2',
   'Bria/Bria-3.2-vector',
   
-  // Sentence Transformers
+  // Sentence Transformers (Embeddings)
   'sentence-transformers/all-MiniLM-L6-v2',
   'sentence-transformers/all-MiniLM-L12-v2',
   'sentence-transformers/all-mpnet-base-v2',
@@ -130,10 +136,7 @@ export const DEEPINFRA_MODELS: string[] = [
   'sentence-transformers/clip-ViT-B-32',
   'sentence-transformers/clip-ViT-B-32-multilingual-v1',
   
-  // Other models
-  'NousResearch/Hermes-3-Llama-3.1-405B',
-  'NousResearch/Hermes-3-Llama-3.1-70B',
-  'PaddlePaddle/PaddleOCR-VL-0.9B',
+  // Embedding models
   'thenlper/gte-base',
   'thenlper/gte-large',
   'intfloat/e5-base-v2',
@@ -145,17 +148,27 @@ export const DEEPINFRA_MODELS: string[] = [
   'BAAI/bge-m3',
   'BAAI/bge-m3-multi',
   'BAAI/bge-en-icl',
+  
+  // OCR models
+  'PaddlePaddle/PaddleOCR-VL-0.9B',
+  'allenai/olmOCR-2-7B-1025',
+  
+  // Other text generation models
+  'NousResearch/Hermes-3-Llama-3.1-405B',
+  'NousResearch/Hermes-3-Llama-3.1-70B',
   'Sao10K/L3.1-70B-Euryale-v2.2',
   'Sao10K/L3.3-70B-Euryale-v2.3',
   'Sao10K/L3-8B-Lunaris-v1-Turbo',
   'Gryphe/MythoMax-L2-13b',
   'shibing624/text2vec-base-chinese',
-  'allenai/olmOCR-2-7B-1025',
   'ByteDance/Seedream-4',
   'zai-org/GLM-4.6',
   'MiniMaxAI/MiniMax-M2',
   'moonshotai/Kimi-K2-Instruct-0905',
   'moonshotai/Kimi-K2-Thinking',
+  
+  // Note: DeepInfra API dynamically provides all available models
+  // This static list is a fallback. The API endpoint should fetch the complete list.
 ];
 
 // Helper to check if a model should route through DeepInfra

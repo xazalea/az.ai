@@ -31,6 +31,10 @@ export default function ModelsPage() {
             const deepInfraData = await deepInfraResponse.json();
             const modelsArray = Array.isArray(deepInfraData) ? deepInfraData : (deepInfraData.data || []);
             
+            // Process ALL models from the API - no filtering
+            // DeepInfra API should return all available models across all categories
+            console.log(`[Models] Fetched ${modelsArray.length} models from DeepInfra API`);
+            
             deepInfraModels = modelsArray.map((model: any) => {
               const modelId = model.id || model.name || '';
               const parts = modelId.split('/');
@@ -39,36 +43,61 @@ export default function ModelsPage() {
               const lowerId = modelId.toLowerCase();
               
               // Determine model type - check for video models first
+              // DeepInfra has text-to-video models - check model object for category/type if available
               let type: 'chat' | 'image' | 'video' = 'chat';
-              if (lowerId.includes('veo') || 
-                  lowerId.includes('video') ||
-                  lowerId.includes('cogvideo') ||
-                  lowerId.includes('runway') ||
-                  lowerId.includes('pika') ||
-                  lowerId.includes('kling') ||
-                  lowerId.includes('luma')) {
-                type = 'video';
-              } else if (lowerId.includes('stable-diffusion') || 
-                         lowerId.includes('flux') || 
-                         lowerId.includes('sdxl') || 
-                         lowerId.includes('imagen') ||
-                         lowerId.includes('dalle') ||
-                         lowerId.includes('midjourney') ||
-                         lowerId.includes('black-forest-labs')) {
-                type = 'image';
-              } else if (lowerId.includes('whisper') ||
-                         lowerId.includes('audio') ||
-                         lowerId.includes('tts') ||
-                         lowerId.includes('speech')) {
-                // Audio models are treated as chat for now (they use chat completions endpoint)
-                type = 'chat';
-              } else if (lowerId.includes('embedding') ||
-                         lowerId.includes('bge') ||
-                         lowerId.includes('gte') ||
-                         lowerId.includes('e5') ||
-                         lowerId.includes('sentence-transformers')) {
-                // Embedding models are treated as chat
-                type = 'chat';
+              
+              // Check model metadata first (if API provides it)
+              if (model.category) {
+                const category = String(model.category).toLowerCase();
+                if (category.includes('video') || category.includes('text-to-video')) {
+                  type = 'video';
+                } else if (category.includes('image') || category.includes('text-to-image')) {
+                  type = 'image';
+                } else if (category.includes('text') || category.includes('generation')) {
+                  type = 'chat';
+                }
+              }
+              
+              // Fallback to pattern matching if no category
+              if (type === 'chat') {
+                if (lowerId.includes('veo') || 
+                    lowerId.includes('video') ||
+                    lowerId.includes('cogvideo') ||
+                    lowerId.includes('runway') ||
+                    lowerId.includes('pika') ||
+                    lowerId.includes('kling') ||
+                    lowerId.includes('luma') ||
+                    lowerId.includes('text-to-video') ||
+                    lowerId.includes('texttovideo')) {
+                  type = 'video';
+                } else if (lowerId.includes('stable-diffusion') || 
+                           lowerId.includes('flux') || 
+                           lowerId.includes('sdxl') || 
+                           lowerId.includes('imagen') ||
+                           lowerId.includes('dalle') ||
+                           lowerId.includes('midjourney') ||
+                           lowerId.includes('black-forest-labs') ||
+                           lowerId.includes('text-to-image') ||
+                           lowerId.includes('texttoimage') ||
+                           lowerId.includes('bria') ||
+                           lowerId.includes('seedream')) {
+                  type = 'image';
+                } else if (lowerId.includes('whisper') ||
+                           lowerId.includes('audio') ||
+                           lowerId.includes('tts') ||
+                           lowerId.includes('speech') ||
+                           lowerId.includes('voxtral')) {
+                  // Audio/speech models are treated as chat (they use chat completions endpoint)
+                  type = 'chat';
+                } else if (lowerId.includes('embedding') ||
+                           lowerId.includes('bge') ||
+                           lowerId.includes('gte') ||
+                           lowerId.includes('e5') ||
+                           lowerId.includes('sentence-transformers') ||
+                           lowerId.includes('reranker')) {
+                  // Embedding/reranker models are treated as chat
+                  type = 'chat';
+                }
               }
               
               // Determine speed
@@ -240,20 +269,39 @@ export default function ModelsPage() {
             let type: 'chat' | 'image' | 'video' = 'chat';
             if (lowerId.includes('veo') || 
                 lowerId.includes('video') ||
-                lowerId.includes('cogvideo')) {
+                lowerId.includes('cogvideo') ||
+                lowerId.includes('runway') ||
+                lowerId.includes('pika') ||
+                lowerId.includes('kling') ||
+                lowerId.includes('luma') ||
+                lowerId.includes('text-to-video') ||
+                lowerId.includes('texttovideo')) {
               type = 'video';
             } else if (lowerId.includes('stable-diffusion') || 
                        lowerId.includes('flux') || 
                        lowerId.includes('sdxl') || 
                        lowerId.includes('imagen') ||
-                       lowerId.includes('black-forest-labs')) {
+                       lowerId.includes('dalle') ||
+                       lowerId.includes('midjourney') ||
+                       lowerId.includes('black-forest-labs') ||
+                       lowerId.includes('text-to-image') ||
+                       lowerId.includes('texttoimage') ||
+                       lowerId.includes('bria') ||
+                       lowerId.includes('seedream')) {
               type = 'image';
+            } else if (lowerId.includes('whisper') ||
+                       lowerId.includes('audio') ||
+                       lowerId.includes('tts') ||
+                       lowerId.includes('speech') ||
+                       lowerId.includes('voxtral')) {
+              type = 'chat'; // Audio/speech models use chat endpoint
             } else if (lowerId.includes('embedding') ||
                        lowerId.includes('bge') ||
                        lowerId.includes('gte') ||
                        lowerId.includes('e5') ||
-                       lowerId.includes('sentence-transformers')) {
-              type = 'chat'; // Embedding models use chat endpoint
+                       lowerId.includes('sentence-transformers') ||
+                       lowerId.includes('reranker')) {
+              type = 'chat'; // Embedding/reranker models use chat endpoint
             }
             
             // Determine speed
@@ -333,6 +381,11 @@ export default function ModelsPage() {
           }
         });
 
+        // Log model counts for debugging
+        const deepInfraCount = deepInfraModels.length;
+        const totalBeforeGrouping = allModels.length;
+        console.log(`[Models] Processing models - DeepInfra API: ${deepInfraCount}, Total unique: ${totalBeforeGrouping}`);
+        
         // Group all models by provider
         const providerMap = new Map<string, Model[]>();
         
@@ -457,6 +510,7 @@ export default function ModelsPage() {
               placeholder="Search models..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
+              aria-label="Search models"
               className="w-full pl-12 pr-4 py-3 rounded-xl bg-[#2d2d2d] border border-[#3a3a3a] text-[#e0e0e0] placeholder:text-[#888888] focus:outline-none focus:ring-2 focus:ring-[#ffb3d1] focus:border-[#ffb3d1] transition-all"
             />
           </div>
@@ -507,8 +561,9 @@ export default function ModelsPage() {
 
         {/* Models Grid */}
         {loading ? (
-          <div className="text-center py-16">
+          <div className="text-center py-16" role="status" aria-label="Loading models">
             <p className="text-[#888888] text-lg">Loading models...</p>
+            <span className="sr-only">Loading models list...</span>
           </div>
         ) : (
           <div className="space-y-6">
