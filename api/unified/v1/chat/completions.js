@@ -50,8 +50,12 @@ async function callModelPackage(packageName, body, req) {
 }
 
 export default async function handler(req) {
+  // Get method from request - handle both Request object and custom handler format
+  const method = req.method || (req instanceof Request ? req.method : null) || 'POST';
+  const normalizedMethod = method.toUpperCase();
+
   // Handle OPTIONS requests
-  if (req.method === 'OPTIONS') {
+  if (normalizedMethod === 'OPTIONS') {
     return new NextResponse(null, {
       status: 200,
       headers: {
@@ -63,7 +67,7 @@ export default async function handler(req) {
   }
 
   // Handle GET requests (health checks)
-  if (req.method === 'GET') {
+  if (normalizedMethod === 'GET') {
     return NextResponse.json(
       { 
         message: 'az.ai unified API',
@@ -78,26 +82,27 @@ export default async function handler(req) {
     );
   }
 
-  // In nodejs runtime, method should always be available
-  // If it's not POST, reject it
-  if (req.method && req.method !== 'POST') {
+  // Only reject if method is explicitly set and is not POST
+  // Allow undefined/null methods to proceed (assume POST for nodejs runtime)
+  if (method && normalizedMethod !== 'POST') {
     return NextResponse.json(
       { 
         error: 'Method not allowed', 
-        details: `Method ${req.method} is not supported. Use POST.`,
-        receivedMethod: req.method,
+        details: `Method ${method} is not supported. Use POST.`,
+        receivedMethod: method,
+        supportedMethods: ['POST', 'GET', 'OPTIONS'],
       },
       { 
         status: 405, 
         headers: { 
           'Access-Control-Allow-Origin': '*',
-          'Allow': 'POST, OPTIONS'
+          'Allow': 'POST, OPTIONS, GET'
         } 
       }
     );
   }
   
-  // If method is undefined/null, proceed (assume POST for nodejs runtime)
+  // Proceed with POST request (or assumed POST if method is undefined)
 
   try {
     // Safely parse request body

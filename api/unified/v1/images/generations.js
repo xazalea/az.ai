@@ -6,7 +6,11 @@ export const config = {
 
 // Unified image generation - all models accessible via /v1/images/generations with model parameter
 export default async function handler(req) {
-  if (req.method === 'OPTIONS') {
+  // Get method from request - handle both Request object and custom handler format
+  const method = req.method || (req instanceof Request ? req.method : null) || 'POST';
+  const normalizedMethod = method.toUpperCase();
+
+  if (normalizedMethod === 'OPTIONS') {
     return new NextResponse(null, {
       status: 200,
       headers: {
@@ -15,6 +19,41 @@ export default async function handler(req) {
         'Access-Control-Allow-Headers': 'Content-Type, Authorization',
       },
     });
+  }
+
+  // Handle GET requests (health checks)
+  if (normalizedMethod === 'GET') {
+    return NextResponse.json(
+      { 
+        message: 'az.ai unified image generation API',
+        endpoint: '/v1/images/generations',
+        method: 'Use POST to generate images',
+        status: 'operational'
+      },
+      { 
+        status: 200,
+        headers: { 'Access-Control-Allow-Origin': '*' }
+      }
+    );
+  }
+
+  // Only reject if method is explicitly set and is not POST
+  if (method && normalizedMethod !== 'POST') {
+    return NextResponse.json(
+      { 
+        error: 'Method not allowed', 
+        details: `Method ${method} is not supported. Use POST.`,
+        receivedMethod: method,
+        supportedMethods: ['POST', 'GET', 'OPTIONS'],
+      },
+      { 
+        status: 405, 
+        headers: { 
+          'Access-Control-Allow-Origin': '*',
+          'Allow': 'POST, OPTIONS, GET'
+        } 
+      }
+    );
   }
 
   try {
