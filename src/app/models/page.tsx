@@ -154,106 +154,33 @@ export default function ModelsPage() {
         }
 
         // Helper to check if two models are duplicates
-        // Only considers them duplicates if they're clearly the same model
+        // Only considers them duplicates if they have EXACT same ID
+        // We want to include ALL models, even if they have similar names
         const areModelsDuplicate = (model1: Model, model2: Model): boolean => {
-          // Exact ID match
-          if (model1.id === model2.id) return true;
-          
-          // Same provider and very similar names (after normalization)
-          const normalize = (str: string) => str.toLowerCase().replace(/[^a-z0-9]/g, '').replace(/\./g, '');
-          const name1 = normalize(model1.name);
-          const name2 = normalize(model2.name);
-          
-          // If names are identical after normalization and same provider, likely duplicate
-          if (name1 === name2 && model1.provider === model2.provider) {
-            return true;
-          }
-          
-          // Check for common variations (e.g., "gpt-4" vs "gpt4" vs "gpt 4")
-          const variants = [
-            ['gpt35', 'gpt3.5', 'gpt-3.5', 'gpt 3.5'],
-            ['gpt4', 'gpt-4', 'gpt 4'],
-            ['gpt4turbo', 'gpt-4-turbo', 'gpt 4 turbo'],
-            ['gpt5', 'gpt-5', 'gpt 5'],
-            ['claudeopus', 'claude-opus', 'claude opus'],
-            ['claudesonnet', 'claude-sonnet', 'claude sonnet'],
-            ['gemini3pro', 'gemini-3-pro', 'gemini 3 pro'],
-            ['gemini25pro', 'gemini-2.5-pro', 'gemini 2.5 pro'],
-            ['gemini25flash', 'gemini-2.5-flash', 'gemini 2.5 flash'],
-            ['llama3', 'llama-3', 'llama 3'],
-            ['llama4', 'llama-4', 'llama 4'],
-            ['qwen25', 'qwen-2.5', 'qwen 2.5', 'qwen2.5'],
-            ['qwen3', 'qwen-3', 'qwen 3'],
-            ['deepseekv3', 'deepseek-v3', 'deepseek v3'],
-            ['deepseekr1', 'deepseek-r1', 'deepseek r1'],
-          ];
-          
-          for (const variantGroup of variants) {
-            if (variantGroup.some(v => name1.includes(v)) && 
-                variantGroup.some(v => name2.includes(v)) &&
-                model1.provider === model2.provider) {
-              return true;
-            }
-          }
-          
-          return false;
+          // Only exact ID match is considered duplicate
+          return model1.id === model2.id;
         };
 
-        // Helper to get model quality score (higher is better)
-        const getModelScore = (model: Model): number => {
-          let score = 0;
-          // Prefer models with speed indicators
-          if (model.speed === 'fast') score += 3;
-          else if (model.speed === 'medium') score += 2;
-          else if (model.speed === 'slow') score += 1;
-          // Prefer models with routes (more complete)
-          if (model.route) score += 2;
-          // Prefer models with better descriptions
-          if (model.description && model.description.length > 20) score += 1;
-          // Prefer models from PROVIDER_GROUPS (more curated)
-          return score;
-        };
 
-        // Combine all models with proper deduplication
+        // Combine all models - only remove EXACT duplicates (same ID)
         const allModels: Model[] = [];
         const modelIdSet = new Set<string>(); // Track exact IDs to avoid exact duplicates
         
-        // Helper to find duplicate in existing models
-        const findDuplicate = (model: Model): Model | undefined => {
-          return allModels.find(existing => areModelsDuplicate(model, existing));
-        };
-        
-        // Add all models from PROVIDER_GROUPS (highest priority - most curated)
+        // Add all models from PROVIDER_GROUPS (curated models)
         PROVIDER_GROUPS.forEach(group => {
           group.models.forEach(model => {
             if (!modelIdSet.has(model.id)) {
-              const duplicate = findDuplicate(model);
-              if (!duplicate) {
-                allModels.push(model);
-                modelIdSet.add(model.id);
-              } else if (getModelScore(model) > getModelScore(duplicate)) {
-                // Replace duplicate with better version
-                const index = allModels.indexOf(duplicate);
-                allModels[index] = model;
-                modelIdSet.add(model.id);
-              }
+              allModels.push(model);
+              modelIdSet.add(model.id);
             }
           });
         });
         
-        // Add all G4F models (lower priority - only if not duplicate)
+        // Add ALL G4F models (only skip if exact ID duplicate)
         (G4F_MODEL_LIST as Model[]).forEach(model => {
           if (!modelIdSet.has(model.id)) {
-            const duplicate = findDuplicate(model);
-            if (!duplicate) {
-              allModels.push(model);
-              modelIdSet.add(model.id);
-            } else if (getModelScore(model) > getModelScore(duplicate)) {
-              // Replace duplicate with better version
-              const index = allModels.indexOf(duplicate);
-              allModels[index] = model;
-              modelIdSet.add(model.id);
-            }
+            allModels.push(model);
+            modelIdSet.add(model.id);
           }
         });
         
@@ -352,32 +279,19 @@ export default function ModelsPage() {
               route,
             };
             
-            const duplicate = findDuplicate(model);
-            if (!duplicate) {
+            // Only skip if exact ID duplicate
+            if (!modelIdSet.has(model.id)) {
               allModels.push(model);
-              modelIdSet.add(model.id);
-            } else if (getModelScore(model) > getModelScore(duplicate)) {
-              // Replace duplicate with better version
-              const index = allModels.indexOf(duplicate);
-              allModels[index] = model;
               modelIdSet.add(model.id);
             }
           }
         });
         
-        // Add fetched DeepInfra models (only if not duplicate)
+        // Add ALL fetched DeepInfra models (only skip if exact ID duplicate)
         deepInfraModels.forEach(model => {
           if (!modelIdSet.has(model.id)) {
-            const duplicate = findDuplicate(model);
-            if (!duplicate) {
-              allModels.push(model);
-              modelIdSet.add(model.id);
-            } else if (getModelScore(model) > getModelScore(duplicate)) {
-              // Replace duplicate with better version
-              const index = allModels.indexOf(duplicate);
-              allModels[index] = model;
-              modelIdSet.add(model.id);
-            }
+            allModels.push(model);
+            modelIdSet.add(model.id);
           }
         });
 

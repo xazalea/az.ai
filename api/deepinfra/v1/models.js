@@ -92,10 +92,16 @@ export default async function handler(req) {
       modelsArray = Object.values(data).find(Array.isArray) || [];
     }
     
-    // Return all models - DeepInfra API should return the complete list
+    // Log how many models we got from API
+    console.log(`[DeepInfra API] Fetched ${modelsArray.length} models from API`);
+    
+    // Return ALL models - DeepInfra API should return the complete list
+    // Make sure we return all models, not just a subset
+    const finalModels = modelsArray.length > 0 ? modelsArray : (data.data || data || []);
+    
     return NextResponse.json({
       object: 'list',
-      data: modelsArray.length > 0 ? modelsArray : (data.data || data || []),
+      data: finalModels,
     }, {
       headers: {
         'Access-Control-Allow-Origin': '*',

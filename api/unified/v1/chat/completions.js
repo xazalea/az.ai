@@ -50,16 +50,23 @@ async function callModelPackage(packageName, body, req) {
 }
 
 export default async function handler(req) {
-  // Get method from request - properly handle Request object
-  let method = 'POST'; // Default to POST
-  if (req && typeof req === 'object') {
-    // Try to get method from various possible locations
-    if (req.method && typeof req.method === 'string' && req.method.trim()) {
-      method = req.method.trim();
-    } else if (req instanceof Request && req.method) {
-      method = req.method;
+  // Handle both Next.js App Router (Request object) and Pages Router formats
+  // In App Router, req is a Request object
+  // In Pages Router, req has a method property
+  
+  let method = 'POST'; // Default to POST for safety
+  
+  // Try to get method from request
+  if (req) {
+    if (req instanceof Request) {
+      // Next.js App Router - req is a Request object
+      method = req.method || 'POST';
+    } else if (typeof req === 'object' && req.method) {
+      // Pages Router or custom handler format
+      method = String(req.method).trim() || 'POST';
     }
   }
+  
   // Normalize method, defaulting to POST if empty or invalid
   const normalizedMethod = (method && method.trim() ? method.trim() : 'POST').toUpperCase();
 
