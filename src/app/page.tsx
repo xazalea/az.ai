@@ -78,7 +78,7 @@ export default function Home() {
                 transition={{ delay: 0.4 }}
                 className="text-xl md:text-2xl text-[#6b6b6b] max-w-3xl mx-auto mb-12 leading-relaxed"
               >
-                Better prices, better uptime, no subscription. Access <Link href="/models" className="text-[#2d2d2d] font-semibold hover:text-[#d94d7a] transition-colors underline">100+ models</Link> through a single OpenAI-compatible endpoint.
+                Better prices, better uptime, no subscription. Access <Link href="/models" className="text-[#2d2d2d] font-semibold hover:text-[#d94d7a] transition-colors underline">1300+ models</Link> through a single OpenAI-compatible endpoint.
               </motion.p>
           
           <motion.div 
@@ -94,9 +94,9 @@ export default function Home() {
               </Link>
             </motion.div>
             <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
-              <button className="px-10 py-4 rounded-full bg-[#e8e5e0] border border-[#d4c5b8] text-[#2d2d2d] font-semibold text-lg hover:bg-[#ddd8d0] transition-colors">
-                View Docs
-              </button>
+              <Link href="/models" className="px-10 py-4 rounded-full bg-[#e8e5e0] border border-[#d4c5b8] text-[#2d2d2d] font-semibold text-lg hover:bg-[#ddd8d0] transition-colors inline-block">
+                Browse Models
+              </Link>
             </motion.div>
           </motion.div>
         </motion.div>
@@ -109,11 +109,11 @@ export default function Home() {
           className="mt-24 grid grid-cols-3 gap-8 max-w-4xl mx-auto"
         >
           <div className="text-center">
-            <div className="text-4xl font-bold text-[#d94d7a] mb-2">50+</div>
+            <div className="text-4xl font-bold text-[#d94d7a] mb-2">1300+</div>
             <div className="text-sm text-[#6b6b6b]">Active Models</div>
           </div>
           <div className="text-center">
-            <div className="text-4xl font-bold text-[#d94d7a] mb-2">300+</div>
+            <div className="text-4xl font-bold text-[#d94d7a] mb-2">50+</div>
             <div className="text-sm text-[#6b6b6b]">Providers</div>
           </div>
           <div className="text-center">
@@ -263,10 +263,10 @@ export default function Home() {
           className="text-center mb-20"
         >
           <h2 className="text-5xl md:text-6xl font-bold mb-6">
-            <span className="text-[#d94d7a]">50+ Models</span>
+            <span className="text-[#d94d7a]">1300+ Models</span>
           </h2>
           <p className="text-xl text-[#6b6b6b] max-w-2xl mx-auto">
-            Access leading AI providers through a single API.
+            Access leading AI providers through a single API. From GPT-5 to Claude Opus, Gemini to DeepSeek, and everything in between.
           </p>
         </motion.div>
         
@@ -306,6 +306,18 @@ export default function Home() {
             </motion.div>
           ))}
         </div>
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.6, delay: 0.6 }}
+          className="text-center mt-12"
+        >
+          <Link href="/models" className="inline-flex items-center gap-2 px-8 py-4 rounded-full bg-[#ffb3d1] text-[#2d2d2d] font-semibold text-lg hover:bg-[#ffa0c7] transition-colors">
+            View All 1300+ Models
+            <ArrowRight className="w-5 h-5" />
+          </Link>
+        </motion.div>
       </section>
 
       {/* CTA */}

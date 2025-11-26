@@ -251,7 +251,7 @@ export default function ModelsPage() {
             Available <span className="text-[#ffb3d1]">Models</span>
           </h1>
           <p className="text-xl text-[#888888] max-w-2xl mx-auto">
-            Access {totalModels}+ AI models through a single unified API
+            Access {totalModels.toLocaleString()}+ AI models through a single unified API. From GPT-5 to Claude Opus, Gemini to DeepSeek, and everything in between.
           </p>
         </motion.div>
 
@@ -290,7 +290,7 @@ export default function ModelsPage() {
                 </div>
               </div>
               <div className="text-sm text-[#888888]">
-                Showing {filteredCount} of {totalModels} models
+                Showing {filteredCount.toLocaleString()} of {totalModels.toLocaleString()} models
               </div>
             </div>
             <div className="flex items-center gap-2">
@@ -335,7 +335,7 @@ export default function ModelsPage() {
                   <div className="flex items-center gap-4">
                     <h2 className="text-xl font-bold text-[#e0e0e0]">{group.name}</h2>
                     <span className="px-3 py-1 rounded-full bg-[#1a1a1a] text-xs text-[#888888] border border-[#3a3a3a]">
-                      {group.models.length} {group.models.length === 1 ? 'model' : 'models'}
+                      {group.models.length.toLocaleString()} {group.models.length === 1 ? 'model' : 'models'}
                     </span>
                   </div>
                   {isExpanded ? (
@@ -370,7 +370,7 @@ export default function ModelsPage() {
                           <div className="flex items-center justify-between">
                             <span className="text-xs text-[#888888]">{model.provider}</span>
                             <Link
-                              href="/playground"
+                              href={`/playground?model=${encodeURIComponent(model.id)}&mode=${model.type}`}
                               className="text-xs text-[#ffb3d1] hover:text-[#ffa0c7] transition-colors font-medium"
                             >
                               Try →

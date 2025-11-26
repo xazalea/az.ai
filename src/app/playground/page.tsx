@@ -1,6 +1,7 @@
 "use client";
 
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect, Suspense } from 'react';
+import { useSearchParams } from 'next/navigation';
 import { Send, Image as ImageIcon, MessageSquare, Loader2, Sparkles, Command, Terminal, Video, ChevronDown, ChevronRight, Zap, Brain, Database, Settings, Copy, Download, Share2, History, Trash2, X, Maximize2, Minimize2, MoreVertical } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { cn } from '@/lib/utils';
@@ -8,7 +9,8 @@ import { PROVIDER_GROUPS, getProviderGroupsByType, type Model } from '@/lib/mode
 import Image from 'next/image';
 import Link from 'next/link';
 
-export default function Playground() {
+function PlaygroundContent() {
+  const searchParams = useSearchParams();
   const [mode, setMode] = useState<'chat' | 'image' | 'video'>('chat');
   const [selectedModel, setSelectedModel] = useState('qwen');
   const [expandedProviders, setExpandedProviders] = useState<Set<string>>(new Set(['openai', 'google', 'deepseek']));
@@ -32,6 +34,21 @@ export default function Playground() {
       scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
     }
   }, [messages, generatedImage, generatedVideo]);
+
+  // Handle URL parameters for model selection
+  useEffect(() => {
+    const modelParam = searchParams.get('model');
+    const modeParam = searchParams.get('mode') as 'chat' | 'image' | 'video' | null;
+    
+    if (modelParam) {
+      setSelectedModel(modelParam);
+      setShowModelInfo(true);
+    }
+    
+    if (modeParam && ['chat', 'image', 'video'].includes(modeParam)) {
+      setMode(modeParam);
+    }
+  }, [searchParams]);
 
   useEffect(() => {
     // Auto-resize textarea
@@ -841,5 +858,17 @@ export default function Playground() {
         </div>
       </main>
     </div>
+  );
+}
+
+export default function Playground() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen bg-[#1a1a1a] flex items-center justify-center">
+        <Loader2 className="w-8 h-8 text-[#ffb3d1] animate-spin" />
+      </div>
+    }>
+      <PlaygroundContent />
+    </Suspense>
   );
 }
