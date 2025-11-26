@@ -22,30 +22,43 @@ export default async function handler(req) {
     const deepinfraUrl = `https://api.deepinfra.com/v1/openai/models`;
     
     let response;
+    let lastError;
     const apiKey = process.env.DEEPINFRA_API_KEY;
     
     // Try with API key if available
     if (apiKey) {
-      response = await fetch(deepinfraUrl, {
-        method: 'GET',
-        headers: {
-          'Authorization': `Bearer ${apiKey}`,
-        },
-      });
+      try {
+        response = await fetch(deepinfraUrl, {
+          method: 'GET',
+          headers: {
+            'Authorization': `Bearer ${apiKey}`,
+          },
+        });
+      } catch (error) {
+        lastError = error;
+        response = null;
+      }
     }
     
     // If no API key or request failed, try without auth (some endpoints work without auth)
     if (!response || !response.ok) {
-      response = await fetch(deepinfraUrl, {
-        method: 'GET',
-        headers: {
-          'User-Agent': 'Mozilla/5.0 (compatible; az.ai/1.0)',
-        },
-      });
+      try {
+        response = await fetch(deepinfraUrl, {
+          method: 'GET',
+          headers: {
+            'User-Agent': 'Mozilla/5.0 (compatible; az.ai/1.0)',
+          },
+        });
+      } catch (error) {
+        lastError = error;
+        // If both attempts fail, return default list
+        console.warn('DeepInfra API fetch failed, using default models:', error.message);
+      }
     }
 
     if (!response || !response.ok) {
       // Return an expanded default list including video models if API fails
+      console.warn('DeepInfra API returned non-OK status, using default models');
       return NextResponse.json({
         object: 'list',
         data: [

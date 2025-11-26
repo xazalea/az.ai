@@ -53,17 +53,26 @@ export default async function handler(req) {
   // Get method from request - handle both Next.js Request and standard Request objects
   // Try multiple ways to get the method
   let method = req.method;
-  if (!method && req instanceof Request) {
+  if (!method && typeof Request !== 'undefined' && req instanceof Request) {
     method = req.method;
   }
   if (!method && req.headers) {
     // Some serverless environments put method in headers
-    method = req.headers.get?.('x-http-method') || req.headers['x-http-method'];
+    if (typeof req.headers.get === 'function') {
+      method = req.headers.get('x-http-method') || req.headers.get('method');
+    } else {
+      method = req.headers['x-http-method'] || req.headers['method'];
+    }
+  }
+  
+  // Default to POST if method is still unknown (common in edge runtime)
+  if (!method) {
+    method = 'POST';
   }
   
   // Log for debugging
   if (process.env.NODE_ENV === 'development') {
-    console.log('[chat/completions] Request method:', method, 'URL:', req.url, 'Headers:', Object.fromEntries(req.headers?.entries() || []));
+    console.log('[chat/completions] Request method:', method, 'URL:', req.url);
   }
   
   if (method === 'OPTIONS') {
@@ -77,7 +86,7 @@ export default async function handler(req) {
     });
   }
 
-  if (method !== 'POST') {
+  if (method !== 'POST' && method !== 'post') {
     return NextResponse.json(
       { 
         error: 'Method not allowed', 
@@ -96,7 +105,25 @@ export default async function handler(req) {
   }
 
   try {
-    const body = await req.json();
+    // Safely parse request body
+    let body;
+    try {
+      body = await req.json();
+    } catch (jsonError) {
+      // If body is empty or not JSON, return error
+      return NextResponse.json(
+        { 
+          error: 'Invalid request body', 
+          details: 'Request body must be valid JSON',
+          message: jsonError.message 
+        },
+        { 
+          status: 400,
+          headers: { 'Access-Control-Allow-Origin': '*' }
+        }
+      );
+    }
+    
     const { model, messages, use_memory = true, use_reasoning = true } = body;
     const url = new URL(req.url);
     
