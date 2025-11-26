@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server';
 import { isG4FModel, isDeepInfraModel } from '@/lib/g4f-models';
 
 export const config = {
-  runtime: 'nodejs', // Changed to nodejs to support package imports
+  runtime: 'nodejs', // Using nodejs to support package imports and dynamic imports
 };
 
 // Unified model routing - all models accessible via /v1/chat/completions with model parameter
@@ -50,32 +50,8 @@ async function callModelPackage(packageName, body, req) {
 }
 
 export default async function handler(req) {
-  // Get method from request - handle both Next.js Request and standard Request objects
-  // Try multiple ways to get the method
-  let method = req.method;
-  if (!method && typeof Request !== 'undefined' && req instanceof Request) {
-    method = req.method;
-  }
-  if (!method && req.headers) {
-    // Some serverless environments put method in headers
-    if (typeof req.headers.get === 'function') {
-      method = req.headers.get('x-http-method') || req.headers.get('method');
-    } else {
-      method = req.headers['x-http-method'] || req.headers['method'];
-    }
-  }
-  
-  // Default to POST if method is still unknown (common in edge runtime)
-  if (!method) {
-    method = 'POST';
-  }
-  
-  // Log for debugging
-  if (process.env.NODE_ENV === 'development') {
-    console.log('[chat/completions] Request method:', method, 'URL:', req.url);
-  }
-  
-  if (method === 'OPTIONS') {
+  // Handle OPTIONS requests
+  if (req.method === 'OPTIONS') {
     return new NextResponse(null, {
       status: 200,
       headers: {
@@ -86,13 +62,30 @@ export default async function handler(req) {
     });
   }
 
-  if (method !== 'POST' && method !== 'post') {
+  // Handle GET requests (health checks)
+  if (req.method === 'GET') {
+    return NextResponse.json(
+      { 
+        message: 'az.ai unified API',
+        endpoint: '/v1/chat/completions',
+        method: 'Use POST to send chat completion requests',
+        status: 'operational'
+      },
+      { 
+        status: 200,
+        headers: { 'Access-Control-Allow-Origin': '*' }
+      }
+    );
+  }
+
+  // In nodejs runtime, method should always be available
+  // If it's not POST, reject it
+  if (req.method && req.method !== 'POST') {
     return NextResponse.json(
       { 
         error: 'Method not allowed', 
-        details: `Method ${method || 'unknown'} is not supported. Use POST.`,
-        receivedMethod: method,
-        requestType: typeof req
+        details: `Method ${req.method} is not supported. Use POST.`,
+        receivedMethod: req.method,
       },
       { 
         status: 405, 
@@ -103,6 +96,8 @@ export default async function handler(req) {
       }
     );
   }
+  
+  // If method is undefined/null, proceed (assume POST for nodejs runtime)
 
   try {
     // Safely parse request body
