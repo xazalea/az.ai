@@ -61,6 +61,13 @@ export default async function handler(req) {
     });
   }
 
+  if (req.method !== 'POST') {
+    return NextResponse.json(
+      { error: 'Method not allowed', details: `Method ${req.method} is not supported. Use POST.` },
+      { status: 405, headers: { 'Access-Control-Allow-Origin': '*' } }
+    );
+  }
+
   try {
     const body = await req.json();
     const { model, messages, use_memory = true, use_reasoning = true } = body;
