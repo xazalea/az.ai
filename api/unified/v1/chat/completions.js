@@ -144,11 +144,11 @@ export default async function handler(req) {
       // Continue with default route
     }
 
-    // Create timeout - fast timeout for better UX
+    // Create timeout - longer timeout for better reliability with slow models
     const controller = new AbortController();
     const timeoutId = setTimeout(() => {
       controller.abort();
-    }, 30000); // 30 second timeout - fail fast
+    }, 60000); // 60 second timeout
 
     try {
       // Forward request to target route with retry logic

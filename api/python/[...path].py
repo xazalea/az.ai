@@ -7,6 +7,8 @@ import json
 import sys
 import time
 from pathlib import Path
+import threading
+import queue
 
 def handler(request):
     """Vercel Python serverless function handler for all Python routes"""
@@ -468,17 +470,7 @@ def handler(request):
                         else:
                             conversation.insert(0, {'role': 'user', 'content': content})
                 
-                # Get provider for model
-                provider = ProviderUtils.convert.get(model)
-                if not provider:
-                    # Try to find a provider that supports this model
-                    provider = g4f.Provider.default
-                
-                # Generate response with retry logic and multiple provider fallbacks
-                response_text = ""
-                import threading
-                import queue
-                
+                # Run g4f call in thread function
                 def run_g4f_call(model_name, messages_list, provider_obj=None, stream_mode=False, result_queue=None, error_queue=None):
                     """Run g4f call in thread"""
                     try:
@@ -509,105 +501,51 @@ def handler(request):
                             result_queue.put(text)
                     except Exception as e:
                         error_queue.put(e)
-                
-                # Try multiple providers in sequence with retries
-                providers_to_try = []
-                if provider and provider != g4f.Provider.default:
-                    providers_to_try.append(provider)
-                # Add default provider
+
+                # Try best provider first - NO FALLBACKS to other providers if model specific fails
+                provider = ProviderUtils.convert.get(model)
+                if not provider:
+                    # Only default to a robust provider if NO specific provider is found
+                    provider = g4f.Provider.Blackbox
+
+                # Run single provider attempt
+                response_text = None
                 try:
-                    default_prov = g4f.Provider.default
-                    if default_prov and default_prov not in providers_to_try:
-                        providers_to_try.append(default_prov)
-                except:
-                    pass
-                
-                # Try to get additional providers
-                try:
-                    # Try common providers
-                    common_providers = [
-                        'OpenaiChat', 'Aichat', 'ChatgptAi', 'ChatgptFree', 
-                        'GptGo', 'You', 'Bing', 'Liaobots'
-                    ]
-                    for prov_name in common_providers:
-                        try:
-                            prov = getattr(g4f.Provider, prov_name, None)
-                            if prov and prov not in providers_to_try:
-                                providers_to_try.append(prov)
-                        except:
-                            pass
-                except:
-                    pass
-                
-                # Limit to first 3 providers to avoid too many attempts
-                providers_to_try = providers_to_try[:3]
-                
-                last_error = None
-                for attempt_provider in providers_to_try:
-                    try:
-                        result_queue = queue.Queue()
-                        error_queue = queue.Queue()
+                    result_queue = queue.Queue()
+                    error_queue = queue.Queue()
+                    
+                    thread = threading.Thread(
+                        target=run_g4f_call,
+                        args=(model, conversation, provider, stream, result_queue, error_queue),
+                        daemon=True
+                    )
+                    thread.start()
+                    thread.join(timeout=55)  # 55 second timeout (fail fast)
+                    
+                    if thread.is_alive():
+                        raise TimeoutError(f"Provider {provider.__name__ if provider else 'Default'} timed out")
+                    
+                    if not error_queue.empty():
+                        raise error_queue.get()
+                    
+                    if not result_queue.empty():
+                        response_text = result_queue.get()
+                    else:
+                        raise Exception("No response received")
                         
-                        thread = threading.Thread(
-                            target=run_g4f_call,
-                            args=(model, conversation, attempt_provider, stream, result_queue, error_queue),
-                            daemon=True
-                        )
-                        thread.start()
-                        thread.join(timeout=15)  # 15 second timeout per attempt - fail fast
-                        
-                        if thread.is_alive():
-                            last_error = TimeoutError(f"Provider {attempt_provider} timed out")
-                            continue
-                        
-                        if not error_queue.empty():
-                            last_error = error_queue.get()
-                            continue
-                        
-                        if not result_queue.empty():
-                            response_text = result_queue.get()
-                            break  # Success!
-                            
-                    except Exception as e:
-                        last_error = e
-                        continue
-                
-                # If all providers failed, try one more time with no provider specified (auto-select)
-                if not response_text:
-                    try:
-                        result_queue = queue.Queue()
-                        error_queue = queue.Queue()
-                        
-                        thread = threading.Thread(
-                            target=run_g4f_call,
-                            args=(model, conversation, None, stream, result_queue, error_queue),
-                            daemon=True
-                        )
-                        thread.start()
-                        thread.join(timeout=20)  # 20 second timeout for final attempt - fail fast
-                        
-                        if not thread.is_alive() and not error_queue.empty():
-                            raise error_queue.get()
-                        
-                        if not result_queue.empty():
-                            response_text = result_queue.get()
-                        elif thread.is_alive():
-                            raise TimeoutError("All providers timed out")
-                        else:
-                            raise last_error or Exception("All providers failed")
-                    except Exception as final_error:
-                        # If all attempts failed, return error response
-                        error_msg = str(final_error) if final_error else "All providers failed"
-                        return {
-                            'statusCode': 500,
-                            'headers': {'Content-Type': 'application/json'},
-                            'body': json.dumps({
-                                'error': 'Model unavailable',
-                                'details': f"Unable to connect to model '{model}'. Error: {error_msg}",
-                                'model': model,
-                                'suggestion': 'Please try a different model or try again later'
-                            })
-                        }
+                except Exception as e:
+                    # If it fails, we fail. No fallbacks as requested.
+                    error_msg = str(e)
+                    return {
+                        'statusCode': 500,
+                        'headers': {'Content-Type': 'application/json'},
+                        'body': json.dumps({
+                            'error': 'Model unavailable',
+                            'details': f"Unable to connect to model '{model}'. Error: {error_msg}",
+                            'model': model,
+                            'suggestion': 'Please try a different model or try again later'
+                        })
+                    }
                 
                 # Ensure we have a response
                 if not response_text:
@@ -648,50 +586,29 @@ def handler(request):
             except ImportError:
                 # g4f not available - return error with instructions
                 return {
-                    'statusCode': 503,
+                    'statusCode': 500,
                     'headers': {'Content-Type': 'application/json'},
                     'body': json.dumps({
-                        'error': 'g4f library not available',
-                        'details': 'g4f needs to be installed in the Python environment',
-                        'note': 'This endpoint requires g4f to be installed. Please ensure g4f is available.'
+                        'error': 'g4f library not installed',
+                        'details': 'Please install g4f: pip install g4f curl_cffi'
                     })
                 }
             except Exception as e:
                 return {
                     'statusCode': 500,
                     'headers': {'Content-Type': 'application/json'},
-                    'body': json.dumps({
-                        'error': 'WebAI (g4f) error',
-                        'details': str(e),
-                        'model': body.get('model', 'unknown')
-                    })
+                    'body': json.dumps({'error': 'WebAI error', 'details': str(e)})
                 }
+                
+        return {
+            'statusCode': 404,
+            'headers': {'Content-Type': 'application/json'},
+            'body': json.dumps({'error': 'Service not found'})
+        }
         
-        elif service == 'removerized' and endpoint == 'images/edit':
-            # Removerized background removal
-            return {
-                'statusCode': 501,
-                'headers': {'Content-Type': 'application/json'},
-                'body': json.dumps({
-                    'error': 'Background removal requires client-side processing',
-                    'note': 'Use @imgly/background-removal-js in browser or Node.js'
-                })
-            }
-        
-        else:
-            return {
-                'statusCode': 404,
-                'headers': {'Content-Type': 'application/json'},
-                'body': json.dumps({'error': f'Unknown service: {service}'})
-            }
-            
     except Exception as e:
         return {
             'statusCode': 500,
             'headers': {'Content-Type': 'application/json'},
-            'body': json.dumps({
-                'error': 'Internal server error',
-                'details': str(e)
-            })
+            'body': json.dumps({'error': 'Internal server error', 'details': str(e)})
         }
-
