@@ -37,7 +37,7 @@ export default async function handler(req) {
     } else if (m.includes('gpt-3.5') || m.includes('gpt3.5') || m.includes('chatgpt')) {
       targetUrl = new URL('/api/services/gpt4freejs/v1/chat/completions', url.origin);
     } else if (m.includes('gemini') && m.includes('flash')) {
-      targetUrl = new URL('/api/python/webai/v1/chat/completions', url.origin);
+      targetUrl = new URL('/api/webai/v1/chat/completions', url.origin);
     } else if (m.includes('pollinations')) {
       targetUrl = new URL('/api/pollinations/v1/chat/completions', url.origin);
     } else {

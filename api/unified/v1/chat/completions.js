@@ -92,7 +92,7 @@ export default async function handler(req) {
     }
 
     const url = new URL(req.url);
-    let targetRoute = '/api/python/webai/v1/chat/completions'; // Default to webai
+    let targetRoute = '/api/webai/v1/chat/completions'; // Default to webai (TypeScript)
     
     // Determine target route based on model
     try {
@@ -118,9 +118,9 @@ export default async function handler(req) {
       else if (isDeepInfraModel(model)) {
         targetRoute = '/api/deepinfra/v1/chat/completions';
       }
-      // G4F models
+      // G4F models - use TypeScript implementation
       else if (isG4FModel(model)) {
-        targetRoute = '/api/python/webai/v1/chat/completions';
+        targetRoute = '/api/webai/v1/chat/completions';
       }
       // Special routes
       else {
@@ -133,11 +133,11 @@ export default async function handler(req) {
         'chatgpt': '/api/services/gpt4freejs/v1/chat/completions',
         'gemini-multimodal': '/api/python/gemini-multimodal/v1/chat/completions',
         'pollinations': '/api/pollinations/v1/chat/completions',
-        'webai': '/api/python/webai/v1/chat/completions',
-        'g4f': '/api/python/webai/v1/chat/completions',
+          'webai': '/api/webai/v1/chat/completions',
+          'g4f': '/api/webai/v1/chat/completions',
         'deepseek-free': '/api/python/deepseekfree/v1/chat/completions',
       };
-        targetRoute = specialRoutes[model] || '/api/python/webai/v1/chat/completions';
+        targetRoute = specialRoutes[model] || '/api/webai/v1/chat/completions';
       }
     } catch (routeError) {
       console.error('[API] Route determination error:', routeError);
