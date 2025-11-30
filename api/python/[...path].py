@@ -504,11 +504,8 @@ def handler(request):
 
                 # Try best provider first - NO FALLBACKS to other providers if model specific fails
                 provider = ProviderUtils.convert.get(model)
-                if not provider:
-                    # Only default to a robust provider if NO specific provider is found
-                    provider = g4f.Provider.Blackbox
-
-                # Run single provider attempt
+                
+                # Run single provider attempt (pass provider=None if not found to use Auto)
                 response_text = None
                 try:
                     result_queue = queue.Queue()
