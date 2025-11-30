@@ -177,11 +177,11 @@ function PlaygroundContent() {
 
         thoughtStartTime = Date.now();
         
-        // Add timeout to prevent infinite loading - match server timeout
+        // Add timeout to prevent infinite loading - fast timeout for better UX
         const controller = new AbortController();
         const timeoutId = setTimeout(() => {
           controller.abort();
-        }, 180000); // 3 minute timeout (matches server)
+        }, 30000); // 30 second timeout - fail fast
         
         try {
           const res = await fetch('/api/unified/v1/chat/completions', {
@@ -254,7 +254,7 @@ function PlaygroundContent() {
         
         if (error instanceof Error) {
           if (error.name === 'AbortError' || error.message.includes('timed out') || error.message.includes('aborted')) {
-            errorMessage = 'Request timed out after 3 minutes. Please try a different model or simplify your request.';
+            errorMessage = 'Request timed out after 30 seconds. Please try a different model or simplify your request.';
           } else if (error.message.includes('500') || error.message.includes('Internal Server Error')) {
             errorMessage = 'Server error. Please try again or select a different model.';
           } else if (error.message.includes('404') || error.message.includes('Not Found')) {
@@ -285,6 +285,10 @@ function PlaygroundContent() {
         setInput('');
         setGeneratedImage(null);
         
+        // Add timeout for image generation
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 30000); // 30 second timeout
+        
         const res = await fetch('/api/unified/v1/images/generations', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -293,8 +297,11 @@ function PlaygroundContent() {
             model: selectedModel,
             n: 1,
             size: "1024x1024"
-          })
+          }),
+          signal: controller.signal,
         });
+        
+        clearTimeout(timeoutId);
 
         const data = await res.json();
         if (data.error) throw new Error(data.error.details || data.error.message || data.error);
@@ -308,8 +315,8 @@ function PlaygroundContent() {
       } catch (error) {
         console.error('Image generation error:', error);
         const errorMessage = error instanceof Error 
-          ? (error.message.includes('timeout') 
-              ? 'Image generation timed out. Please try again.' 
+          ? (error.name === 'AbortError' || error.message.includes('timeout')
+              ? 'Image generation timed out after 30 seconds. Please try again.' 
               : error.message)
           : 'Failed to generate image';
         showError(errorMessage, 8000);
@@ -322,6 +329,10 @@ function PlaygroundContent() {
         setInput('');
         setGeneratedVideo(null);
         
+        // Add timeout for video generation
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 30000); // 30 second timeout
+        
         const res = await fetch('/api/unified/v1/videos/generations', {
           method: 'POST',
           headers: { 
@@ -332,8 +343,11 @@ function PlaygroundContent() {
             model: selectedModel,
             duration: 8.0,
             aspect_ratio: '16:9'
-          })
+          }),
+          signal: controller.signal,
         });
+        
+        clearTimeout(timeoutId);
 
         const data = await res.json();
         if (data.error) throw new Error(data.error.details || data.error.message || data.error);
@@ -345,8 +359,8 @@ function PlaygroundContent() {
       } catch (error) {
         console.error('Video generation error:', error);
         const errorMessage = error instanceof Error 
-          ? (error.message.includes('timeout') 
-              ? 'Video generation timed out. Please try again.' 
+          ? (error.name === 'AbortError' || error.message.includes('timeout')
+              ? 'Video generation timed out after 30 seconds. Please try again.' 
               : error.message)
           : 'Failed to generate video';
         showError(errorMessage, 8000);

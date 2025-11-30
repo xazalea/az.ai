@@ -144,11 +144,11 @@ export default async function handler(req) {
       // Continue with default route
     }
 
-    // Create timeout - increased to 3 minutes for slow models
+    // Create timeout - fast timeout for better UX
     const controller = new AbortController();
     const timeoutId = setTimeout(() => {
       controller.abort();
-    }, 180000); // 3 minute timeout (increased from 2 minutes)
+    }, 30000); // 30 second timeout - fail fast
 
     try {
       // Forward request to target route with retry logic
@@ -271,7 +271,7 @@ export default async function handler(req) {
         return NextResponse.json(
           { 
             error: 'Request timeout', 
-            details: 'The request took too long to complete (over 3 minutes). Please try again with a different model.',
+            details: 'The request took too long to complete (over 30 seconds). Please try again with a different model.',
             model: model,
             route: targetRoute
           },

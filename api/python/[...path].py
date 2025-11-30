@@ -554,7 +554,7 @@ def handler(request):
                             daemon=True
                         )
                         thread.start()
-                        thread.join(timeout=60)  # 60 second timeout per attempt
+                        thread.join(timeout=15)  # 15 second timeout per attempt - fail fast
                         
                         if thread.is_alive():
                             last_error = TimeoutError(f"Provider {attempt_provider} timed out")
@@ -584,7 +584,7 @@ def handler(request):
                             daemon=True
                         )
                         thread.start()
-                        thread.join(timeout=90)  # Longer timeout for final attempt
+                        thread.join(timeout=20)  # 20 second timeout for final attempt - fail fast
                         
                         if not thread.is_alive() and not error_queue.empty():
                             raise error_queue.get()

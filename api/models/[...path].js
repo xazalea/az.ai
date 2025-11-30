@@ -62,7 +62,7 @@ export default async function handler(req) {
     // Call the Koa app with timeout
     try {
       const timeoutPromise = new Promise((_, reject) => {
-        setTimeout(() => reject(new Error('Request timeout')), 150000);
+        setTimeout(() => reject(new Error('Request timeout')), 30000); // 30 second timeout
       });
       
       // Race between the app call and timeout
