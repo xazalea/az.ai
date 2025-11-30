@@ -164,7 +164,7 @@ export default async function handler(req) {
       for (let attempt = 0; attempt < maxRetries; attempt++) {
         try {
           response = await fetch(targetUrl.toString(), {
-            method: 'POST',
+          method: 'POST',
             headers: {
               'Content-Type': 'application/json',
             },

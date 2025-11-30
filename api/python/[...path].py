@@ -596,7 +596,30 @@ def handler(request):
                         else:
                             raise last_error or Exception("All providers failed")
                     except Exception as final_error:
-                        raise final_error
+                        # If all attempts failed, return error response
+                        error_msg = str(final_error) if final_error else "All providers failed"
+                        return {
+                            'statusCode': 500,
+                            'headers': {'Content-Type': 'application/json'},
+                            'body': json.dumps({
+                                'error': 'Model unavailable',
+                                'details': f"Unable to connect to model '{model}'. Error: {error_msg}",
+                                'model': model,
+                                'suggestion': 'Please try a different model or try again later'
+                            })
+                        }
+                
+                # Ensure we have a response
+                if not response_text:
+                    return {
+                        'statusCode': 500,
+                        'headers': {'Content-Type': 'application/json'},
+                        'body': json.dumps({
+                            'error': 'No response generated',
+                            'details': f"Model '{model}' did not return any content",
+                            'model': model
+                        })
+                    }
                 
                 # Format as OpenAI-compatible response
                 return {

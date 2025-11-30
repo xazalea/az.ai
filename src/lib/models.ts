@@ -290,11 +290,146 @@ function mergeModelsByProvider(): ProviderGroup[] {
 
 // Get provider groups by type (with merged providers)
 export const getProviderGroupsByType = (type: 'chat' | 'image' | 'video'): ProviderGroup[] => {
-  const merged = mergeModelsByProvider();
-  return merged.map(group => ({
-    ...group,
-    models: group.models.filter(model => model.type === type),
-  })).filter(group => group.models.length > 0);
+  // Combine all models from PROVIDER_GROUPS and G4F_MODEL_LIST
+  const allModels: Model[] = [];
+  
+  // Add models from PROVIDER_GROUPS
+  PROVIDER_GROUPS.forEach(group => {
+    group.models.forEach(model => {
+      allModels.push(model);
+    });
+  });
+  
+  // Add models from G4F_MODEL_LIST (import dynamically to avoid circular deps)
+  try {
+    const { G4F_MODEL_LIST } = require('./g4f-model-list');
+    (G4F_MODEL_LIST as Model[]).forEach(model => {
+      // Filter out g4f provider and map to correct provider
+      const providerLower = (model.provider || '').toLowerCase();
+      if (providerLower === 'g4f' || providerLower === 'g4f models') {
+        // Try to infer provider from model name
+        const modelLower = model.name.toLowerCase();
+        if (modelLower.includes('claude')) {
+          model.provider = 'Anthropic';
+        } else if (modelLower.includes('gpt') || modelLower.includes('openai')) {
+          model.provider = 'OpenAI';
+        } else if (modelLower.includes('gemini') || modelLower.includes('gemma')) {
+          model.provider = 'Google';
+        } else if (modelLower.includes('llama') || modelLower.includes('meta')) {
+          model.provider = 'Meta';
+        } else if (modelLower.includes('mistral') || modelLower.includes('mixtral')) {
+          model.provider = 'Mistral AI';
+        } else if (modelLower.includes('grok') || modelLower.includes('xai')) {
+          model.provider = 'xAI';
+        } else if (modelLower.includes('qwen')) {
+          model.provider = 'Qwen';
+        } else if (modelLower.includes('deepseek')) {
+          model.provider = 'DeepSeek';
+        } else if (modelLower.includes('glm')) {
+          model.provider = 'GLM';
+        } else if (modelLower.includes('kimi')) {
+          model.provider = 'Kimi';
+        } else {
+          // Skip models we can't categorize
+          return;
+        }
+      }
+      allModels.push(model);
+    });
+  } catch (e) {
+    // If import fails, continue without G4F models
+    console.warn('Could not load G4F_MODEL_LIST:', e);
+  }
+  
+  // Group by provider (normalize provider names)
+  const providerMap = new Map<string, Model[]>();
+  
+  allModels.forEach(model => {
+    if (model.type !== type) return; // Filter by type
+    
+    let provider = model.provider || 'Other';
+    // Normalize provider names
+    provider = provider
+      .replace(/\s+via\s+g4f/i, '')
+      .replace(/\s+via\s+deepinfra/i, '')
+      .trim();
+    
+    // Map common variations to standard names
+    const providerMap_normalized: Record<string, string> = {
+      'mistral ai': 'Mistral AI',
+      'mistralai': 'Mistral AI',
+      'mistral': 'Mistral AI',
+      'openai': 'OpenAI',
+      'anthropic': 'Anthropic',
+      'google': 'Google',
+      'meta': 'Meta',
+      'deepseek': 'DeepSeek',
+      'qwen': 'Qwen',
+      'xai': 'xAI',
+      'groq': 'Groq',
+      'glm': 'GLM',
+      'kimi': 'Kimi',
+      'minimax': 'MiniMax',
+      'step': 'Step',
+      'jimeng': 'Jimeng',
+      'doubao': 'Doubao',
+      'nvidia': 'NVIDIA',
+      'microsoft': 'Microsoft',
+      '01-ai': '01.AI',
+    };
+    
+    const normalized = provider.toLowerCase();
+    if (providerMap_normalized[normalized]) {
+      provider = providerMap_normalized[normalized];
+    }
+    
+    // Skip g4f provider
+    if (provider.toLowerCase() === 'g4f' || provider.toLowerCase() === 'g4f models') {
+      return;
+    }
+    
+    if (!providerMap.has(provider)) {
+      providerMap.set(provider, []);
+    }
+    
+    // Avoid duplicates by ID
+    const existing = providerMap.get(provider)!;
+    if (!existing.find(m => m.id === model.id)) {
+      existing.push(model);
+    }
+  });
+  
+  // Create provider groups
+  const groups: ProviderGroup[] = [];
+  const providerOrder = [
+    'OpenAI', 'Anthropic', 'Google', 'Meta', 'Mistral AI', 'DeepSeek', 'Qwen',
+    'xAI', 'Groq', 'GLM', 'Doubao', 'Kimi', 'MiniMax', 'Step', 'Jimeng',
+    'NVIDIA', 'Microsoft', '01.AI', 'Other'
+  ];
+  
+  // Add ordered providers first
+  providerOrder.forEach(providerName => {
+    const models = providerMap.get(providerName);
+    if (models && models.length > 0) {
+      groups.push({
+        id: providerName.toLowerCase().replace(/\s+/g, '-'),
+        name: providerName,
+        models: models.sort((a, b) => a.name.localeCompare(b.name)),
+      });
+      providerMap.delete(providerName);
+    }
+  });
+  
+  // Add remaining providers
+  providerMap.forEach((models, providerName) => {
+    groups.push({
+      id: providerName.toLowerCase().replace(/\s+/g, '-'),
+      name: providerName,
+      models: models.sort((a, b) => a.name.localeCompare(b.name)),
+    });
+  });
+  
+  return groups;
 };
 
 // Find model by ID (with fallback to fastest if duplicate)
