@@ -1,14 +1,11 @@
 import { NextResponse } from 'next/server';
 
-// Helper functions to check model types (inline to avoid import issues in API routes)
+// Helper functions to check model types
 function isG4FModel(modelId) {
   if (!modelId || typeof modelId !== 'string') return false;
   const m = modelId.toLowerCase();
-  
-  // Check if it's a DeepInfra model first (those should route to DeepInfra)
   if (isDeepInfraModel(modelId)) return false;
   
-  // G4F models - comprehensive list
   const g4fPatterns = [
     'claude', 'gemini', 'gpt', 'llama', 'mistral', 'qwen', 'deepseek', 
     'glm', 'kimi', 'grok', 'imagen', 'dall-e', 'flux', 'sdxl', 'openchat',
@@ -23,8 +20,6 @@ function isDeepInfraModel(modelId) {
   if (!modelId || typeof modelId !== 'string') return false;
   const m = modelId.toLowerCase();
   
-  // DeepInfra models typically have provider/model format like "meta-llama/..."
-  // or are explicitly DeepInfra models
   const deepInfraPatterns = [
     'meta-llama/', 'mistralai/', 'qwen/', 'deepseek-ai/', 'anthropic/',
     'google/', 'openai/', 'microsoft/', 'nvidia/', 'stabilityai/',
@@ -35,406 +30,152 @@ function isDeepInfraModel(modelId) {
   
   return deepInfraPatterns.some(pattern => m.includes(pattern)) || 
          m.startsWith('deepinfra/') ||
-         m.includes('/') && m.split('/').length === 2; // provider/model format
+         (m.includes('/') && m.split('/').length === 2);
 }
 
 export const config = {
-  runtime: 'nodejs', // Using nodejs to support package imports and dynamic imports
+  runtime: 'nodejs',
 };
 
-// Unified model routing - all models accessible via /v1/chat/completions with model parameter
-// Models are specified in the request body: { "model": "qwen", ... }
-
-async function callModelPackage(packageName, body, req) {
-  try {
-    // Import the package
-    const packagePath = `../../packages/${packageName}/dist/index.mjs`;
-    const pkg = await import(packagePath);
-    const app = pkg.default || pkg;
-    
-    // Create a Koa-compatible context
-    const ctx = {
-      request: {
-        body: body,
-        headers: Object.fromEntries(req.headers.entries()),
-        method: req.method,
-        url: '/v1/chat/completions',
-        path: '/v1/chat/completions',
-        query: {},
-      },
-      response: {
-        body: null,
-        status: 200,
-        headers: {},
-        set: function(key, value) { this.headers[key] = value; },
-      },
-      set: function(key, value) { this.response.headers[key] = value; },
-      status: 200,
-    };
-    
-    // Call the Koa app
-    await app(ctx, async () => {});
-    
-    return {
-      data: ctx.response.body,
-      status: ctx.response.status,
-      headers: ctx.response.headers,
-    };
-  } catch (error) {
-    console.error(`Error calling ${packageName}:`, error);
-    throw error;
-  }
-}
-
 export default async function handler(req) {
-  // Handle both Next.js App Router (Request object) and Pages Router formats
-  // In App Router, req is a Request object
-  // In Pages Router, req has a method property
-  
-  let method = 'POST'; // Default to POST for safety
-  
-  // Try to get method from request
-  if (req) {
-    if (req instanceof Request) {
-      // Next.js App Router - req is a Request object
-      method = req.method || 'POST';
-    } else if (typeof req === 'object' && req.method) {
-      // Pages Router or custom handler format
-      method = String(req.method).trim() || 'POST';
-    }
-  }
-  
-  // Normalize method, defaulting to POST if empty or invalid
-  const normalizedMethod = (method && method.trim() ? method.trim() : 'POST').toUpperCase();
-
-  // Handle OPTIONS requests
-  if (normalizedMethod === 'OPTIONS') {
+  // Handle OPTIONS
+  if (req.method === 'OPTIONS') {
     return new NextResponse(null, {
       status: 200,
       headers: {
         'Access-Control-Allow-Origin': '*',
-        'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
+        'Access-Control-Allow-Methods': 'POST, OPTIONS',
         'Access-Control-Allow-Headers': 'Content-Type, Authorization',
       },
     });
   }
 
-  // Handle GET requests (health checks)
-  if (normalizedMethod === 'GET') {
+  // Only allow POST
+  if (req.method !== 'POST') {
     return NextResponse.json(
-      { 
-        message: 'az.ai unified API',
-        endpoint: '/v1/chat/completions',
-        method: 'Use POST to send chat completion requests',
-        status: 'operational'
-      },
-      { 
-        status: 200,
-        headers: { 'Access-Control-Allow-Origin': '*' }
-      }
+      { error: 'Method not allowed', details: 'Only POST requests are supported' },
+      { status: 405, headers: { 'Access-Control-Allow-Origin': '*' } }
     );
   }
-
-  // Only reject if method is explicitly set and is not POST, GET, or OPTIONS
-  if (normalizedMethod !== 'POST' && normalizedMethod !== 'GET' && normalizedMethod !== 'OPTIONS') {
-    return NextResponse.json(
-      { 
-        error: 'Method not allowed', 
-        details: `Method ${method} is not supported. Use POST.`,
-        receivedMethod: method,
-        supportedMethods: ['POST', 'GET', 'OPTIONS'],
-      },
-      { 
-        status: 405, 
-        headers: { 
-          'Access-Control-Allow-Origin': '*',
-          'Allow': 'POST, OPTIONS, GET'
-        } 
-      }
-    );
-  }
-  
-  // Proceed with POST request
 
   try {
-    // Safely parse request body
-    let body;
-    try {
-      body = await req.json();
-    } catch (jsonError) {
-      // If body is empty or not JSON, return error
+    // Parse request body
+    const body = await req.json();
+    
+    if (!body || !body.model) {
       return NextResponse.json(
-        { 
-          error: 'Invalid request body', 
-          details: 'Request body must be valid JSON',
-          message: jsonError.message 
-        },
-        { 
-          status: 400,
-          headers: { 'Access-Control-Allow-Origin': '*' }
-        }
-      );
-    }
-    
-    const { model, messages, use_memory = true, use_reasoning = true } = body;
-    const url = new URL(req.url);
-    
-    // Auto-generate session ID
-    const clientIP = req.headers.get('x-forwarded-for')?.split(',')[0] || 
-                     req.headers.get('x-real-ip') || 
-                     'anonymous';
-    const userAgent = req.headers.get('user-agent') || '';
-    const sessionKey = `${clientIP}-${userAgent}`;
-    const sessionId = body.session_id || `session_${Buffer.from(sessionKey).toString('base64').substring(0, 16).replace(/[^a-zA-Z0-9]/g, '')}`;
-    
-    const m = model?.toLowerCase() || '';
-    
-    if (!m) {
-      console.error('[API] Missing model in request body');
-      console.error('[API] Request body keys:', Object.keys(body || {}));
-      return NextResponse.json(
-        { error: 'Model is required', details: 'Please specify a model in the request body' },
+        { error: 'Bad request', details: 'Model is required' },
         { status: 400, headers: { 'Access-Control-Allow-Origin': '*' } }
       );
     }
+
+    const model = body.model.toLowerCase();
+    const url = new URL(req.url);
+
+    // Determine target route
+    let targetRoute = '/api/python/webai/v1/chat/completions'; // Default to webai
     
-    console.log(`[API] Processing request for model: ${m}`);
-    
-    // Session-based memory
-    let memoryContext = [];
-    if (use_memory !== false) {
-      try {
-        const conversationHistory = messages?.filter(m => m.role !== 'system').slice(0, -1) || [];
-        const lastUserMessage = messages?.findLast(m => m.role === 'user')?.content || '';
-        
-        if (lastUserMessage) {
-          const memoryRes = await fetch(new URL('/api/openmemory/memory/query', url.origin), {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              query: lastUserMessage,
-              k: 5,
-              filters: { user_id: sessionId },
-            }),
-          });
-          if (memoryRes.ok) {
-            try {
-              const memoryData = await memoryRes.json();
-              if (memoryData.matches && memoryData.matches.length > 0) {
-                memoryContext = memoryData.matches.map((m) => ({
-                  role: 'system',
-                  content: `[Previous Context] ${m.content}`,
-                }));
-              }
-            } catch (memoryError) {
-              console.error('[API] Error parsing memory response:', memoryError);
-              // Continue without memory context if parsing fails
-            }
-          }
-        }
-        
-        if (conversationHistory.length > 0) {
-          const recentContext = conversationHistory.slice(-6).map((msg) => ({
-            role: msg.role,
-            content: msg.content,
-          }));
-          memoryContext = [...memoryContext, ...recentContext];
-        }
-      } catch (memError) {
-        console.warn('Memory query failed:', memError);
-      }
+    // Package-based models
+    if (model.includes('qwen') && !isDeepInfraModel(model)) {
+      targetRoute = `/api/models/qwen-free-api/v1/chat/completions`;
+    } else if (model.includes('deepseek') && !model.includes('free') && !isDeepInfraModel(model)) {
+      targetRoute = `/api/models/deepseek-free-api/v1/chat/completions`;
+    } else if (model.includes('glm')) {
+      targetRoute = `/api/models/glm-free-api/v1/chat/completions`;
+    } else if (model.includes('doubao')) {
+      targetRoute = `/api/models/doubao-free-api/v1/chat/completions`;
+    } else if (model.includes('kimi') && !isDeepInfraModel(model)) {
+      targetRoute = `/api/models/kimi-free-api/v1/chat/completions`;
+    } else if (model.includes('minimax') || model.includes('hailuo')) {
+      targetRoute = `/api/models/minimax-free-api/v1/chat/completions`;
+    } else if (model.includes('step') || model.includes('yuewen')) {
+      targetRoute = `/api/models/step-free-api/v1/chat/completions`;
+    } else if (model.includes('jimeng') && !model.includes('api')) {
+      targetRoute = `/api/models/jimeng-free-api/v1/chat/completions`;
+    }
+    // DeepInfra models
+    else if (isDeepInfraModel(model)) {
+      targetRoute = '/api/deepinfra/v1/chat/completions';
+    }
+    // G4F models
+    else if (isG4FModel(model)) {
+      targetRoute = '/api/python/webai/v1/chat/completions';
+    }
+    // Special routes
+    else {
+      const specialRoutes = {
+        'groq': '/api/groq/v1/chat/completions',
+        'gpt-4': '/api/services/gpt4freejs/v1/chat/completions',
+        'gpt4': '/api/services/gpt4freejs/v1/chat/completions',
+        'gpt-3.5': '/api/services/gpt4freejs/v1/chat/completions',
+        'gpt3.5': '/api/services/gpt4freejs/v1/chat/completions',
+        'chatgpt': '/api/services/gpt4freejs/v1/chat/completions',
+        'gemini-multimodal': '/api/python/gemini-multimodal/v1/chat/completions',
+        'pollinations': '/api/pollinations/v1/chat/completions',
+        'webai': '/api/python/webai/v1/chat/completions',
+        'g4f': '/api/python/webai/v1/chat/completions',
+        'deepseek-free': '/api/python/deepseekfree/v1/chat/completions',
+      };
+      targetRoute = specialRoutes[model] || '/api/python/webai/v1/chat/completions';
     }
 
-    let responseData;
-    let responseStatus = 200;
-    let targetUrl;
-    
-    // Determine which handler to use based on model
-    const requestBody = { ...body, messages: [...memoryContext, ...messages] };
-    
-    // Package-based models (use generic proxy) - check these first before g4f/deepinfra
-    let packageName = null;
-    if (m.includes('qwen') && !isDeepInfraModel(m)) { // Exclude DeepInfra Qwen
-      packageName = 'qwen-free-api';
-    } else if (m.includes('deepseek') && !m.includes('free') && !isDeepInfraModel(m)) { // Exclude DeepInfra DeepSeek
-      packageName = 'deepseek-free-api';
-    } else if (m.includes('glm')) {
-      packageName = 'glm-free-api';
-    } else if (m.includes('doubao')) {
-      packageName = 'doubao-free-api';
-    } else if (m.includes('kimi') && !isDeepInfraModel(m)) { // Exclude DeepInfra Kimi
-      packageName = 'kimi-free-api';
-    } else if (m.includes('minimax') || m.includes('hailuo')) {
-      packageName = 'minimax-free-api';
-    } else if (m.includes('step') || m.includes('yuewen')) {
-      packageName = 'step-free-api';
-    } else if (m.includes('jimeng') && !m.includes('api')) {
-      packageName = 'jimeng-free-api';
-    }
-    
-    // Add timeout to prevent hanging requests
+    // Create timeout
     const controller = new AbortController();
-    const timeoutId = setTimeout(() => {
-      controller.abort();
-      console.error(`[API] Request timeout for model: ${m}`);
-    }, 60000); // 60 second timeout
-    
+    const timeoutId = setTimeout(() => controller.abort(), 120000); // 2 minute timeout
+
     try {
-      if (packageName) {
-        // Use generic model proxy
-        const proxyUrl = new URL(`/api/models/${packageName}/v1/chat/completions`, url.origin);
-        const response = await fetch(proxyUrl, {
-          method: 'POST',
-          headers: req.headers,
-          body: JSON.stringify(requestBody),
-          signal: controller.signal,
-        });
-        clearTimeout(timeoutId);
-        try {
-          const responseText = await response.text();
-          if (!response.ok) {
-            try {
-              responseData = JSON.parse(responseText);
-            } catch {
-              responseData = { error: { message: `HTTP ${response.status}: ${response.statusText}`, details: responseText } };
-            }
-            responseStatus = response.status;
-          } else {
-            try {
-              responseData = JSON.parse(responseText);
-              responseStatus = response.status;
-            } catch (parseError) {
-              console.error(`[API] JSON parse error for package ${packageName}:`, parseError);
-              throw new Error(`Invalid JSON response from ${packageName}: ${responseText.substring(0, 200)}`);
-            }
+      // Forward request to target route
+      const targetUrl = new URL(targetRoute, url.origin);
+      const response = await fetch(targetUrl, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(body),
+        signal: controller.signal,
+      });
+
+      clearTimeout(timeoutId);
+
+      // Get response text
+      const responseText = await response.text();
+      
+      // Parse JSON or return error
+      let responseData;
+      try {
+        responseData = JSON.parse(responseText);
+      } catch (parseError) {
+        return NextResponse.json(
+          { 
+            error: 'Invalid response', 
+            details: 'The API returned invalid JSON',
+            status: response.status,
+            responseText: responseText.substring(0, 500)
+          },
+          { 
+            status: response.status || 500,
+            headers: { 'Access-Control-Allow-Origin': '*' }
           }
-        } catch (responseError) {
-          console.error(`[API] Response processing error for package ${packageName}:`, responseError);
-          throw responseError;
-        }
-      } else if (isDeepInfraModel(m)) {
-        // DeepInfra models - check before g4f
-        targetUrl = new URL('/api/deepinfra/v1/chat/completions', url.origin);
-        const response = await fetch(targetUrl, {
-          method: 'POST',
-          headers: req.headers,
-          body: JSON.stringify(requestBody),
-          signal: controller.signal,
-        });
-        clearTimeout(timeoutId);
-        try {
-          const responseText = await response.text();
-          if (!response.ok) {
-            try {
-              responseData = JSON.parse(responseText);
-            } catch {
-              responseData = { error: { message: `HTTP ${response.status}: ${response.statusText}`, details: responseText } };
-            }
-            responseStatus = response.status;
-          } else {
-            try {
-              responseData = JSON.parse(responseText);
-              responseStatus = response.status;
-            } catch (parseError) {
-              console.error(`[API] JSON parse error for DeepInfra:`, parseError);
-              throw new Error(`Invalid JSON response from DeepInfra: ${responseText.substring(0, 200)}`);
-            }
-          }
-        } catch (responseError) {
-          console.error(`[API] Response processing error for DeepInfra:`, responseError);
-          throw responseError;
-        }
-      } else if (isG4FModel(m)) {
-        // g4f models via webai - route all g4f models here
-        targetUrl = new URL('/api/python/webai/v1/chat/completions', url.origin);
-        const response = await fetch(targetUrl, {
-          method: 'POST',
-          headers: req.headers,
-          body: JSON.stringify(requestBody),
-          signal: controller.signal,
-        });
-        clearTimeout(timeoutId);
-        try {
-          const responseText = await response.text();
-          if (!response.ok) {
-            try {
-              responseData = JSON.parse(responseText);
-            } catch {
-              responseData = { error: { message: `HTTP ${response.status}: ${response.statusText}`, details: responseText } };
-            }
-            responseStatus = response.status;
-          } else {
-            try {
-              responseData = JSON.parse(responseText);
-              responseStatus = response.status;
-            } catch (parseError) {
-              console.error(`[API] JSON parse error for G4F:`, parseError);
-              throw new Error(`Invalid JSON response from G4F: ${responseText.substring(0, 200)}`);
-            }
-          }
-        } catch (responseError) {
-          console.error(`[API] Response processing error for G4F:`, responseError);
-          throw responseError;
-        }
-      } else {
-        // External API routes (Python/Go or services that need separate routes)
-        const externalRoutes = {
-          'groq': '/api/groq/v1/chat/completions',
-          'gpt-4': '/api/services/gpt4freejs/v1/chat/completions',
-          'gpt4': '/api/services/gpt4freejs/v1/chat/completions',
-          'gpt-3.5': '/api/services/gpt4freejs/v1/chat/completions',
-          'gpt3.5': '/api/services/gpt4freejs/v1/chat/completions',
-          'chatgpt': '/api/services/gpt4freejs/v1/chat/completions',
-          'gemini-multimodal': '/api/python/gemini-multimodal/v1/chat/completions',
-          'pollinations': '/api/pollinations/v1/chat/completions',
-          'webai': '/api/python/webai/v1/chat/completions',
-          'g4f': '/api/python/webai/v1/chat/completions',
-          'deepseek-free': '/api/python/deepseekfree/v1/chat/completions',
-        };
-        
-        // Default to webai (g4f) for unknown models - this allows all g4f models to work automatically
-        const targetRoute = externalRoutes[m] || '/api/python/webai/v1/chat/completions';
-        targetUrl = new URL(targetRoute, url.origin);
-        
-        const response = await fetch(targetUrl, {
-          method: 'POST',
-          headers: req.headers,
-          body: JSON.stringify(requestBody),
-          signal: controller.signal,
-        });
-        clearTimeout(timeoutId);
-        try {
-          const responseText = await response.text();
-          if (!response.ok) {
-            try {
-              responseData = JSON.parse(responseText);
-            } catch {
-              responseData = { error: { message: `HTTP ${response.status}: ${response.statusText}`, details: responseText } };
-            }
-            responseStatus = response.status;
-          } else {
-            try {
-              responseData = JSON.parse(responseText);
-              responseStatus = response.status;
-            } catch (parseError) {
-              console.error(`[API] JSON parse error for external route ${targetRoute}:`, parseError);
-              throw new Error(`Invalid JSON response from ${targetRoute}: ${responseText.substring(0, 200)}`);
-            }
-          }
-        } catch (responseError) {
-          console.error(`[API] Response processing error for external route ${targetRoute}:`, responseError);
-          throw responseError;
-        }
+        );
       }
+
+      // Return response with same status
+      return NextResponse.json(responseData, {
+        status: response.status,
+        headers: {
+          'Access-Control-Allow-Origin': '*',
+        },
+      });
+
     } catch (fetchError) {
       clearTimeout(timeoutId);
+      
       if (fetchError.name === 'AbortError') {
-        console.error(`[API] Request timeout for model: ${m}`);
         return NextResponse.json(
           { 
             error: 'Request timeout', 
             details: 'The request took too long to complete. Please try again.',
-            model: m
+            model: model
           },
           { 
             status: 504,
@@ -442,93 +183,27 @@ export default async function handler(req) {
           }
         );
       }
-      console.error(`[API] Fetch error for model ${m}:`, fetchError);
-      throw fetchError;
-    }
 
-    // Store in session memory
-    if (use_memory !== false && responseData.choices && responseData.choices[0]?.message?.content) {
-      try {
-        const lastUserMessage = messages?.findLast(m => m.role === 'user')?.content || '';
-        const assistantResponse = responseData.choices[0].message.content;
-        
-        await fetch(new URL('/api/openmemory/memory/add', url.origin), {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            content: `User: ${lastUserMessage}\nAssistant: ${assistantResponse}`,
-            tags: ['session', 'chat', model],
-            metadata: { 
-              model, 
-              session_id: sessionId,
-              timestamp: Date.now(),
-              temporary: true,
-            },
-            user_id: sessionId,
-          }),
-        });
-      } catch (memError) {
-        console.warn('Memory storage failed:', memError);
-      }
-    }
-    
-    if (use_memory !== false) {
-      responseData.session_id = sessionId;
-    }
-
-    // Enhance with OpenReason
-    if (use_reasoning !== false && responseData.choices && responseData.choices[0]?.message?.content) {
-      try {
-        const lastUserMessage = messages?.findLast(m => m.role === 'user')?.content || '';
-        
-        const reasonUrl = new URL('/api/openreason/reason', url.origin);
-        const reasonResponse = await fetch(reasonUrl, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            query: lastUserMessage,
-            config: {
-              provider: 'openai',
-              memory: { enabled: use_memory !== false },
-            },
-          }),
-        });
-
-        if (reasonResponse.ok) {
-          const reasonData = await reasonResponse.json();
-          if (reasonData.verdict) {
-            responseData.reasoning = {
-              engine: 'OpenReason',
-              confidence: reasonData.confidence,
-              mode: reasonData.mode,
-              domain: reasonData.domain,
-              complexity: reasonData.complexity,
-            };
-          }
+      console.error('[API] Fetch error:', fetchError);
+      return NextResponse.json(
+        { 
+          error: 'Request failed', 
+          details: fetchError.message || 'Failed to connect to the API',
+          model: model
+        },
+        { 
+          status: 500,
+          headers: { 'Access-Control-Allow-Origin': '*' }
         }
-      } catch (reasonError) {
-        console.warn('OpenReason enhancement failed:', reasonError);
-      }
+      );
     }
 
-    return NextResponse.json(responseData, {
-      status: responseStatus,
-      headers: {
-        'Access-Control-Allow-Origin': '*',
-      },
-    });
   } catch (error) {
-    console.error('[API] Unified chat completions error:', error);
-    console.error('[API] Error stack:', error.stack);
-    console.error('[API] Model:', body?.model);
-    console.error('[API] Request body keys:', Object.keys(body || {}));
-    
+    console.error('[API] Error:', error);
     return NextResponse.json(
       { 
         error: 'Internal Server Error', 
-        details: error.message || 'An unexpected error occurred',
-        model: body?.model,
-        type: error.name || 'UnknownError'
+        details: error.message || 'An unexpected error occurred'
       }, 
       { 
         status: 500,
