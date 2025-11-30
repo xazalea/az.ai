@@ -59,16 +59,54 @@ export default async function handler(req) {
       status: 200,
     };
     
-    // Call the Koa app
-    await app(ctx, async () => {});
-    
-    return NextResponse.json(ctx.response.body, {
-      status: ctx.response.status,
-      headers: {
-        ...ctx.response.headers,
-        'Access-Control-Allow-Origin': '*',
-      },
-    });
+    // Call the Koa app with timeout
+    try {
+      const timeoutPromise = new Promise((_, reject) => {
+        setTimeout(() => reject(new Error('Request timeout')), 150000);
+      });
+      
+      // Race between the app call and timeout
+      await Promise.race([
+        app(ctx, async () => {}),
+        timeoutPromise
+      ]);
+      
+      // Check if response body exists
+      if (!ctx.response.body) {
+        throw new Error('No response from model package');
+      }
+      
+      return NextResponse.json(ctx.response.body, {
+        status: ctx.response.status || 200,
+        headers: {
+          ...ctx.response.headers,
+          'Access-Control-Allow-Origin': '*',
+        },
+      });
+    } catch (error) {
+      // If package fails, try fallback to webai
+      if (packageName.includes('qwen') || packageName.includes('deepseek') || packageName.includes('glm')) {
+        console.log(`[API] Package ${packageName} failed, falling back to webai`);
+        try {
+          const fallbackUrl = new URL('/api/python/webai/v1/chat/completions', url.origin);
+          const fallbackResponse = await fetch(fallbackUrl.toString(), {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(body),
+          });
+          
+          const fallbackData = await fallbackResponse.json();
+          return NextResponse.json(fallbackData, {
+            status: fallbackResponse.status,
+            headers: { 'Access-Control-Allow-Origin': '*' },
+          });
+        } catch (fallbackError) {
+          console.error('Fallback also failed:', fallbackError);
+        }
+      }
+      
+      throw error;
+    }
   } catch (error) {
     console.error('Model proxy error:', error);
     return NextResponse.json({ 

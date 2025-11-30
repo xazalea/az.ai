@@ -474,38 +474,129 @@ def handler(request):
                     # Try to find a provider that supports this model
                     provider = g4f.Provider.default
                 
-                # Generate response
+                # Generate response with retry logic and multiple provider fallbacks
                 response_text = ""
-                try:
-                    response = g4f.ChatCompletion.create(
-                        model=model,
-                        messages=conversation,
-                        provider=provider,
-                        stream=stream
-                    )
-                    
-                    if stream:
-                        # Handle streaming
-                        response_text = ""
-                        for chunk in response:
-                            if hasattr(chunk, 'choices') and chunk.choices:
-                                delta = chunk.choices[0].get('delta', {})
-                                if 'content' in delta:
-                                    response_text += delta['content']
-                    else:
-                        response_text = response if isinstance(response, str) else response.choices[0].message.content
-                except Exception as g4f_error:
-                    # Fallback: try with default provider
+                import threading
+                import queue
+                
+                def run_g4f_call(model_name, messages_list, provider_obj=None, stream_mode=False, result_queue=None, error_queue=None):
+                    """Run g4f call in thread"""
                     try:
-                        response_text = g4f.ChatCompletion.create(
-                            model=model,
-                            messages=conversation,
-                            stream=False
+                        if provider_obj:
+                            response = g4f.ChatCompletion.create(
+                                model=model_name,
+                                messages=messages_list,
+                                provider=provider_obj,
+                                stream=stream_mode
+                            )
+                        else:
+                            response = g4f.ChatCompletion.create(
+                                model=model_name,
+                                messages=messages_list,
+                                stream=stream_mode
+                            )
+                        
+                        if stream_mode:
+                            stream_text = ""
+                            for chunk in response:
+                                if hasattr(chunk, 'choices') and chunk.choices:
+                                    delta = chunk.choices[0].get('delta', {})
+                                    if 'content' in delta:
+                                        stream_text += delta['content']
+                            result_queue.put(stream_text)
+                        else:
+                            text = response if isinstance(response, str) else response.choices[0].message.content
+                            result_queue.put(text)
+                    except Exception as e:
+                        error_queue.put(e)
+                
+                # Try multiple providers in sequence with retries
+                providers_to_try = []
+                if provider and provider != g4f.Provider.default:
+                    providers_to_try.append(provider)
+                # Add default provider
+                try:
+                    default_prov = g4f.Provider.default
+                    if default_prov and default_prov not in providers_to_try:
+                        providers_to_try.append(default_prov)
+                except:
+                    pass
+                
+                # Try to get additional providers
+                try:
+                    # Try common providers
+                    common_providers = [
+                        'OpenaiChat', 'Aichat', 'ChatgptAi', 'ChatgptFree', 
+                        'GptGo', 'You', 'Bing', 'Liaobots'
+                    ]
+                    for prov_name in common_providers:
+                        try:
+                            prov = getattr(g4f.Provider, prov_name, None)
+                            if prov and prov not in providers_to_try:
+                                providers_to_try.append(prov)
+                        except:
+                            pass
+                except:
+                    pass
+                
+                # Limit to first 3 providers to avoid too many attempts
+                providers_to_try = providers_to_try[:3]
+                
+                last_error = None
+                for attempt_provider in providers_to_try:
+                    try:
+                        result_queue = queue.Queue()
+                        error_queue = queue.Queue()
+                        
+                        thread = threading.Thread(
+                            target=run_g4f_call,
+                            args=(model, conversation, attempt_provider, stream, result_queue, error_queue),
+                            daemon=True
                         )
-                        if not isinstance(response_text, str):
-                            response_text = response_text.choices[0].message.content
-                    except:
-                        raise g4f_error
+                        thread.start()
+                        thread.join(timeout=60)  # 60 second timeout per attempt
+                        
+                        if thread.is_alive():
+                            last_error = TimeoutError(f"Provider {attempt_provider} timed out")
+                            continue
+                        
+                        if not error_queue.empty():
+                            last_error = error_queue.get()
+                            continue
+                        
+                        if not result_queue.empty():
+                            response_text = result_queue.get()
+                            break  # Success!
+                            
+                    except Exception as e:
+                        last_error = e
+                        continue
+                
+                # If all providers failed, try one more time with no provider specified (auto-select)
+                if not response_text:
+                    try:
+                        result_queue = queue.Queue()
+                        error_queue = queue.Queue()
+                        
+                        thread = threading.Thread(
+                            target=run_g4f_call,
+                            args=(model, conversation, None, stream, result_queue, error_queue),
+                            daemon=True
+                        )
+                        thread.start()
+                        thread.join(timeout=90)  # Longer timeout for final attempt
+                        
+                        if not thread.is_alive() and not error_queue.empty():
+                            raise error_queue.get()
+                        
+                        if not result_queue.empty():
+                            response_text = result_queue.get()
+                        elif thread.is_alive():
+                            raise TimeoutError("All providers timed out")
+                        else:
+                            raise last_error or Exception("All providers failed")
+                    except Exception as final_error:
+                        raise final_error
                 
                 # Format as OpenAI-compatible response
                 return {

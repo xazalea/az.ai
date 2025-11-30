@@ -41,20 +41,20 @@ export default async function handler(req) {
   // Wrap everything in try-catch to ensure we always return a response
   try {
     // Handle OPTIONS
-    if (req.method === 'OPTIONS') {
-      return new NextResponse(null, {
-        status: 200,
-        headers: {
-          'Access-Control-Allow-Origin': '*',
+  if (req.method === 'OPTIONS') {
+    return new NextResponse(null, {
+      status: 200,
+      headers: {
+        'Access-Control-Allow-Origin': '*',
           'Access-Control-Allow-Methods': 'POST, OPTIONS',
-          'Access-Control-Allow-Headers': 'Content-Type, Authorization',
-        },
-      });
-    }
+        'Access-Control-Allow-Headers': 'Content-Type, Authorization',
+      },
+    });
+  }
 
     // Only allow POST
     if (req.method !== 'POST') {
-      return NextResponse.json(
+    return NextResponse.json(
         { error: 'Method not allowed', details: 'Only POST requests are supported' },
         { status: 405, headers: { 'Access-Control-Allow-Origin': '*' } }
       );
@@ -125,18 +125,18 @@ export default async function handler(req) {
       // Special routes
       else {
         const specialRoutes = {
-          'groq': '/api/groq/v1/chat/completions',
-          'gpt-4': '/api/services/gpt4freejs/v1/chat/completions',
-          'gpt4': '/api/services/gpt4freejs/v1/chat/completions',
-          'gpt-3.5': '/api/services/gpt4freejs/v1/chat/completions',
-          'gpt3.5': '/api/services/gpt4freejs/v1/chat/completions',
-          'chatgpt': '/api/services/gpt4freejs/v1/chat/completions',
-          'gemini-multimodal': '/api/python/gemini-multimodal/v1/chat/completions',
-          'pollinations': '/api/pollinations/v1/chat/completions',
-          'webai': '/api/python/webai/v1/chat/completions',
-          'g4f': '/api/python/webai/v1/chat/completions',
-          'deepseek-free': '/api/python/deepseekfree/v1/chat/completions',
-        };
+        'groq': '/api/groq/v1/chat/completions',
+        'gpt-4': '/api/services/gpt4freejs/v1/chat/completions',
+        'gpt4': '/api/services/gpt4freejs/v1/chat/completions',
+        'gpt-3.5': '/api/services/gpt4freejs/v1/chat/completions',
+        'gpt3.5': '/api/services/gpt4freejs/v1/chat/completions',
+        'chatgpt': '/api/services/gpt4freejs/v1/chat/completions',
+        'gemini-multimodal': '/api/python/gemini-multimodal/v1/chat/completions',
+        'pollinations': '/api/pollinations/v1/chat/completions',
+        'webai': '/api/python/webai/v1/chat/completions',
+        'g4f': '/api/python/webai/v1/chat/completions',
+        'deepseek-free': '/api/python/deepseekfree/v1/chat/completions',
+      };
         targetRoute = specialRoutes[model] || '/api/python/webai/v1/chat/completions';
       }
     } catch (routeError) {
@@ -144,26 +144,54 @@ export default async function handler(req) {
       // Continue with default route
     }
 
-    // Create timeout
+    // Create timeout - increased to 3 minutes for slow models
     const controller = new AbortController();
     const timeoutId = setTimeout(() => {
       controller.abort();
-    }, 120000); // 2 minute timeout
+    }, 180000); // 3 minute timeout (increased from 2 minutes)
 
     try {
-      // Forward request to target route
+      // Forward request to target route with retry logic
       const targetUrl = new URL(targetRoute, url.origin);
       
       console.log(`[API] Routing model "${model}" to ${targetRoute}`);
       
-      const response = await fetch(targetUrl.toString(), {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(body),
-        signal: controller.signal,
-      });
+      let response;
+      let lastError;
+      const maxRetries = 3;
+      
+      // Retry logic for failed requests
+      for (let attempt = 0; attempt < maxRetries; attempt++) {
+        try {
+          response = await fetch(targetUrl.toString(), {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(body),
+            signal: controller.signal,
+          });
+          
+          // If we got a response (even if not OK), break retry loop
+          break;
+        } catch (fetchErr) {
+          lastError = fetchErr;
+          // If it's an abort error, don't retry
+          if (fetchErr.name === 'AbortError') {
+            throw fetchErr;
+          }
+          // Wait a bit before retrying (exponential backoff)
+          if (attempt < maxRetries - 1) {
+            await new Promise(resolve => setTimeout(resolve, 1000 * (attempt + 1)));
+            console.log(`[API] Retry attempt ${attempt + 1} for model: ${model}`);
+          }
+        }
+      }
+      
+      // If all retries failed, throw the last error
+      if (!response) {
+        throw lastError || new Error('Failed to fetch after retries');
+      }
 
       clearTimeout(timeoutId);
 
@@ -227,12 +255,12 @@ export default async function handler(req) {
       }
 
       // Return successful response
-      return NextResponse.json(responseData, {
+    return NextResponse.json(responseData, {
         status: response.status || 200,
-        headers: {
-          'Access-Control-Allow-Origin': '*',
-        },
-      });
+      headers: {
+        'Access-Control-Allow-Origin': '*',
+      },
+    });
 
     } catch (fetchError) {
       clearTimeout(timeoutId);
@@ -243,7 +271,7 @@ export default async function handler(req) {
         return NextResponse.json(
           { 
             error: 'Request timeout', 
-            details: 'The request took too long to complete (over 2 minutes). Please try again with a different model.',
+            details: 'The request took too long to complete (over 3 minutes). Please try again with a different model.',
             model: model,
             route: targetRoute
           },

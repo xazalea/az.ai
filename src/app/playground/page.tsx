@@ -177,11 +177,11 @@ function PlaygroundContent() {
 
         thoughtStartTime = Date.now();
         
-        // Add timeout to prevent infinite loading
+        // Add timeout to prevent infinite loading - match server timeout
         const controller = new AbortController();
         const timeoutId = setTimeout(() => {
           controller.abort();
-        }, 120000); // 2 minute timeout
+        }, 180000); // 3 minute timeout (matches server)
         
         try {
           const res = await fetch('/api/unified/v1/chat/completions', {
@@ -254,7 +254,7 @@ function PlaygroundContent() {
         
         if (error instanceof Error) {
           if (error.name === 'AbortError' || error.message.includes('timed out') || error.message.includes('aborted')) {
-            errorMessage = 'Request timed out after 2 minutes. Please try a different model or simplify your request.';
+            errorMessage = 'Request timed out after 3 minutes. Please try a different model or simplify your request.';
           } else if (error.message.includes('500') || error.message.includes('Internal Server Error')) {
             errorMessage = 'Server error. Please try again or select a different model.';
           } else if (error.message.includes('404') || error.message.includes('Not Found')) {
