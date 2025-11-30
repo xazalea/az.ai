@@ -74,7 +74,16 @@ export default async function handler(req) {
         );
       }
 
-      model = body.model.toLowerCase();
+      // Strip "openrouter:" prefix for routing decisions, but keep original for API calls
+      let modelId = body.model;
+      const originalModelId = modelId; // Keep original for downstream API
+      if (typeof modelId === 'string' && modelId.startsWith('openrouter:')) {
+        modelId = modelId.replace('openrouter:', '');
+      }
+      model = modelId.toLowerCase();
+      
+      // Keep original model ID in body for downstream APIs (they may need the prefix)
+      // But use cleaned version for routing decisions
     } catch (parseError) {
       return NextResponse.json(
         { error: 'Bad request', details: 'Invalid JSON in request body', message: parseError.message },

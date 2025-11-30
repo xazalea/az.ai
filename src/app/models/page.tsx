@@ -179,7 +179,29 @@ export default function ModelsPage() {
         // Add ALL G4F models (only skip if exact ID duplicate)
         (G4F_MODEL_LIST as Model[]).forEach(model => {
           if (!modelIdSet.has(model.id)) {
-            allModels.push(model);
+            // Clean up model - remove "via g4f" from description and clean up openrouter: names
+            let displayName = model.name;
+            let displayId = model.id;
+            
+            // If model ID has openrouter: prefix, clean it for display
+            if (model.id.startsWith('openrouter:')) {
+              const cleanId = model.id.replace('openrouter:', '');
+              // Extract just the model name part (after last /)
+              const parts = cleanId.split('/');
+              const modelName = parts[parts.length - 1];
+              displayName = modelName
+                .replace(/-/g, ' ')
+                .replace(/_/g, ' ')
+                .replace(/\b\w/g, l => l.toUpperCase());
+              // Keep original ID for API, but show clean name
+            }
+            
+            const cleanModel = {
+              ...model,
+              name: displayName,
+              description: model.description || displayName,
+            };
+            allModels.push(cleanModel);
             modelIdSet.add(model.id);
           }
         });

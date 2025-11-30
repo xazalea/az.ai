@@ -7,9 +7,27 @@ const g4fModelsPath = path.join(__dirname, '../src/lib/g4f-models.ts');
 const g4fContent = fs.readFileSync(g4fModelsPath, 'utf8');
 
 // Extract model IDs from G4F_MODELS array
-const modelMatches = g4fContent.match(/['"]([^'"]+)['"]/g);
+// Match strings that are in the array, excluding import statements and comments
+const arrayContent = g4fContent.match(/export const G4F_MODELS = \[([\s\S]*?)\];/);
+if (!arrayContent) {
+  console.error('Could not find G4F_MODELS array');
+  process.exit(1);
+}
+
+// Extract model IDs from the array content
+const modelMatches = arrayContent[1].match(/['"]([^'"]+)['"]/g);
 const modelIds = modelMatches
-  ? modelMatches.map(m => m.replace(/['"]/g, ''))
+  ? modelMatches
+      .map(m => m.replace(/['"]/g, ''))
+      .filter(id => {
+        // Filter out non-model strings (imports, comments, etc.)
+        return !id.startsWith('.') && 
+               !id.startsWith('/') && 
+               !id.includes('import') &&
+               !id.includes('export') &&
+               id.length > 0 &&
+               id !== 'g4f';
+      })
   : [];
 
 // Filter models - include most, but exclude specific non-chat types
@@ -68,60 +86,121 @@ const g4fChatModels = modelIds.filter(id => {
 
 // Generate model objects
 const models = g4fChatModels.map(id => {
-  const name = id
-    .split('-')
-    .map(word => word.charAt(0).toUpperCase() + word.slice(1))
-    .join(' ')
-    .replace(/\bGpt\b/g, 'GPT')
-    .replace(/\bLlama\b/g, 'Llama')
-    .replace(/\bGemini\b/g, 'Gemini')
-    .replace(/\bClaude\b/g, 'Claude')
-    .replace(/\bMistral\b/g, 'Mistral')
-    .replace(/\bGrok\b/g, 'Grok')
-    .replace(/\bQwen\b/g, 'Qwen')
-    .replace(/\bDeepseek\b/g, 'DeepSeek')
-    .replace(/\bGlm\b/g, 'GLM')
-    .replace(/\bKimi\b/g, 'Kimi')
-    .replace(/\bPhi\b/g, 'Phi')
-    .replace(/\bYi\b/g, 'Yi')
-    .replace(/\bO\b/g, 'O')
-    .replace(/\bNova\b/g, 'Nova')
-    .replace(/\bHermes\b/g, 'Hermes')
-    .replace(/\bCommand\b/g, 'Command')
-    .replace(/\bPixtral\b/g, 'Pixtral')
-    .replace(/\bMixtral\b/g, 'Mixtral')
-    .replace(/\bGemma\b/g, 'Gemma')
-    .replace(/\bNemotron\b/g, 'Nemotron')
-    .replace(/\bCogito\b/g, 'Cogito')
-    .replace(/\bSeed\b/g, 'Seed')
-    .replace(/\bRing\b/g, 'Ring')
-    .replace(/\bLing\b/g, 'Ling')
-    .replace(/\bErnie\b/g, 'ERNIE')
-    .replace(/\bSonar\b/g, 'Sonar')
-    .replace(/\bGoliath\b/g, 'Goliath')
-    .replace(/\bSd\b/g, 'SD')
-    .replace(/\bCliptagger\b/g, 'Cliptagger')
-    .replace(/\bOpenchat\b/g, 'OpenChat')
-    .replace(/\bMeowgpt\b/g, 'MeowGPT')
-    .replace(/\bChar\b/g, 'Char')
-    .replace(/\bNano\b/g, 'Nano')
-    .replace(/\bBanana\b/g, 'Banana')
-    .replace(/\bLucid\b/g, 'Lucid')
-    .replace(/\bOrigin\b/g, 'Origin')
-    .replace(/\bCogvideox\b/g, 'CogVideoX')
-    .replace(/\bBidara\b/g, 'Bidara')
-    .replace(/\bChickytutor\b/g, 'ChickyTutor')
-    .replace(/\bEvil\b/g, 'Evil')
-    .replace(/\bMidijourney\b/g, 'Midijourney')
-    .replace(/\bRtist\b/g, 'Rtist')
-    .replace(/\bUnity\b/g, 'Unity')
-    .replace(/\bSearchgpt\b/g, 'SearchGPT')
-    .replace(/\bLlama\b/g, 'Llama')
-    .replace(/\bRoblox\b/g, 'Roblox');
+  // Strip "openrouter:" prefix from ID but keep it for internal use
+  const cleanId = id.startsWith('openrouter:') ? id.replace('openrouter:', '') : id;
+  const displayId = cleanId; // Use clean ID for display
+  
+  // Handle model names with slashes (provider/model format)
+  let name;
+  if (cleanId.includes('/')) {
+    const parts = cleanId.split('/');
+    const modelName = parts[parts.length - 1]; // Get last part (just the model name)
+    name = modelName
+      .split('-')
+      .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+      .join(' ')
+      .replace(/\bGpt\b/g, 'GPT')
+      .replace(/\bLlama\b/g, 'Llama')
+      .replace(/\bGemini\b/g, 'Gemini')
+      .replace(/\bClaude\b/g, 'Claude')
+      .replace(/\bMistral\b/g, 'Mistral')
+      .replace(/\bGrok\b/g, 'Grok')
+      .replace(/\bQwen\b/g, 'Qwen')
+      .replace(/\bDeepseek\b/g, 'DeepSeek')
+      .replace(/\bGlm\b/g, 'GLM')
+      .replace(/\bKimi\b/g, 'Kimi')
+      .replace(/\bPhi\b/g, 'Phi')
+      .replace(/\bYi\b/g, 'Yi')
+      .replace(/\bO\b/g, 'O')
+      .replace(/\bNova\b/g, 'Nova')
+      .replace(/\bHermes\b/g, 'Hermes')
+      .replace(/\bCommand\b/g, 'Command')
+      .replace(/\bPixtral\b/g, 'Pixtral')
+      .replace(/\bMixtral\b/g, 'Mixtral')
+      .replace(/\bGemma\b/g, 'Gemma')
+      .replace(/\bNemotron\b/g, 'Nemotron')
+      .replace(/\bCogito\b/g, 'Cogito')
+      .replace(/\bSeed\b/g, 'Seed')
+      .replace(/\bRing\b/g, 'Ring')
+      .replace(/\bLing\b/g, 'Ling')
+      .replace(/\bErnie\b/g, 'ERNIE')
+      .replace(/\bSonar\b/g, 'Sonar')
+      .replace(/\bGoliath\b/g, 'Goliath')
+      .replace(/\bSd\b/g, 'SD')
+      .replace(/\bCliptagger\b/g, 'Cliptagger')
+      .replace(/\bOpenchat\b/g, 'OpenChat')
+      .replace(/\bMeowgpt\b/g, 'MeowGPT')
+      .replace(/\bChar\b/g, 'Char')
+      .replace(/\bNano\b/g, 'Nano')
+      .replace(/\bBanana\b/g, 'Banana')
+      .replace(/\bLucid\b/g, 'Lucid')
+      .replace(/\bOrigin\b/g, 'Origin')
+      .replace(/\bCogvideox\b/g, 'CogVideoX')
+      .replace(/\bBidara\b/g, 'Bidara')
+      .replace(/\bChickytutor\b/g, 'ChickyTutor')
+      .replace(/\bEvil\b/g, 'Evil')
+      .replace(/\bMidijourney\b/g, 'Midijourney')
+      .replace(/\bRtist\b/g, 'Rtist')
+      .replace(/\bUnity\b/g, 'Unity')
+      .replace(/\bSearchgpt\b/g, 'SearchGPT')
+      .replace(/\bLlama\b/g, 'Llama')
+      .replace(/\bRoblox\b/g, 'Roblox');
+  } else {
+    name = cleanId
+      .split('-')
+      .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+      .join(' ')
+      .replace(/\bGpt\b/g, 'GPT')
+      .replace(/\bLlama\b/g, 'Llama')
+      .replace(/\bGemini\b/g, 'Gemini')
+      .replace(/\bClaude\b/g, 'Claude')
+      .replace(/\bMistral\b/g, 'Mistral')
+      .replace(/\bGrok\b/g, 'Grok')
+      .replace(/\bQwen\b/g, 'Qwen')
+      .replace(/\bDeepseek\b/g, 'DeepSeek')
+      .replace(/\bGlm\b/g, 'GLM')
+      .replace(/\bKimi\b/g, 'Kimi')
+      .replace(/\bPhi\b/g, 'Phi')
+      .replace(/\bYi\b/g, 'Yi')
+      .replace(/\bO\b/g, 'O')
+      .replace(/\bNova\b/g, 'Nova')
+      .replace(/\bHermes\b/g, 'Hermes')
+      .replace(/\bCommand\b/g, 'Command')
+      .replace(/\bPixtral\b/g, 'Pixtral')
+      .replace(/\bMixtral\b/g, 'Mixtral')
+      .replace(/\bGemma\b/g, 'Gemma')
+      .replace(/\bNemotron\b/g, 'Nemotron')
+      .replace(/\bCogito\b/g, 'Cogito')
+      .replace(/\bSeed\b/g, 'Seed')
+      .replace(/\bRing\b/g, 'Ring')
+      .replace(/\bLing\b/g, 'Ling')
+      .replace(/\bErnie\b/g, 'ERNIE')
+      .replace(/\bSonar\b/g, 'Sonar')
+      .replace(/\bGoliath\b/g, 'Goliath')
+      .replace(/\bSd\b/g, 'SD')
+      .replace(/\bCliptagger\b/g, 'Cliptagger')
+      .replace(/\bOpenchat\b/g, 'OpenChat')
+      .replace(/\bMeowgpt\b/g, 'MeowGPT')
+      .replace(/\bChar\b/g, 'Char')
+      .replace(/\bNano\b/g, 'Nano')
+      .replace(/\bBanana\b/g, 'Banana')
+      .replace(/\bLucid\b/g, 'Lucid')
+      .replace(/\bOrigin\b/g, 'Origin')
+      .replace(/\bCogvideox\b/g, 'CogVideoX')
+      .replace(/\bBidara\b/g, 'Bidara')
+      .replace(/\bChickytutor\b/g, 'ChickyTutor')
+      .replace(/\bEvil\b/g, 'Evil')
+      .replace(/\bMidijourney\b/g, 'Midijourney')
+      .replace(/\bRtist\b/g, 'Rtist')
+      .replace(/\bUnity\b/g, 'Unity')
+      .replace(/\bSearchgpt\b/g, 'SearchGPT')
+      .replace(/\bLlama\b/g, 'Llama')
+      .replace(/\bRoblox\b/g, 'Roblox');
+  }
   
   // Determine provider
   let provider = 'g4f';
-  const lowerId = id.toLowerCase();
+  const lowerId = cleanId.toLowerCase();
   if (lowerId.includes('gpt') || lowerId.includes('o1') || lowerId.includes('o3') || lowerId.includes('o4')) {
     provider = 'OpenAI';
   } else if (lowerId.includes('claude')) {
@@ -174,9 +253,9 @@ const models = g4fChatModels.map(id => {
   }
   
   return {
-    id: id,
+    id: id, // Keep original ID with openrouter: prefix for API routing
     name: name,
-    description: `${name} via g4f`,
+    description: name, // Remove "via g4f" - just use the model name
     type: 'chat',
     provider: provider,
     speed: speed,
