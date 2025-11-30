@@ -179,7 +179,9 @@ function PlaygroundContent() {
         
         // Add timeout to prevent infinite loading
         const controller = new AbortController();
-        const timeoutId = setTimeout(() => controller.abort(), 120000); // 2 minute timeout
+        const timeoutId = setTimeout(() => {
+          controller.abort();
+        }, 120000); // 2 minute timeout
         
         try {
           const res = await fetch('/api/unified/v1/chat/completions', {
@@ -236,23 +238,31 @@ function PlaygroundContent() {
           }]);
         } catch (fetchError) {
           clearTimeout(timeoutId);
+          // Re-throw with better error message for AbortError
+          if (fetchError instanceof Error && fetchError.name === 'AbortError') {
+            throw new Error('Request timed out after 2 minutes. Please try a different model or simplify your request.');
+          }
           throw fetchError;
         }
       } catch (error) {
-        console.error('Chat error:', error);
+        // Only log non-AbortError errors to console (AbortError is expected for timeouts)
+        if (!(error instanceof Error && error.name === 'AbortError')) {
+          console.error('Chat error:', error);
+        }
+        
         let errorMessage = 'Failed to fetch response';
         
         if (error instanceof Error) {
-          if (error.name === 'AbortError') {
-            errorMessage = 'Request timed out. Please try again with a different model.';
-          } else if (error.message.includes('timeout')) {
-            errorMessage = 'Request timed out. The model took too long to respond.';
+          if (error.name === 'AbortError' || error.message.includes('timed out') || error.message.includes('aborted')) {
+            errorMessage = 'Request timed out after 2 minutes. Please try a different model or simplify your request.';
           } else if (error.message.includes('500') || error.message.includes('Internal Server Error')) {
             errorMessage = 'Server error. Please try again or select a different model.';
           } else if (error.message.includes('404') || error.message.includes('Not Found')) {
             errorMessage = 'Model not found. Please select a different model.';
           } else if (error.message.includes('403')) {
             errorMessage = 'Access denied. This model may not be available.';
+          } else if (error.message.includes('504') || error.message.includes('Gateway Timeout')) {
+            errorMessage = 'Request timed out. The server took too long to respond.';
           } else {
             errorMessage = error.message || 'An error occurred. Please try again.';
           }
