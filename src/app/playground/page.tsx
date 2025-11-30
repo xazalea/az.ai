@@ -9,6 +9,7 @@ import { PROVIDER_GROUPS, getProviderGroupsByType, type Model } from '@/lib/mode
 import Image from 'next/image';
 import Link from 'next/link';
 import { KeyboardShortcuts } from '@/components/KeyboardShortcuts';
+import { ToastContainer, useToast } from '@/components/Toast';
 
 function PlaygroundContent() {
   const searchParams = useSearchParams();
@@ -25,10 +26,10 @@ function PlaygroundContent() {
   const [showSettings, setShowSettings] = useState(false);
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [showModelInfo, setShowModelInfo] = useState(false);
-  const [sortBy, setSortBy] = useState<'provider' | 'name' | 'speed'>('provider');
-  const [filterProvider, setFilterProvider] = useState<string>('all');
+  const [sortBy, setSortBy] = useState<'name' | 'speed'>('name');
   const scrollRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
+  const { toasts, showError, showSuccess, removeToast } = useToast();
 
   useEffect(() => {
     if (scrollRef.current) {
@@ -110,18 +111,10 @@ function PlaygroundContent() {
       });
     }
     
-    // Filter by provider if selected
-    if (filterProvider !== 'all') {
-      sortedModels = sortedModels.filter(m => m.provider.toLowerCase() === filterProvider.toLowerCase());
-    }
-    
     return { ...group, models: sortedModels };
   }).filter(group => group.models.length > 0);
   
   const selectedModelInfo = sortedProviderGroups.flatMap(g => g.models).find(m => m.id === selectedModel);
-  
-  // Get unique providers for filter
-  const uniqueProviders = Array.from(new Set(providerGroups.flatMap(g => g.models.map(m => m.provider))));
 
   const handleSend = async () => {
     if (!input.trim() || isLoading) return;
@@ -226,11 +219,25 @@ function PlaygroundContent() {
         }
       } catch (error) {
         console.error('Chat error:', error);
-        const errorMessage = error instanceof Error 
-          ? (error.name === 'AbortError' 
-              ? 'Request timed out. Please try again.' 
-              : error.message)
-          : 'Failed to fetch response';
+        let errorMessage = 'Failed to fetch response';
+        
+        if (error instanceof Error) {
+          if (error.name === 'AbortError') {
+            errorMessage = 'Request timed out. Please try again with a different model.';
+          } else if (error.message.includes('timeout')) {
+            errorMessage = 'Request timed out. The model took too long to respond.';
+          } else if (error.message.includes('500') || error.message.includes('Internal Server Error')) {
+            errorMessage = 'Server error. Please try again or select a different model.';
+          } else if (error.message.includes('404') || error.message.includes('Not Found')) {
+            errorMessage = 'Model not found. Please select a different model.';
+          } else if (error.message.includes('403')) {
+            errorMessage = 'Access denied. This model may not be available.';
+          } else {
+            errorMessage = error.message || 'An error occurred. Please try again.';
+          }
+        }
+        
+        showError(errorMessage, 8000);
         setMessages(prev => [...prev, { 
           role: 'assistant', 
           content: `Error: ${errorMessage}`,
@@ -269,7 +276,12 @@ function PlaygroundContent() {
 
       } catch (error) {
         console.error('Image generation error:', error);
-        alert(`Failed to generate image: ${error instanceof Error ? error.message : 'Unknown error'}`);
+        const errorMessage = error instanceof Error 
+          ? (error.message.includes('timeout') 
+              ? 'Image generation timed out. Please try again.' 
+              : error.message)
+          : 'Failed to generate image';
+        showError(errorMessage, 8000);
       } finally {
         setIsLoading(false);
       }
@@ -301,7 +313,12 @@ function PlaygroundContent() {
 
       } catch (error) {
         console.error('Video generation error:', error);
-        alert(`Failed to generate video: ${error instanceof Error ? error.message : 'Unknown error'}`);
+        const errorMessage = error instanceof Error 
+          ? (error.message.includes('timeout') 
+              ? 'Video generation timed out. Please try again.' 
+              : error.message)
+          : 'Failed to generate video';
+        showError(errorMessage, 8000);
       } finally {
         setIsLoading(false);
       }
@@ -406,6 +423,9 @@ function PlaygroundContent() {
         </div>
       </header>
 
+      {/* Toast Notifications */}
+      <ToastContainer toasts={toasts} onRemove={removeToast} />
+
       {/* Main Content */}
       <main className="flex-1 w-full px-4 py-6 flex gap-6 relative">
         
@@ -418,60 +438,49 @@ function PlaygroundContent() {
               exit={{ x: -300, opacity: 0 }}
               transition={{ duration: 0.2 }}
               className={cn(
-                "w-64 flex-shrink-0 space-y-4 overflow-y-auto max-h-[calc(100vh-8rem)]",
+                "w-56 flex-shrink-0 space-y-2 overflow-y-auto max-h-[calc(100vh-8rem)]",
                 "md:block",
                 !sidebarOpen && "hidden md:block",
-                "bg-[#424658] p-4 rounded-2xl border border-[#6C739C]/30"
+                "bg-[#424658] p-3 rounded-xl border border-[#6C739C]/30"
               )}
             >
-              <div className="space-y-2">
-                <div className="flex items-center justify-between">
-                  <label className="text-xs font-semibold text-[#BABBB1] uppercase tracking-wider flex items-center gap-2">
+              <div className="space-y-1.5">
+                <div className="flex items-center justify-between mb-2">
+                  <label className="text-[10px] font-semibold text-[#BABBB1] uppercase tracking-wider flex items-center gap-1.5">
                     <Zap className="w-3 h-3 text-[#D9A69F]" />
-                    Models
+                    Model Providers
                   </label>
                   <button
                     onClick={() => setSidebarOpen(false)}
-                    className="md:hidden p-1 rounded-lg hover:bg-[#424658]/80"
+                    className="md:hidden p-1 rounded hover:bg-[#424658]/80"
                   >
-                    <X className="w-4 h-4 text-[#BABBB1]" />
+                    <X className="w-3.5 h-3.5 text-[#BABBB1]" />
                   </button>
                 </div>
                 
-                {/* Sort and Filter */}
-                <div className="flex gap-2 mb-4">
+                {/* Sort */}
+                <div className="mb-2">
                   <select
                     value={sortBy}
-                    onChange={(e) => setSortBy(e.target.value as 'provider' | 'name' | 'speed')}
-                    className="flex-1 p-2 rounded-lg bg-[#424658] text-[#F0DAD5] text-xs border border-[#6C739C]/40 focus:outline-none focus:ring-1 focus:ring-[#6C739C]"
+                    onChange={(e) => setSortBy(e.target.value as 'name' | 'speed')}
+                    className="w-full p-1.5 rounded-lg bg-[#1a1a1a] text-[#F0DAD5] text-[11px] border border-[#6C739C]/40 focus:outline-none focus:ring-1 focus:ring-[#6C739C]"
                   >
-                    <option value="provider">Sort by Provider</option>
                     <option value="name">Sort by Name</option>
                     <option value="speed">Sort by Speed</option>
                   </select>
-                  <select
-                    value={filterProvider}
-                    onChange={(e) => setFilterProvider(e.target.value)}
-                    className="flex-1 p-2 rounded-lg bg-[#424658] text-[#F0DAD5] text-xs border border-[#6C739C]/40 focus:outline-none focus:ring-1 focus:ring-[#6C739C]"
-                  >
-                    <option value="all">All Providers</option>
-                    {uniqueProviders.map(provider => (
-                      <option key={provider} value={provider.toLowerCase()}>{provider}</option>
-                    ))}
-                  </select>
                 </div>
                 
-                <div className="space-y-1">
+                <div className="space-y-0.5">
                   {sortedProviderGroups.map(group => {
                     const isExpanded = expandedProviders.has(group.id);
                     return (
-                      <div key={group.id} className="border border-[#6C739C]/30 rounded-xl overflow-hidden bg-[#1a1a1a]">
+                      <div key={group.id} className="border border-[#6C739C]/30 rounded-lg overflow-hidden bg-[#1a1a1a]">
                         <button
                           onClick={() => toggleProvider(group.id)}
-                          className="w-full text-left px-4 py-3 hover:bg-[#424658] transition-all flex items-center justify-between text-sm font-semibold text-[#F0DAD5] rounded-xl"
+                          className="w-full text-left px-2.5 py-1.5 hover:bg-[#424658] transition-all flex items-center justify-between text-xs font-semibold text-[#F0DAD5] rounded-lg"
                         >
-                          <span>{group.name}</span>
-                          {isExpanded ? <ChevronDown className="w-4 h-4 text-[#BABBB1]" /> : <ChevronRight className="w-4 h-4 text-[#BABBB1]" />}
+                          <span className="truncate">{group.name}</span>
+                          {isExpanded ? <ChevronDown className="w-3 h-3 text-[#BABBB1] flex-shrink-0 ml-1" /> : <ChevronRight className="w-3 h-3 text-[#BABBB1] flex-shrink-0 ml-1" />}
                         </button>
                         <AnimatePresence>
                           {isExpanded && (
@@ -482,7 +491,7 @@ function PlaygroundContent() {
                               transition={{ duration: 0.2 }}
                               className="overflow-hidden"
                             >
-                              <div className="p-1 space-y-1">
+                              <div className="p-0.5 space-y-0.5">
                                 {group.models.map(model => (
                                   <button
                                     key={model.id}
@@ -495,19 +504,18 @@ function PlaygroundContent() {
                                       }
                                     }}
                                     className={cn(
-                                      "w-full text-left px-4 py-3 rounded-lg text-sm transition-all group",
+                                      "w-full text-left px-2.5 py-1.5 rounded text-xs transition-all group",
                                       selectedModel === model.id 
                                         ? "bg-[#6C739C] text-[#F0DAD5] font-semibold" 
                                         : "text-[#BABBB1] hover:text-[#F0DAD5] hover:bg-[#424658]"
                                     )}
                                   >
-                                    <div className="font-medium flex items-center justify-between">
-                                      <span>{model.name}</span>
+                                    <div className="font-medium flex items-center justify-between gap-1">
+                                      <span className="truncate">{model.name}</span>
                                       {model.speed === 'fast' && (
-                                        <Zap className="w-3 h-3 text-[#D9A69F] opacity-70" />
+                                        <Zap className="w-2.5 h-2.5 text-[#D9A69F] opacity-70 flex-shrink-0" />
                                       )}
                                     </div>
-                                    <div className="text-xs opacity-70 truncate mt-0.5">{model.description}</div>
                                   </button>
                                 ))}
                               </div>
@@ -521,16 +529,16 @@ function PlaygroundContent() {
               </div>
               
               {/* Settings Panel */}
-              <div className="space-y-3">
+              <div className="space-y-1.5 mt-2">
                     <button
                         onClick={() => setShowSettings(!showSettings)}
-                        className="w-full px-4 py-3 rounded-2xl bg-[#424658] border border-[#6C739C]/30 hover:bg-[#424658]/80 flex items-center justify-between text-sm font-semibold text-[#F0DAD5] transition-all"
+                        className="w-full px-2.5 py-1.5 rounded-lg bg-[#1a1a1a] border border-[#6C739C]/30 hover:bg-[#424658]/80 flex items-center justify-between text-xs font-semibold text-[#F0DAD5] transition-all"
                     >
-                        <div className="flex items-center gap-2">
-                            <Settings className="w-4 h-4 text-[#D9A69F]" />
+                        <div className="flex items-center gap-1.5">
+                            <Settings className="w-3 h-3 text-[#D9A69F]" />
                             <span>Settings</span>
                         </div>
-                        {showSettings ? <ChevronDown className="w-4 h-4 text-[#BABBB1]" /> : <ChevronRight className="w-4 h-4 text-[#BABBB1]" />}
+                        {showSettings ? <ChevronDown className="w-3 h-3 text-[#BABBB1]" /> : <ChevronRight className="w-3 h-3 text-[#BABBB1]" />}
                     </button>
                 
                 <AnimatePresence>
@@ -543,24 +551,24 @@ function PlaygroundContent() {
                     >
                       <div className="p-4 rounded-2xl bg-[#424658] border border-[#6C739C]/30 space-y-4">
                         <div className="flex items-center justify-between">
-                          <div className="flex items-center gap-2">
-                            <Brain className="w-4 h-4 text-[#D9A69F]" />
+                          <div className="flex items-center gap-1.5">
+                            <Brain className="w-3 h-3 text-[#D9A69F]" />
                             <div>
-                              <div className="text-sm font-medium text-[#F0DAD5]">Reasoning</div>
-                              <div className="text-xs text-[#BABBB1]">Always enabled</div>
+                              <div className="text-xs font-medium text-[#F0DAD5]">Reasoning</div>
+                              <div className="text-[10px] text-[#BABBB1]">Always enabled</div>
                             </div>
                           </div>
-                          <div className="px-2 py-1 rounded bg-[#6C739C] border border-[#6C739C]/50 text-xs text-[#F0DAD5] font-medium">
+                          <div className="px-1.5 py-0.5 rounded bg-[#6C739C] border border-[#6C739C]/50 text-[10px] text-[#F0DAD5] font-medium">
                             On
                           </div>
                         </div>
                         
                         <div className="flex items-center justify-between">
-                          <div className="flex items-center gap-2">
-                            <Database className="w-4 h-4 text-[#D9A69F]" />
+                          <div className="flex items-center gap-1.5">
+                            <Database className="w-3 h-3 text-[#D9A69F]" />
                             <div>
-                              <div className="text-sm font-medium text-[#F0DAD5]">Memory</div>
-                              <div className="text-xs text-[#BABBB1]">Session-based</div>
+                              <div className="text-xs font-medium text-[#F0DAD5]">Memory</div>
+                              <div className="text-[10px] text-[#BABBB1]">Session-based</div>
                             </div>
                           </div>
                           <button
