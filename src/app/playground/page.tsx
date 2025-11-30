@@ -6,6 +6,7 @@ import { Send, Image as ImageIcon, MessageSquare, Loader2, Sparkles, Command, Te
 import { motion, AnimatePresence } from 'framer-motion';
 import { cn } from '@/lib/utils';
 import { PROVIDER_GROUPS, getProviderGroupsByType, type Model } from '@/lib/models';
+import { ProviderIcon } from '@/lib/provider-icons';
 import Image from 'next/image';
 import Link from 'next/link';
 import { KeyboardShortcuts } from '@/components/KeyboardShortcuts';
@@ -97,22 +98,42 @@ function PlaygroundContent() {
 
   const providerGroups = getProviderGroupsByType(mode);
   
-  // Sort and filter models
-  const sortedProviderGroups = providerGroups.map(group => {
-    let sortedModels = [...group.models];
-    
-    if (sortBy === 'name') {
-      sortedModels.sort((a, b) => a.name.localeCompare(b.name));
-    } else if (sortBy === 'speed') {
-      sortedModels.sort((a, b) => {
-        const aSpeed = a.speed === 'fast' ? 3 : a.speed === 'medium' ? 2 : 1;
-        const bSpeed = b.speed === 'fast' ? 3 : b.speed === 'medium' ? 2 : 1;
-        return bSpeed - aSpeed;
+  // Sort and filter models - filter out g4f provider and clean provider names
+  const sortedProviderGroups = providerGroups
+    .map(group => {
+      // Filter out models with "g4f" as provider and clean provider names
+      let filteredModels = group.models.filter(model => {
+        const providerLower = (model.provider || '').toLowerCase();
+        return providerLower !== 'g4f' && providerLower !== 'g4f models';
       });
-    }
-    
-    return { ...group, models: sortedModels };
-  }).filter(group => group.models.length > 0);
+      
+      // Clean provider names - remove "via g4f" and similar
+      filteredModels = filteredModels.map(model => ({
+        ...model,
+        provider: model.provider?.replace(/\s+via\s+g4f/i, '').replace(/\s+via\s+deepinfra/i, '') || model.provider
+      }));
+      
+      let sortedModels = [...filteredModels];
+      
+      if (sortBy === 'name') {
+        sortedModels.sort((a, b) => a.name.localeCompare(b.name));
+      } else if (sortBy === 'speed') {
+        sortedModels.sort((a, b) => {
+          const aSpeed = a.speed === 'fast' ? 3 : a.speed === 'medium' ? 2 : 1;
+          const bSpeed = b.speed === 'fast' ? 3 : b.speed === 'medium' ? 2 : 1;
+          return bSpeed - aSpeed;
+        });
+      }
+      
+      return { ...group, models: sortedModels };
+    })
+    .filter(group => {
+      // Filter out groups with "g4f" in name and empty groups
+      const nameLower = group.name.toLowerCase();
+      return group.models.length > 0 && 
+             !nameLower.includes('g4f') && 
+             nameLower !== 'g4f';
+    });
   
   const selectedModelInfo = sortedProviderGroups.flatMap(g => g.models).find(m => m.id === selectedModel);
 
@@ -246,7 +267,7 @@ function PlaygroundContent() {
           timing: { totalTime: (Date.now() - startTime) / 1000 },
         }]);
       } finally {
-        setIsLoading(false);
+        setIsLoading(false); // Always clear loading state
       }
     } else if (mode === 'image') {
       try {
@@ -477,10 +498,13 @@ function PlaygroundContent() {
                       <div key={group.id} className="border border-[#6C739C]/30 rounded-lg overflow-hidden bg-[#1a1a1a]">
                         <button
                           onClick={() => toggleProvider(group.id)}
-                          className="w-full text-left px-2.5 py-1.5 hover:bg-[#424658] transition-all flex items-center justify-between text-xs font-semibold text-[#F0DAD5] rounded-lg"
+                          className="w-full text-left px-2.5 py-1.5 hover:bg-[#424658] transition-all flex items-center justify-between text-xs font-semibold text-[#F0DAD5] rounded-lg gap-2"
                         >
-                          <span className="truncate">{group.name}</span>
-                          {isExpanded ? <ChevronDown className="w-3 h-3 text-[#BABBB1] flex-shrink-0 ml-1" /> : <ChevronRight className="w-3 h-3 text-[#BABBB1] flex-shrink-0 ml-1" />}
+                          <div className="flex items-center gap-1.5 min-w-0 flex-1">
+                            <ProviderIcon provider={group.name} className="w-3.5 h-3.5 text-[#D9A69F] flex-shrink-0" />
+                            <span className="truncate">{group.name}</span>
+                          </div>
+                          {isExpanded ? <ChevronDown className="w-3 h-3 text-[#BABBB1] flex-shrink-0" /> : <ChevronRight className="w-3 h-3 text-[#BABBB1] flex-shrink-0" />}
                         </button>
                         <AnimatePresence>
                           {isExpanded && (
