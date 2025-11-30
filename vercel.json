@@ -2,6 +2,11 @@
   "buildCommand": "bash vercel-build.sh",
   "installCommand": "npm install --legacy-peer-deps",
   "framework": "nextjs",
+  "functions": {
+    "api/python/[...path].py": {
+      "maxDuration": 30
+    }
+  },
   "rewrites": [
     { "source": "/v1/chat/completions", "destination": "/api/unified/v1/chat/completions" },
     { "source": "/v1/images/generations", "destination": "/api/unified/v1/images/generations" },

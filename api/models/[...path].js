@@ -88,7 +88,7 @@ export default async function handler(req) {
       if (packageName.includes('qwen') || packageName.includes('deepseek') || packageName.includes('glm')) {
         console.log(`[API] Package ${packageName} failed, falling back to webai`);
         try {
-          const fallbackUrl = new URL('/api/webai/v1/chat/completions', url.origin);
+          const fallbackUrl = new URL('/api/python/webai/v1/chat/completions', url.origin);
           const fallbackResponse = await fetch(fallbackUrl.toString(), {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
