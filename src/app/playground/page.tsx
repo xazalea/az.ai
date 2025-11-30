@@ -98,8 +98,9 @@ function PlaygroundContent() {
 
   const providerGroups = getProviderGroupsByType(mode);
   
-  // Sort and filter models - filter out g4f provider and clean provider names
-  const sortedProviderGroups = providerGroups
+  // Sort and filter models - memoized to prevent re-calculation on every render
+  const sortedProviderGroups = React.useMemo(() => {
+    return providerGroups
     .map(group => {
       // Filter out models with "g4f" as provider and clean provider names
       let filteredModels = group.models.filter(model => {
@@ -134,6 +135,7 @@ function PlaygroundContent() {
              !nameLower.includes('g4f') && 
              nameLower !== 'g4f';
     });
+  }, [providerGroups, sortBy]);
   
   const selectedModelInfo = sortedProviderGroups.flatMap(g => g.models).find(m => m.id === selectedModel);
 
@@ -177,11 +179,11 @@ function PlaygroundContent() {
 
         thoughtStartTime = Date.now();
         
-        // Add timeout to prevent infinite loading - fast timeout for better UX
+        // Add timeout to prevent infinite loading
         const controller = new AbortController();
         const timeoutId = setTimeout(() => {
           controller.abort();
-        }, 30000); // 30 second timeout - fail fast
+        }, 60000); // 60 second timeout - better for slower models
         
         try {
           const res = await fetch('/api/unified/v1/chat/completions', {
@@ -254,7 +256,7 @@ function PlaygroundContent() {
         
         if (error instanceof Error) {
           if (error.name === 'AbortError' || error.message.includes('timed out') || error.message.includes('aborted')) {
-            errorMessage = 'Request timed out after 30 seconds. Please try a different model or simplify your request.';
+            errorMessage = 'Request timed out after 60 seconds. Please try a different model or simplify your request.';
           } else if (error.message.includes('500') || error.message.includes('Internal Server Error')) {
             errorMessage = 'Server error. Please try again or select a different model.';
           } else if (error.message.includes('404') || error.message.includes('Not Found')) {
@@ -287,7 +289,7 @@ function PlaygroundContent() {
         
         // Add timeout for image generation
         const controller = new AbortController();
-        const timeoutId = setTimeout(() => controller.abort(), 30000); // 30 second timeout
+        const timeoutId = setTimeout(() => controller.abort(), 60000); // 60 second timeout
         
         const res = await fetch('/api/unified/v1/images/generations', {
           method: 'POST',
@@ -316,7 +318,7 @@ function PlaygroundContent() {
         console.error('Image generation error:', error);
         const errorMessage = error instanceof Error 
           ? (error.name === 'AbortError' || error.message.includes('timeout')
-              ? 'Image generation timed out after 30 seconds. Please try again.' 
+              ? 'Image generation timed out after 60 seconds. Please try again.' 
               : error.message)
           : 'Failed to generate image';
         showError(errorMessage, 8000);
@@ -331,7 +333,7 @@ function PlaygroundContent() {
         
         // Add timeout for video generation
         const controller = new AbortController();
-        const timeoutId = setTimeout(() => controller.abort(), 30000); // 30 second timeout
+        const timeoutId = setTimeout(() => controller.abort(), 60000); // 60 second timeout
         
         const res = await fetch('/api/unified/v1/videos/generations', {
           method: 'POST',
@@ -360,7 +362,7 @@ function PlaygroundContent() {
         console.error('Video generation error:', error);
         const errorMessage = error instanceof Error 
           ? (error.name === 'AbortError' || error.message.includes('timeout')
-              ? 'Video generation timed out after 30 seconds. Please try again.' 
+              ? 'Video generation timed out after 60 seconds. Please try again.' 
               : error.message)
           : 'Failed to generate video';
         showError(errorMessage, 8000);
