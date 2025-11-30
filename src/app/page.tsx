@@ -7,14 +7,25 @@ import Link from 'next/link';
 import Image from 'next/image';
 
 export default function Home() {
+  const liquidGLInitialized = React.useRef(false);
+
   useEffect(() => {
     // Add light mode class to body for homepage
     document.body.classList.add('light-mode');
     
     // Initialize liquidGL after scripts are loaded - optimized for performance
     const initLiquidGL = () => {
+      if (liquidGLInitialized.current) return;
+
       if (typeof window !== 'undefined' && (window as any).liquidGL && typeof (window as any).liquidGL === 'function') {
+        // Check if already initialized in DOM
+        if (document.querySelector('canvas[class*="liquid-glass"]')) {
+          liquidGLInitialized.current = true;
+          return;
+        }
+
         try {
+          liquidGLInitialized.current = true;
           // Optimized settings for performance - only on key elements
           (window as any).liquidGL({
             snapshot: 'body',
